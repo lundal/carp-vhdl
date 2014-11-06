@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 13.3
-# Date: Thu Nov  6 12:06:18 2014
+# Date: Thu Nov  6 12:15:27 2014
 #
 ##############################################################
 #
@@ -45,7 +45,7 @@ CSET bar0_64bit=false
 CSET bar0_enabled=true
 CSET bar0_prefetchable=false
 CSET bar0_scale=Kilobytes
-CSET bar0_size=64
+CSET bar0_size=4
 CSET bar0_type=Memory
 CSET bar1_64bit=false
 CSET bar1_enabled=false
@@ -141,4 +141,4 @@ CSET xlnx_ref_board=SP605_Rev_A-D
 MISC pkg_timestamp=2011-10-05T00:22:37.000Z
 # END Extra information
 GENERATE
-# CRC: a59dedf7
+# CRC: c43874fb
