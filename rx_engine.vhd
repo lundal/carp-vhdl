@@ -14,7 +14,6 @@ entity rx_engine is
     rx_valid   : in  std_logic;
     rx_last    : in  std_logic;
     rx_data    : in  std_logic_vector(31 downto 0);
-    rx_keep    : in  std_logic_vector(3 downto 0);
     rx_user    : in  std_logic_vector(21 downto 0);
     -- Request
     rq_ready   : in  std_logic;

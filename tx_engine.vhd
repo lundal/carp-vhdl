@@ -14,7 +14,6 @@ entity tx_engine is
     tx_valid   : out std_logic;
     tx_last    : out std_logic;
     tx_data    : out std_logic_vector(31 downto 0);
-    tx_keep    : out std_logic_vector(3 downto 0);
     tx_user    : out std_logic_vector(3 downto 0);
     -- Request
     rq_ready   : out std_logic;
@@ -75,7 +74,6 @@ begin
   tlp_bcm           <= '0';
   tlp_byte_count    <= tlp_length & "00";
 
-  tx_keep    <= (others => '1');
   tx_user(0) <= '0'; -- Unused for S6
   tx_user(1) <= '0'; -- Error forward packet
   tx_user(2) <= '0'; -- Stream packet

@@ -85,7 +85,7 @@ CONFIG PART = xc6slx45t-fgg484-3;
 # to suit your requirements and VCCO voltage banking rules.
 #
 
-NET sys_reset_n      LOC = J7  | IOSTANDARD = LVCMOS25 | PULLUP | NODELAY;
+NET reset_n LOC = J7 | IOSTANDARD = LVCMOS25 | PULLUP | NODELAY;
 
 # SYS clock 100 or 125 MHz (input) signal. The sys_clk_p and sys_clk_n
 # signals are the PCI Express reference clock. Spartan-6 GTP
@@ -97,8 +97,8 @@ NET sys_reset_n      LOC = J7  | IOSTANDARD = LVCMOS25 | PULLUP | NODELAY;
 # for guidelines regarding clock resource selection.
 #
 
-NET  sys_clk_n       LOC = B10;
-NET  sys_clk_p       LOC = A10;
+NET  clock_n LOC = B10;
+NET  clock_p LOC = A10;
 
 #
 # Transceiver instance placement.  This constraint selects the
@@ -109,18 +109,18 @@ NET  sys_clk_p       LOC = A10;
 #
 # PCIe Lane 0
 INST pcie_core/GT_i/tile0_gtpa1_dual_wrapper_i/gtpa1_dual_i LOC = GTPA1_DUAL_X0Y0;
-NET  pci_exp_txp LOC = B6;
-NET  pci_exp_txn LOC = A6;
-NET  pci_exp_rxp LOC = D7;
-NET  pci_exp_rxn LOC = C7;
+NET  pcie_tx_p LOC = B6;
+NET  pcie_tx_n LOC = A6;
+NET  pcie_rx_p LOC = D7;
+NET  pcie_rx_n LOC = C7;
 
 #
 # LED pinout for reference board
 #
-NET led_0 LOC = D17;
-NET led_1 LOC = AB4;
-NET led_2 LOC = D21;
-NET led_3 LOC = W15;
+NET led(0) LOC = D17;
+NET led(1) LOC = AB4;
+NET led(2) LOC = D21;
+NET led(3) LOC = W15;
 
 ###############################################################################
 # Physical Constraints
@@ -138,7 +138,7 @@ NET sys_reset_n TIG;
 #
 # Timing requirements and related constraints.
 #
-NET sys_clk_c PERIOD = 8ns;
+NET sys_clock_c PERIOD = 8ns;
 
 NET pcie_core/gt_refclk_out(0) TNM_NET = GT_REFCLK_OUT;
 TIMESPEC TS_GT_REFCLK_OUT = PERIOD GT_REFCLK_OUT 8ns HIGH 50 % ;

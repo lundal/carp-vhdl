@@ -33,7 +33,6 @@
 *.udo
 *.map
 *.mrp
--transcript
 *.wlf
 *_bitgen.xwbt
 *_envsettings.html
@@ -67,6 +66,7 @@ work/
 
 # ISIM
 isim/
+ipcore_dir/
 *isim_beh.*
 isim.cmd
 xilinxsim.ini
@@ -76,6 +76,9 @@ xilinxsim.ini
 wlft*
 transcript
 *.tmp
+*.cfi
+*.mcs
+*.prm
 
 # Linux toolchain garbage
 *.o

@@ -7,7 +7,7 @@ $(PROGFILE):
 flash: $(PROGFILE)
 	echo "setmode -bs" > flash.tmp
 	echo "setcable -port auto" >> flash.tmp
-	echo "identify" >> flash.tmb
+	echo "identify" >> flash.tmp
 	echo "attachflash -position 2 -spi \"W25Q64BV\"" >> flash.tmp
 	echo "assignfiletoattachedflash -position 2 -file \"$(PROGFILE)\"" >> flash.tmp
 	echo "program -p 2 -spionly -e -loadfpga " >> flash.tmp
