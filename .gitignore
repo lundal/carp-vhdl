@@ -75,12 +75,13 @@ xilinxsim.ini
 # Extra
 wlft*
 transcript
+*.tmp
 
-# linux toolchain garbage
+# Linux toolchain garbage
 *.o
 *.out
 *.cf
 
-# vim swap files
+# Vim swap files
 *.swp
 
