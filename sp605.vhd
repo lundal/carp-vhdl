@@ -54,6 +54,8 @@ architecture rtl of sp605 is
 
 begin
 
+  leds <= (others => '0');
+
   tx : entity work.tx_engine
   port map (
     -- General

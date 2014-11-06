@@ -1,7 +1,7 @@
 BITFILE = sp605.bit
 PROGFILE = sp605.mcs
 
-$(PROGFILE):
+$(PROGFILE): $(BITFILE)
 	promgen -w -p mcs -c FF -o $(PROGFILE) -s 4096 -u 0000 $(BITFILE) -spi
 
 flash: $(PROGFILE)
