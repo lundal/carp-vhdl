@@ -48,13 +48,7 @@ architecture rtl of sp605 is
       rx_last   : in  std_logic;
       rx_data   : in  std_logic_vector(31 downto 0);
       rx_keep   : in  std_logic_vector(3 downto 0);
-      rx_user   : in  std_logic_vector(21 downto 0);
-
-      -- LEDs
-      led_0     : out std_logic;
-      led_1     : out std_logic;
-      led_2     : out std_logic;
-      led_3     : out std_logic
+      rx_user   : in  std_logic_vector(21 downto 0)
     );
   end component sp605_application;
 
@@ -403,12 +397,7 @@ begin
     rx_last   => m_axis_rx_tlast,
     rx_data   => m_axis_rx_tdata,
     rx_keep   => m_axis_rx_tkeep,
-    rx_user   => m_axis_rx_tuser,
-    -- LEDs
-    led_0     => led_0_internal,
-    led_1     => led_1_internal,
-    led_2     => led_2_internal,
-    led_3     => led_3_internal
+    rx_user   => m_axis_rx_tuser
   );
 
   ---------------------------------------------------------

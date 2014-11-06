@@ -23,13 +23,7 @@ entity sp605_application is
     rx_last   : in  std_logic;
     rx_data   : in  std_logic_vector(31 downto 0);
     rx_keep   : in  std_logic_vector(3 downto 0);
-    rx_user   : in  std_logic_vector(21 downto 0);
-
-    -- LEDs
-    led_0     : out std_logic;
-    led_1     : out std_logic;
-    led_2     : out std_logic;
-    led_3     : out std_logic
+    rx_user   : in  std_logic_vector(21 downto 0)
   );
 end sp605_application;
 
@@ -100,11 +94,6 @@ begin
     rq_length  => rq_length,
     rq_id      => rq_id,
     rq_tag     => rq_tag,
-    -- LEDs
-    led_0      => led_0,
-    led_1      => led_1,
-    led_2      => led_2,
-    led_3      => led_3,
     -- FIFO
     fifo_data  => fifo_in,
     fifo_write => fifo_write
