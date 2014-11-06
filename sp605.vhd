@@ -5,10 +5,10 @@ use unisim.VCOMPONENTS.all;
 
 entity sp605 is
   port (
-    pci_exp_txp : out std_logic;
-    pci_exp_txn : out std_logic;
-    pci_exp_rxp : in  std_logic;
-    pci_exp_rxn : in  std_logic;
+    pcie_tx_p : out std_logic;
+    pcie_tx_n : out std_logic;
+    pcie_rx_p : in  std_logic;
+    pcie_rx_n : in  std_logic;
 
     sys_clk_p   : in  std_logic;
     sys_clk_n   : in  std_logic;
@@ -406,10 +406,10 @@ begin
   pcie_core : sp605_pcie
   port map (
     -- PCI Express (PCI_EXP) Fabric Interface
-    pci_exp_txp                        => pci_exp_txp,
-    pci_exp_txn                        => pci_exp_txn,
-    pci_exp_rxp                        => pci_exp_rxp,
-    pci_exp_rxn                        => pci_exp_rxn,
+    pci_exp_txp                        => pcie_tx_p,
+    pci_exp_txn                        => pcie_tx_n,
+    pci_exp_rxp                        => pcie_rx_p,
+    pci_exp_rxn                        => pcie_rx_n,
 
     -- Transaction (TRN) Interface
     -- Common clock & reset
