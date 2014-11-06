@@ -24,6 +24,7 @@ entity tx_engine is
     rq_tag     : in  std_logic_vector(7 downto 0);
     -- FIFO
     fifo_data  : in  std_logic_vector(31 downto 0);
+    fifo_words : in  std_logic_vector(9 downto 0);
     fifo_read  : out std_logic
   );
 end tx_engine;
@@ -34,7 +35,7 @@ architecture rtl of tx_engine is
 
   type state_type is (
     IDLE,
-    COMPLETE_DW0, COMPLETE_DW1, COMPLETE_DW2, COMPLETE_DATA
+    COMPLETE_DW0, COMPLETE_DW1, COMPLETE_DW2, COMPLETE_WORDS, COMPLETE_DATA
   );
 
   signal state                 : state_type := IDLE;
@@ -124,13 +125,27 @@ begin
           tx_valid <= '1';
           tx_data  <= tlp_requester_id & tlp_tag & "0" & tlp_address;
           --
-          state <= COMPLETE_DATA;
+          state <= COMPLETE_WORDS;
+        end if;
+        --
+      when COMPLETE_WORDS =>
+        if (tx_ready = '1') then
+          tx_valid <= '1';
+          tx_data  <= x"0000" & "000000" & fifo_words;
+          --
+          tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
+          if (tlp_remaining = "0000000001") then
+            tx_last <= '1';
+            state   <= IDLE;
+          else
+            state <= COMPLETE_DATA;
+          end if;
         end if;
         --
       when COMPLETE_DATA =>
         if (tx_ready = '1') then
           tx_valid <= '1';
-          --tx_data  <= x"12345678";
+          tx_data   <= fifo_data;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
           if (tlp_remaining = "0000000001") then
@@ -140,7 +155,6 @@ begin
         end if;
         -- FIFO
         if (tx_ready = '1') then
-          tx_data   <= fifo_data;
           fifo_read <= '1';
         else
           fifo_read <= '0';

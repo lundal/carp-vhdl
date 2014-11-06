@@ -49,6 +49,7 @@ architecture rtl of sp605 is
   -- FIFO
   signal fifo_in    : std_logic_vector(31 downto 0);
   signal fifo_out   : std_logic_vector(31 downto 0);
+  signal fifo_words : std_logic_vector(9 downto 0);
   signal fifo_read  : std_logic;
   signal fifo_write : std_logic;
 
@@ -78,6 +79,7 @@ begin
     rq_tag     => rq_tag,
     -- FIFO
     fifo_data  => fifo_out,
+    fifo_words => fifo_words,
     fifo_read  => fifo_read
   );
 
@@ -116,6 +118,7 @@ begin
     reset      => reset,
     data_in    => fifo_in,
     data_out   => fifo_out,
+    data_words => fifo_words,
     data_read  => fifo_read,
     data_write => fifo_write
   );
