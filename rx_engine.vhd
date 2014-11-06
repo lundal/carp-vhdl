@@ -23,11 +23,6 @@ entity rx_engine is
     rq_length  : out std_logic_vector(9 downto 0);
     rq_id      : out std_logic_vector(15 downto 0);
     rq_tag     : out std_logic_vector(7 downto 0);
-    -- LEDs
-    led_0      : out std_logic;
-    led_1      : out std_logic;
-    led_2      : out std_logic;
-    led_3      : out std_logic;
     -- FIFO
     fifo_data  : out std_logic_vector(31 downto 0);
     fifo_write : out std_logic
@@ -153,10 +148,6 @@ begin
       when WRITE_DATA =>
         if (rx_valid = '1') then
           tlp_data <= rx_data;
-          led_0    <= rx_data(0);
-          led_1    <= rx_data(1);
-          led_2    <= rx_data(2);
-          led_3    <= rx_data(3);
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
           if (tlp_remaining = "0000000001") then
