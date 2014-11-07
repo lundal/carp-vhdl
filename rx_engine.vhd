@@ -3,6 +3,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity rx_engine is
+  generic (
+    reverse_payload_endian : boolean
+  );
   port (
     -- General
     clock      : in  std_logic;
@@ -24,6 +27,7 @@ entity rx_engine is
     rq_tag     : out std_logic_vector(7 downto 0);
     -- FIFO
     fifo_data  : out std_logic_vector(31 downto 0);
+    fifo_count : in  std_logic_vector(31 downto 0); -- TODO: set rx_ready = 0 if writing data and fifo is full
     fifo_write : out std_logic
   );
 end rx_engine;
@@ -66,6 +70,19 @@ architecture rtl of rx_engine is
 
   -- Other
   signal tlp_remaining         : std_logic_vector(9 downto 0);
+
+  -- Reverse Endian
+  function reverse_endian(input : std_logic_vector) return std_logic_vector is
+    variable output    : std_logic_vector(input'range);
+    constant num_bytes : natural := input'length / 8;
+  begin
+    for i in 0 to num_bytes-1 loop
+      for j in 7 downto 0 loop
+        output(8*i + j) := input(8*(num_bytes-1-i) + j);
+      end loop;
+    end loop;
+    return output;
+  end function reverse_endian;
 
 begin
 
@@ -155,7 +172,11 @@ begin
         end if;
         -- FIFO
         if (rx_valid = '1') then
-          fifo_data  <= rx_data;
+          if (reverse_payload_endian) then
+            fifo_data <= reverse_endian(rx_data);
+          else
+            fifo_data  <= rx_data;
+          end if;
           fifo_write <= '1';
         else
           fifo_write <= '0';

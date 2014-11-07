@@ -1,7 +1,13 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity sp605 is
+  generic (
+    fifo_tx_address_bits   : integer := 10;
+    fifo_rx_address_bits   : integer := 10;
+    reverse_payload_endian : boolean := true -- Required for x86 systems
+  );
   port (
     pcie_tx_p : out std_logic;
     pcie_tx_n : out std_logic;
@@ -47,17 +53,27 @@ architecture rtl of sp605 is
   signal rq_tag     : std_logic_vector(7 downto 0);
   
   -- FIFO
-  signal fifo_in    : std_logic_vector(31 downto 0);
-  signal fifo_out   : std_logic_vector(31 downto 0);
-  signal fifo_words : std_logic_vector(9 downto 0);
-  signal fifo_read  : std_logic;
-  signal fifo_write : std_logic;
+  signal fifo_tx_in             : std_logic_vector(31 downto 0);
+  signal fifo_tx_out            : std_logic_vector(31 downto 0);
+  signal fifo_tx_count          : std_logic_vector(fifo_tx_address_bits-1 downto 0);
+  signal fifo_tx_count_extended : std_logic_vector(31 downto 0);
+  signal fifo_tx_read           : std_logic;
+  signal fifo_tx_write          : std_logic;
+  signal fifo_rx_in             : std_logic_vector(31 downto 0);
+  signal fifo_rx_out            : std_logic_vector(31 downto 0);
+  signal fifo_rx_count          : std_logic_vector(fifo_rx_address_bits-1 downto 0);
+  signal fifo_rx_count_extended : std_logic_vector(31 downto 0);
+  signal fifo_rx_read           : std_logic;
+  signal fifo_rx_write          : std_logic;
 
 begin
 
   leds <= (others => '0');
 
-  tx : entity work.tx_engine
+  tx_engine : entity work.tx_engine
+  generic map (
+    reverse_payload_endian => reverse_payload_endian
+  )
   port map (
     -- General
     clock      => clock,
@@ -78,12 +94,15 @@ begin
     rq_id      => rq_id,
     rq_tag     => rq_tag,
     -- FIFO
-    fifo_data  => fifo_out,
-    fifo_words => fifo_words,
-    fifo_read  => fifo_read
+    fifo_data  => fifo_tx_out,
+    fifo_count => fifo_tx_count_extended,
+    fifo_read  => fifo_tx_read
   );
 
-  rx : entity work.rx_engine
+  rx_engine : entity work.rx_engine
+  generic map (
+    reverse_payload_endian => reverse_payload_endian
+  )
   port map (
     -- General
     clock      => clock,
@@ -104,24 +123,48 @@ begin
     rq_id      => rq_id,
     rq_tag     => rq_tag,
     -- FIFO
-    fifo_data  => fifo_in,
-    fifo_write => fifo_write
+    fifo_data  => fifo_rx_in,
+    fifo_count => fifo_rx_count_extended,
+    fifo_write => fifo_rx_write
   );
 
-  fifo : entity work.fifo
+  tx_fifo : entity work.fifo
   generic map (
-    addr_bits => 10,
+    addr_bits => fifo_tx_address_bits,
     data_bits => 32
   )
   port map (
     clock      => clock,
     reset      => reset,
-    data_in    => fifo_in,
-    data_out   => fifo_out,
-    data_words => fifo_words,
-    data_read  => fifo_read,
-    data_write => fifo_write
+    data_in    => fifo_tx_in,
+    data_out   => fifo_tx_out,
+    data_count => fifo_tx_count,
+    data_read  => fifo_tx_read,
+    data_write => fifo_tx_write
   );
+
+  rx_fifo : entity work.fifo
+  generic map (
+    addr_bits => fifo_rx_address_bits,
+    data_bits => 32
+  )
+  port map (
+    clock      => clock,
+    reset      => reset,
+    data_in    => fifo_rx_in,
+    data_out   => fifo_rx_out,
+    data_count => fifo_rx_count,
+    data_read  => fifo_rx_read,
+    data_write => fifo_rx_write
+  );
+
+  fifo_tx_count_extended <= std_logic_vector(resize(unsigned(fifo_tx_count), 32));
+  fifo_rx_count_extended <= std_logic_vector(resize(unsigned(fifo_rx_count), 32));
+
+  -- Link FIFOs together
+  fifo_tx_in <= fifo_rx_out;
+  fifo_tx_write <= '0' when fifo_rx_count = "0000000000" else '1';
+  fifo_rx_read <= '0' when fifo_rx_count = "0000000000" else '1';
 
   pcie : entity work.sp605_pcie_wrapper
   port map (

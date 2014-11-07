@@ -3,6 +3,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity tx_engine is
+  generic (
+    reverse_payload_endian : boolean
+  );
   port (
     -- General
     clock      : in  std_logic;
@@ -24,7 +27,7 @@ entity tx_engine is
     rq_tag     : in  std_logic_vector(7 downto 0);
     -- FIFO
     fifo_data  : in  std_logic_vector(31 downto 0);
-    fifo_words : in  std_logic_vector(9 downto 0);
+    fifo_count : in  std_logic_vector(31 downto 0);
     fifo_read  : out std_logic
   );
 end tx_engine;
@@ -61,6 +64,19 @@ architecture rtl of tx_engine is
 
   -- Other
   signal tlp_remaining         : std_logic_vector(9 downto 0);
+
+  -- Reverse Endian
+  function reverse_endian(input : std_logic_vector) return std_logic_vector is
+    variable output    : std_logic_vector(input'range);
+    constant num_bytes : natural := input'length / 8;
+  begin
+    for i in 0 to num_bytes-1 loop
+      for j in 7 downto 0 loop
+        output(8*i + j) := input(8*(num_bytes-1-i) + j);
+      end loop;
+    end loop;
+    return output;
+  end function reverse_endian;
 
 begin
 
@@ -131,7 +147,11 @@ begin
       when COMPLETE_WORDS =>
         if (tx_ready = '1') then
           tx_valid <= '1';
-          tx_data  <= x"0000" & "000000" & fifo_words;
+          if (reverse_payload_endian) then
+            tx_data <= reverse_endian(fifo_count);
+          else
+            tx_data <= fifo_count;
+          end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
           if (tlp_remaining = "0000000001") then
@@ -145,7 +165,11 @@ begin
       when COMPLETE_DATA =>
         if (tx_ready = '1') then
           tx_valid <= '1';
-          tx_data   <= fifo_data;
+          if (reverse_payload_endian) then
+            tx_data <= reverse_endian(fifo_data);
+          else
+            tx_data <= fifo_data;
+          end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
           if (tlp_remaining = "0000000001") then

@@ -12,7 +12,7 @@ entity fifo is
     reset      : in  std_logic;
     data_in    : in  std_logic_vector(data_bits - 1 downto 0);
     data_out   : out std_logic_vector(data_bits - 1 downto 0);
-    data_words : out std_logic_vector(addr_bits - 1 downto 0);
+    data_count : out std_logic_vector(addr_bits - 1 downto 0);
     data_read  : in  std_logic;
     data_write : in  std_logic
   );
@@ -25,7 +25,7 @@ architecture rtl of fifo is
 
 begin
 
-  data_words <= std_logic_vector(unsigned(pointer_write) - unsigned(pointer_read));
+  data_count <= std_logic_vector(unsigned(pointer_write) - unsigned(pointer_read));
 
   process begin
     wait until rising_edge(clock);
