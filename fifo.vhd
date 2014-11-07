@@ -1,3 +1,20 @@
+-------------------------------------------------------------------------------
+-- Title      : FIFO Buffer
+-- Project    : Cellular Automata Research Platform
+-------------------------------------------------------------------------------
+-- File       : fifo.vhd
+-- Author     : Per Thomas Lundal
+-- Company    : NTNU
+-- Last update: 2014/11/07
+-- Platform   : Spartan-6 LX45T
+-------------------------------------------------------------------------------
+-- Description: A circular first-in first-out buffer
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Date        Version  Author    Description
+-- 2014/11/07  1.0      lundal    Created
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
