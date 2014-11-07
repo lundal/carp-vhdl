@@ -65,9 +65,6 @@ architecture rtl of rx_engine is
   -- DW 2+3
   signal tlp_address           : std_logic_vector(31 downto 0);
 
-  -- DATA
-  signal tlp_data              : std_logic_vector(31 downto 0);
-
   -- Other
   signal tlp_remaining         : std_logic_vector(9 downto 0);
 
@@ -163,7 +160,11 @@ begin
         --
       when WRITE_DATA =>
         if (rx_valid = '1') then
-          tlp_data <= rx_data;
+          if (reverse_payload_endian) then
+            fifo_data <= reverse_endian(rx_data);
+          else
+            fifo_data  <= rx_data;
+          end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
           if (tlp_remaining = "0000000001") then
@@ -172,11 +173,6 @@ begin
         end if;
         -- FIFO
         if (rx_valid = '1') then
-          if (reverse_payload_endian) then
-            fifo_data <= reverse_endian(rx_data);
-          else
-            fifo_data  <= rx_data;
-          end if;
           fifo_write <= '1';
         else
           fifo_write <= '0';
