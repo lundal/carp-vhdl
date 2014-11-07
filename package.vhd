@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : package.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : AsbjÃ¸rn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
 -- Company    : 
@@ -29,9 +29,9 @@ package sblock_package is
 
   -- constants set by preprosessor
 
-  constant COORD_SIZE_X : integer := 2;
-  constant COORD_SIZE_Y : integer := 2;
-  constant COORD_SIZE_Z : integer := 2;
+  constant COORD_SIZE_X : integer := 3;
+  constant COORD_SIZE_Y : integer := 3;
+  constant COORD_SIZE_Z : integer := 3;
 
   -- constants
   -- 5 for 2d and 7 for 3d
