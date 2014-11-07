@@ -1,3 +1,20 @@
+-------------------------------------------------------------------------------
+-- Title      : Communication Module
+-- Project    : Cellular Automata Research Platform
+-------------------------------------------------------------------------------
+-- File       : communication.vhd
+-- Author     : Per Thomas Lundal
+-- Company    : NTNU
+-- Last update: 2014/11/07
+-- Platform   : Spartan-6 LX45T
+-------------------------------------------------------------------------------
+-- Description: Handles communication with host system over PCIe
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Date        Version  Author    Description
+-- 2014/11/07  1.0      lundal    Created
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
