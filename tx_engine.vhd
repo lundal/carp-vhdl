@@ -9,7 +9,7 @@
 -- Platform   : Spartan-6 LX45T
 -------------------------------------------------------------------------------
 -- Description: Handles transmission of PCIe packets.
---              The first word sent is the fifo buffer word count.
+--              The first word sent is the buffer word count.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -43,10 +43,10 @@ entity tx_engine is
     rq_length  : in  std_logic_vector(9 downto 0);
     rq_id      : in  std_logic_vector(15 downto 0);
     rq_tag     : in  std_logic_vector(7 downto 0);
-    -- FIFO
-    fifo_data  : in  std_logic_vector(31 downto 0);
-    fifo_count : in  std_logic_vector(31 downto 0);
-    fifo_read  : out std_logic
+    -- Buffer
+    buffer_data  : in  std_logic_vector(31 downto 0);
+    buffer_count : in  std_logic_vector(31 downto 0);
+    buffer_read  : out std_logic
   );
 end tx_engine;
 
@@ -134,8 +134,8 @@ begin
           --
           state <= COMPLETE_DW0;
         end if;
-        -- FIFO
-        fifo_read <= '0';
+        -- Buffer signal
+        buffer_read <= '0';
         --
       when COMPLETE_DW0 =>
         if (tx_ready = '1') then
@@ -166,9 +166,9 @@ begin
         if (tx_ready = '1') then
           tx_valid <= '1';
           if (reverse_payload_endian) then
-            tx_data <= reverse_endian(fifo_count);
+            tx_data <= reverse_endian(buffer_count);
           else
-            tx_data <= fifo_count;
+            tx_data <= buffer_count;
           end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
@@ -184,9 +184,9 @@ begin
         if (tx_ready = '1') then
           tx_valid <= '1';
           if (reverse_payload_endian) then
-            tx_data <= reverse_endian(fifo_data);
+            tx_data <= reverse_endian(buffer_data);
           else
-            tx_data <= fifo_data;
+            tx_data <= buffer_data;
           end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
@@ -195,11 +195,11 @@ begin
             state   <= IDLE;
           end if;
         end if;
-        -- FIFO
+        -- Buffer signal
         if (tx_ready = '1') then
-          fifo_read <= '1';
+          buffer_read <= '1';
         else
-          fifo_read <= '0';
+          buffer_read <= '0';
         end if;
         --
     end case;

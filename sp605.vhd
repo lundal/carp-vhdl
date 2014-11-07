@@ -93,10 +93,10 @@ begin
     rq_length  => rq_length,
     rq_id      => rq_id,
     rq_tag     => rq_tag,
-    -- FIFO
-    fifo_data  => fifo_tx_out,
-    fifo_count => fifo_tx_count_extended,
-    fifo_read  => fifo_tx_read
+    -- Buffer
+    buffer_data  => fifo_tx_out,
+    buffer_count => fifo_tx_count_extended,
+    buffer_read  => fifo_tx_read
   );
 
   rx_engine : entity work.rx_engine
@@ -122,10 +122,10 @@ begin
     rq_length  => rq_length,
     rq_id      => rq_id,
     rq_tag     => rq_tag,
-    -- FIFO
-    fifo_data  => fifo_rx_in,
-    fifo_count => fifo_rx_count_extended,
-    fifo_write => fifo_rx_write
+    -- Buffer
+    buffer_data  => fifo_rx_in,
+    buffer_count => fifo_rx_count_extended,
+    buffer_write => fifo_rx_write
   );
 
   tx_fifo : entity work.fifo

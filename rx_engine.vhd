@@ -42,10 +42,10 @@ entity rx_engine is
     rq_length  : out std_logic_vector(9 downto 0);
     rq_id      : out std_logic_vector(15 downto 0);
     rq_tag     : out std_logic_vector(7 downto 0);
-    -- FIFO
-    fifo_data  : out std_logic_vector(31 downto 0);
-    fifo_count : in  std_logic_vector(31 downto 0); -- TODO: set rx_ready = 0 if writing data and fifo is full
-    fifo_write : out std_logic
+    -- Buffer
+    buffer_data  : out std_logic_vector(31 downto 0);
+    buffer_count : in  std_logic_vector(31 downto 0); -- TODO: set rx_ready = 0 if writing data and buffer is full?
+    buffer_write : out std_logic
   );
 end rx_engine;
 
@@ -133,8 +133,8 @@ begin
               state <= DISCARD;
           end case;
         end if;
-        -- FIFO
-        fifo_write <= '0';
+        -- Buffer signal
+        buffer_write <= '0';
         --
       when READ_DW1 =>
         if (rx_valid = '1') then
@@ -178,9 +178,9 @@ begin
       when WRITE_DATA =>
         if (rx_valid = '1') then
           if (reverse_payload_endian) then
-            fifo_data <= reverse_endian(rx_data);
+            buffer_data <= reverse_endian(rx_data);
           else
-            fifo_data  <= rx_data;
+            buffer_data  <= rx_data;
           end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
@@ -188,11 +188,11 @@ begin
             state   <= IDLE;
           end if;
         end if;
-        -- FIFO
+        -- Buffer signal
         if (rx_valid = '1') then
-          fifo_write <= '1';
+          buffer_write <= '1';
         else
-          fifo_write <= '0';
+          buffer_write <= '0';
         end if;
         --
       when DISCARD =>
