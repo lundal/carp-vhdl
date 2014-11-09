@@ -67,7 +67,7 @@ architecture dft_arch of dft is
 
   
   signal cnt : unsigned(6 downto 0);
-  signal cnt2 : integer;
+  signal cnt2 : integer := 0;
   signal first_addr_i : unsigned(RUN_STEP_ADDR_BUS_SIZE - 1 downto 0);
   
   signal twiddle_index : unsigned(13 - DFT_LG_DSPS downto 0) := (others => '0');
