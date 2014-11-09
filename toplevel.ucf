@@ -1,0 +1,33 @@
+###############################################################################
+# SP605 Constraints
+###############################################################################
+
+CONFIG PART = xc6slx45t-fgg484-3;
+
+# Pinout
+NET reset_n LOC = J7 | IOSTANDARD = LVCMOS25 | PULLUP | NODELAY;
+NET clock_n LOC = B10;
+NET clock_p LOC = A10;
+NET pcie_tx_p LOC = B6;
+NET pcie_tx_n LOC = A6;
+NET pcie_rx_p LOC = D7;
+NET pcie_rx_n LOC = C7;
+NET leds<0> LOC = D17;
+NET leds<1> LOC = AB4;
+NET leds<2> LOC = D21;
+NET leds<3> LOC = W15;
+
+# Timing
+NET reset_n TIG;
+
+###############################################################################
+# PCIe Constraints
+###############################################################################
+
+# Placement
+INST */sp605_pcie_core/GT_i/tile0_gtpa1_dual_wrapper_i/gtpa1_dual_i LOC = GTPA1_DUAL_X0Y0;
+
+# Timing
+NET */sys_clock PERIOD = 8ns;
+NET */sp605_pcie_core/gt_refclk_out(0) TNM_NET = GT_REFCLK_OUT;
+TIMESPEC TS_GT_REFCLK_OUT = PERIOD GT_REFCLK_OUT 8ns HIGH 50 % ;

@@ -1,19 +1,21 @@
 -------------------------------------------------------------------------------
--- Title      : toplevel
--- Project    : 
+-- Title      : Toplevel
+-- Project    : Cellular Automata Research Platform
 -------------------------------------------------------------------------------
 -- File       : toplevel.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : AsbjÃ¸rn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
+--            : Per Thomas Lundal
 -- Company    : 
--- Last update: 2014/04/09
--- Platform   : Spartan-6 LX150T
+-- Last update: 2014/11/09
+-- Platform   : Spartan-6 LX45T
 -------------------------------------------------------------------------------
 -- Description: Connects all main components
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
+-- 2014/11/09  3.1      lundal    Added compatibility layer
 -- 2014/04/09  3.0      stoevneng Added components
 -- 2005/03/17  2.0      aamodt    Added components
 -- 2003/01/17  1.1      djupdal
@@ -25,32 +27,38 @@ use IEEE.std_logic_1164.all;
 use work.sblock_package.all;
 
 entity toplevel is
-  
   port (
+    pcie_tx_p : out std_logic;
+    pcie_tx_n : out std_logic;
+    pcie_rx_p : in  std_logic;
+    pcie_rx_n : in  std_logic;
 
-    -- PCI FPGA signals
-    pciBusy   : in    std_logic;
-    pciEmpty  : in    std_logic;
-    pciRW     : out   std_logic;
-    pciEnable : out   std_logic;
-    pciData   : inout std_logic_vector(63 downto 0);
+    clock_p : in  std_logic;
+    clock_n : in  std_logic;
+    reset_n : in  std_logic;
 
-    -- BenERA LEDS
-    debugled : out std_logic_vector(15 downto 0);
-
-    clk   : in std_logic;               -- normal (fast) clock
-    clk40 : in std_logic;               -- 40MHz clock
-
-    rst : in std_logic);
-
+    leds : out std_logic_vector(3 downto 0)
+  );
 end toplevel;
 
-architecture toplevel_arch of toplevel is
+architecture rtl of toplevel is
 
-  signal rst_i      : std_logic;
+  -- General
+  signal clock : std_logic;
+  signal reset : std_logic;
+  signal reset_n_i : std_logic;
 
   -----------------------------------------------------------------------------
   -- signals connecting components
+
+  -- Communication
+  signal tx_buffer_data  : std_logic_vector(31 downto 0);
+  signal tx_buffer_count : std_logic_vector(31 downto 0);
+  signal tx_buffer_write : std_logic;
+
+  signal rx_buffer_data  : std_logic_vector(31 downto 0);
+  signal rx_buffer_count : std_logic_vector(31 downto 0);
+  signal rx_buffer_read  : std_logic;
 
   -- com40
 
@@ -269,34 +277,59 @@ architecture toplevel_arch of toplevel is
 
 begin  -- toplevel_arch
 
-  debugled <= "0101010110101010";
-
-  process (rst, clk)
-  begin
-    if rst = '0' then
-      rst_i <= '0';
-    elsif rising_edge (clk) then
-      rst_i <= '1';
-    end if;
-  end process;
+  leds <= "0101";
+  reset_n_i <= not reset;
 
   -----------------------------------------------------------------------------
 
-  com40_unit: com40
-    port map (
-      send         => send,
-      ack_send     => ack_send,
-      receive      => receive,
-      ack_receive  => ack_receive,
-      data_send    => data_send,
-      data_receive => data_receive,
-      pciBusy      => pciBusy,
-      pciEmpty     => pciEmpty,
-      pciRW        => pciRW,
-      pciEnable    => pciEnable,
-      pciData      => pciData,
-      rst          => rst_i,
-      clk40        => clk40);
+  com_unit : entity work.communication
+  generic map (
+    tx_buffer_address_bits => 10,
+    rx_buffer_address_bits => 10,
+    reverse_payload_endian => true -- Required for x86 systems
+  )
+  port map (
+    pcie_tx_p => pcie_tx_p,
+    pcie_tx_n => pcie_tx_n,
+    pcie_rx_p => pcie_rx_p,
+    pcie_rx_n => pcie_rx_n,
+
+    clock_p => clock_p,
+    clock_n => clock_n,
+    reset_n => reset_n,
+
+    tx_buffer_data  => tx_buffer_data,
+    tx_buffer_count => tx_buffer_count,
+    tx_buffer_write => tx_buffer_write,
+
+    rx_buffer_data  => rx_buffer_data,
+    rx_buffer_count => rx_buffer_count,
+    rx_buffer_read  => rx_buffer_read,
+
+    clock => clock,
+    reset => reset
+  );
+
+  com40_unit: entity work.com40_compatibility_layer
+  port map (
+    -- COM40
+    send         => send,
+    ack_send     => ack_send,
+    receive      => receive,
+    ack_receive  => ack_receive,
+    data_send    => data_send,
+    data_receive => data_receive,
+    -- PCIe
+    tx_buffer_data  => tx_buffer_data,
+    tx_buffer_count => tx_buffer_count,
+    tx_buffer_write => tx_buffer_write,
+    rx_buffer_data  => rx_buffer_data,
+    rx_buffer_count => rx_buffer_count,
+    rx_buffer_read  => rx_buffer_read,
+    -- General
+    clock => clock,
+    reset => reset
+  );
 
   rule_storage_unit: rule_storage
     port map (
@@ -308,8 +341,8 @@ begin  -- toplevel_arch
       rule_number         => rule_number,
       rule_to_store       => rule_to_store,
       nbr_of_last_rule    => nbr_of_last_rule,
-      rst                 => rst_i,
-      clk                 => clk);
+      rst                 => reset_n_i,
+      clk                 => clock);
 
   lutconv_unit: lutconv
     port map (
@@ -318,8 +351,8 @@ begin  -- toplevel_arch
       slct      => lut_slct,
       lut_write => lut_write,
       write_en  => write_en,
-      rst       => rst_i,
-      clk       => clk);
+      rst       => reset_n_i,
+      clk       => clock);
 
   sbm_unit: sblock_matrix
     port map (
@@ -332,8 +365,8 @@ begin  -- toplevel_arch
       config_enable_lut   => config_enable_lut,
       config_enable_ff    => config_enable_ff,
       run_matrix          => run_matrix,
-      rst                 => rst_i,
-      clk                 => clk);
+      rst                 => reset_n_i,
+      clk                 => clock);
 
 
   sbm_bram_mgr_unit: sbm_bram_mgr
@@ -358,8 +391,8 @@ begin  -- toplevel_arch
       rdb_enable_write_state_1  => rdb_enable_write_state_1,
       stall                     => stall_sbm_bram_mgr,
       select_sbm                => select_sbm,
-      rst                       => rst_i,
-      clk                       => clk);
+      rst                       => reset_n_i,
+      clk                       => clock);
 
   hazard_unit: hazard
     port map (
@@ -392,8 +425,8 @@ begin  -- toplevel_arch
 --Kaa
       dft_idle              => dft_idle,
       dec_start_dft         => dec_start_dft,
-      rst                   => rst_i,
-      clk                   => clk);
+      rst                   => reset_n_i,
+      clk                   => clock);
 
   fetch_unit : fetch
     port map (
@@ -409,8 +442,8 @@ begin  -- toplevel_arch
       receive                 => receive,
       ack_receive             => ack_receive,
       data_receive            => data_receive,
-      rst                     => rst_i,
-      clk                     => clk);
+      rst                     => reset_n_i,
+      clk                     => clock);
 
   decode_unit: decode
     port map (
@@ -471,8 +504,8 @@ begin  -- toplevel_arch
       dec_start_dft           => dec_start_dft,
       dec_dft_set_first_addr  => dft_set_first_addr,
       dec_dft_first_addr      => dft_first_addr,
-      rst                     => rst_i,
-      clk                     => clk);
+      rst                     => reset_n_i,
+      clk                     => clock);
 
   lss_unit: lss
     port map (
@@ -535,8 +568,8 @@ begin  -- toplevel_arch
       lss_ld2_sending           => lss_ld2_sending,
       lss_ack_send_i            => lss_ack_send_i,
 
-      rst                       => rst_i,
-      clk                       => clk);
+      rst                       => reset_n_i,
+      clk                       => clock);
 
   dev_unit: dev
     port map (
@@ -570,8 +603,8 @@ begin  -- toplevel_arch
       dec_start_devstep   => dec_start_devstep,
       dev_idle            => dev_idle,
 
-      rst                 => rst_i,
-      clk                 => clk);
+      rst                 => reset_n_i,
+      clk                 => clock);
 
   sbm_pipe_unit: sbm_pipe
     port map (
@@ -603,8 +636,8 @@ begin  -- toplevel_arch
       run_step_mem_write_enable => run_step_funk_write_enable,
       run_step_first            => run_step_first,
 --Kaa
-      rst                       => rst_i,
-      clk                       => clk);
+      rst                       => reset_n_i,
+      clk                       => clock);
 
 --Kaa
   run_step_funk_unit: run_step_funk
@@ -617,8 +650,8 @@ begin  -- toplevel_arch
       address_out      => run_step_mem_address1,
       write_enable_out => run_step_mem_write_enable,
       first_in         => run_step_first,
-      rst      => rst_i,
-      clk      => clk);
+      rst      => reset_n_i,
+      clk      => clock);
 
   run_step_mem_unit: run_step_mem
     port map (
@@ -630,8 +663,8 @@ begin  -- toplevel_arch
       write_enable => run_step_mem_write_enable,
       read_enable  => run_step_mem_read_enable,
       stall        => stall_run_step_mem,
-      rst          => rst_i,
-      clk          => clk);
+      rst          => reset_n_i,
+      clk          => clock);
 
   rulevector_mem_unit: rulevector_mem
   port map(
@@ -641,8 +674,8 @@ begin  -- toplevel_arch
     reset_counter => lss_rulevector_reset,
     read_next     => lss_rulevector_read_next,
     stall         => stall_rulevector_mem,
-    rst           => rst_i, 
-    clk           => clk);        
+    rst           => reset_n_i,
+    clk           => clock);
 
   dft_unit : dft
    port map(
@@ -653,8 +686,8 @@ begin  -- toplevel_arch
     set_first_addr => dft_set_first_addr,
     dft_idle        => dft_idle,
     output      => dft_output,
-    rst         => rst_i,
-    clk         => clk);
+    rst         => reset_n_i,
+    clk         => clock);
 
   fitness_pipe_unit: fitness_pipe
     port map (
@@ -667,8 +700,8 @@ begin  -- toplevel_arch
       run_step_to_evaluate => dec_number_of_readback_values,  --using same bus
       stall                => stall_fitness,
       fitness_idle         => fitness_pipe_idle,
-      rst                  => rst_i,
-      clk                  => clk);
+      rst                  => reset_n_i,
+      clk                  => clock);
   
   usedrules_mem_unit: usedrules_mem
     port map (
@@ -678,8 +711,8 @@ begin  -- toplevel_arch
       data_write    => dev_usedrules_write,
       write_enable  => dev_usedrules_write_enable,
       stall         => stall_usedrules_mem,
-      rst           => rst_i,
-      clk           => clk);
+      rst           => reset_n_i,
+      clk           => clock);
   
 --   process(dev_usedrules_read_enable, lss_usedrules_read_enable,
 --           dev_usedrules_addr_read, lss_usedrules_addr_read)
@@ -693,4 +726,4 @@ begin  -- toplevel_arch
     
 --   end process;
   
-end toplevel_arch;
+end rtl;
