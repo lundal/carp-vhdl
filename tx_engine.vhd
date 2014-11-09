@@ -43,6 +43,7 @@ entity tx_engine is
     rq_length  : in  std_logic_vector(9 downto 0);
     rq_id      : in  std_logic_vector(15 downto 0);
     rq_tag     : in  std_logic_vector(7 downto 0);
+    rq_bar_hit : in  std_logic_vector(5 downto 0);
     -- Buffer
     buffer_data  : in  std_logic_vector(31 downto 0);
     buffer_count : in  std_logic_vector(31 downto 0);
@@ -53,10 +54,11 @@ end tx_engine;
 architecture rtl of tx_engine is
 
   constant TYPE_COMPLETE       : std_logic_vector(7 downto 0) := "01001010";
+  constant REQUEST_COUNT       : std_logic_vector(7 downto 0) := x"00"; -- Last two bits must be 0
 
   type state_type is (
     IDLE,
-    COMPLETE_DW0, COMPLETE_DW1, COMPLETE_DW2, COMPLETE_WORDS, COMPLETE_DATA
+    COMPLETE_DW0, COMPLETE_DW1, COMPLETE_DW2, COMPLETE_REQUEST, COMPLETE_DATA
   );
 
   signal state                 : state_type := IDLE;
@@ -78,9 +80,11 @@ architecture rtl of tx_engine is
   -- DW 2
   signal tlp_requester_id      : std_logic_vector(15 downto 0);
   signal tlp_tag               : std_logic_vector(7 downto 0);
-  signal tlp_address           : std_logic_vector(6 downto 0);
+  signal tlp_address           : std_logic_vector(31 downto 0);
+  signal tlp_address_lower     : std_logic_vector(6 downto 0);
 
   -- Other
+  signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
 
   -- Reverse Endian
@@ -108,6 +112,7 @@ begin
   tlp_status        <= (others => '0');
   tlp_bcm           <= '0';
   tlp_byte_count    <= tlp_length & "00";
+  tlp_address_lower <= tlp_address(6 downto 0);
 
   tx_user(0) <= '0'; -- Unused for S6
   tx_user(1) <= '0'; -- Error forward packet
@@ -126,11 +131,12 @@ begin
         tx_last  <= '0';
         --
         if (rq_valid = '1') then
-          tlp_address      <= rq_address(6 downto 0);
+          tlp_address      <= rq_address;
           tlp_length       <= rq_length;
           tlp_requester_id <= rq_id;
           tlp_tag          <= rq_tag;
           tlp_remaining    <= rq_length;
+          tlp_bar_hit      <= rq_bar_hit;
           --
           state <= COMPLETE_DW0;
         end if;
@@ -157,26 +163,12 @@ begin
       when COMPLETE_DW2 =>
         if (tx_ready = '1') then
           tx_valid <= '1';
-          tx_data  <= tlp_requester_id & tlp_tag & "0" & tlp_address;
+          tx_data  <= tlp_requester_id & tlp_tag & "0" & tlp_address_lower;
           --
-          state <= COMPLETE_WORDS;
-        end if;
-        --
-      when COMPLETE_WORDS =>
-        if (tx_ready = '1') then
-          tx_valid <= '1';
-          if (reverse_payload_endian) then
-            tx_data <= reverse_endian(buffer_count);
-          else
-            tx_data <= buffer_count;
-          end if;
-          --
-          tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
-          if (tlp_remaining = "0000000001") then
-            tx_last <= '1';
-            state   <= IDLE;
-          else
+          if (tlp_bar_hit(0) = '1') then
             state <= COMPLETE_DATA;
+          else
+            state <= COMPLETE_REQUEST;
           end if;
         end if;
         --
@@ -190,7 +182,7 @@ begin
           end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
-          if (tlp_remaining = "0000000001") then
+          if (unsigned(tlp_remaining) = 1) then
             tx_last <= '1';
             state   <= IDLE;
           end if;
@@ -200,6 +192,23 @@ begin
           buffer_read <= '1';
         else
           buffer_read <= '0';
+        end if;
+        --
+      when COMPLETE_REQUEST =>
+        if (tx_ready = '1') then
+          tx_valid <= '1';
+          -- REQUEST_COUNT
+          if (reverse_payload_endian) then
+            tx_data <= reverse_endian(buffer_count);
+          else
+            tx_data <= buffer_count;
+          end if;
+          --
+          tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
+          if (unsigned(tlp_remaining) = 1) then
+            tx_last <= '1';
+            state   <= IDLE;
+          end if;
         end if;
         --
     end case;

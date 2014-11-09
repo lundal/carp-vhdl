@@ -42,6 +42,7 @@ entity rx_engine is
     rq_length  : out std_logic_vector(9 downto 0);
     rq_id      : out std_logic_vector(15 downto 0);
     rq_tag     : out std_logic_vector(7 downto 0);
+    rq_bar_hit : out std_logic_vector(5 downto 0);
     -- Buffer
     buffer_data  : out std_logic_vector(31 downto 0);
     buffer_count : in  std_logic_vector(31 downto 0); -- TODO: set rx_ready = 0 if writing data and buffer is full?
@@ -83,6 +84,7 @@ architecture rtl of rx_engine is
   signal tlp_address           : std_logic_vector(31 downto 0);
 
   -- Other
+  signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
 
   -- Reverse Endian
@@ -105,6 +107,7 @@ begin
   rq_length  <= tlp_length;
   rq_id      <= tlp_requester_id;
   rq_tag     <= tlp_tag;
+  rq_bar_hit <= tlp_bar_hit;
 
   -- State dependant variables
   rx_ready <= '0' when state = READ_WAIT else '1';
@@ -123,6 +126,8 @@ begin
           tlp_attributes    <= rx_data(13 downto 12);
           tlp_length        <= rx_data(9 downto 0);
           tlp_remaining     <= rx_data(9 downto 0);
+          --
+          tlp_bar_hit       <= rx_user(7 downto 2);
           --
           case (rx_data(31 downto 24)) is
             when TYPE_READ_32 =>

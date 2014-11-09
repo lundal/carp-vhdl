@@ -80,7 +80,7 @@ architecture rtl of sp605_pcie_wrapper is
       VC0_TOTAL_CREDITS_CD              : integer    := 211;
       VC0_CPL_INFINITE                  : boolean    := TRUE;
       BAR0                              : bit_vector := x"FFFFF000";
-      BAR1                              : bit_vector := x"00000000";
+      BAR1                              : bit_vector := x"FFFFF000";
       BAR2                              : bit_vector := x"00000000";
       BAR3                              : bit_vector := x"00000000";
       BAR4                              : bit_vector := x"00000000";

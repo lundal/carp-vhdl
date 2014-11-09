@@ -77,6 +77,7 @@ architecture rtl of communication is
   signal rq_length  : std_logic_vector(9 downto 0);
   signal rq_id      : std_logic_vector(15 downto 0);
   signal rq_tag     : std_logic_vector(7 downto 0);
+  signal rq_bar_hit : std_logic_vector(5 downto 0);
   
   -- FIFO
   signal fifo_tx_in             : std_logic_vector(31 downto 0);
@@ -117,6 +118,7 @@ begin
     rq_length  => rq_length,
     rq_id      => rq_id,
     rq_tag     => rq_tag,
+    rq_bar_hit => rq_bar_hit,
     -- Buffer
     buffer_data  => fifo_tx_out,
     buffer_count => fifo_tx_count_extended,
@@ -146,6 +148,7 @@ begin
     rq_length  => rq_length,
     rq_id      => rq_id,
     rq_tag     => rq_tag,
+    rq_bar_hit => rq_bar_hit,
     -- Buffer
     buffer_data  => fifo_rx_in,
     buffer_count => fifo_rx_count_extended,
