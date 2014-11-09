@@ -27,7 +27,7 @@ architecture rtl of sp605 is
   signal tx_buffer_data  : std_logic_vector(31 downto 0);
   signal tx_buffer_count : std_logic_vector(31 downto 0);
   signal tx_buffer_write : std_logic;
-  
+
   signal rx_buffer_data  : std_logic_vector(31 downto 0);
   signal rx_buffer_count : std_logic_vector(31 downto 0);
   signal rx_buffer_read  : std_logic;
