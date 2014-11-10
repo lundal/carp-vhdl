@@ -194,7 +194,7 @@ begin
           end if;
           --
           tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
-          if (tlp_remaining = "0000000001") then
+          if (unsigned(tlp_remaining) = 1) then
             state   <= IDLE;
           end if;
         end if;
