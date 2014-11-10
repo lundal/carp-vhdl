@@ -62,8 +62,8 @@ architecture rtl of com40_compatibility_layer is
 
 begin
 
-  tx_has_space <= unsigned(tx_buffer_count) > 512;
-  rx_has_data  <= unsigned(rx_buffer_count) < 2;
+  tx_has_space <= unsigned(tx_buffer_count) <= 500;
+  rx_has_data  <= unsigned(rx_buffer_count) >= 2;
 
   process begin
     wait until rising_edge(clock);
