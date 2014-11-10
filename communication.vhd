@@ -97,6 +97,7 @@ begin
 
   tx_engine : entity work.tx_engine
   generic map (
+    buffer_address_bits => tx_buffer_address_bits,
     reverse_payload_endian => reverse_payload_endian
   )
   port map (
@@ -127,6 +128,7 @@ begin
 
   rx_engine : entity work.rx_engine
   generic map (
+    buffer_address_bits => rx_buffer_address_bits,
     reverse_payload_endian => reverse_payload_endian
   )
   port map (
