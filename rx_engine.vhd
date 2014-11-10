@@ -21,6 +21,7 @@ use ieee.numeric_std.all;
 
 entity rx_engine is
   generic (
+    buffer_address_bits : integer;
     reverse_payload_endian : boolean
   );
   port (
@@ -45,7 +46,7 @@ entity rx_engine is
     rq_bar_hit : out std_logic_vector(5 downto 0);
     -- Buffer
     buffer_data  : out std_logic_vector(31 downto 0);
-    buffer_count : in  std_logic_vector(31 downto 0); -- TODO: set rx_ready = 0 if writing data and buffer is full?
+    buffer_count : in  std_logic_vector(31 downto 0);
     buffer_write : out std_logic
   );
 end rx_engine;
@@ -86,6 +87,7 @@ architecture rtl of rx_engine is
   -- Other
   signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
+  signal buffer_has_space      : boolean;
 
   -- Reverse Endian
   function reverse_endian(input : std_logic_vector) return std_logic_vector is
@@ -112,6 +114,9 @@ begin
   -- State dependant variables
   rx_ready <= '0' when state = READ_WAIT else '1';
   rq_valid <= '1' when state = READ_WAIT else '0';
+
+  -- Buffer
+  buffer_has_space <= buffer_count(buffer_address_bits-1 downto 0) /= (buffer_address_bits-1 downto 0 => '1');
 
   process begin
     wait until rising_edge(clock);

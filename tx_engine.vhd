@@ -22,6 +22,7 @@ use ieee.numeric_std.all;
 
 entity tx_engine is
   generic (
+    buffer_address_bits : integer;
     reverse_payload_endian : boolean
   );
   port (
@@ -86,6 +87,7 @@ architecture rtl of tx_engine is
   -- Other
   signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
+  signal buffer_has_data       : boolean;
 
   -- Reverse Endian
   function reverse_endian(input : std_logic_vector) return std_logic_vector is
@@ -121,6 +123,9 @@ begin
 
   -- State dependant variables
   rq_ready <= '1' when state = IDLE else '0';
+
+  -- Buffer
+  buffer_has_data <= buffer_count(buffer_address_bits-1 downto 0) /= (buffer_address_bits-1 downto 0 => '0');
 
   process begin
     wait until rising_edge(clock);
