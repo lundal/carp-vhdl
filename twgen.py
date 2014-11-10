@@ -5,52 +5,66 @@
 -------------------------------------------------------------------------------
 -- File       : twgen.py
 -- Author     : Ola Martin Tiseth Stoevneng  <ola.martin.st@gmail.com>
+--            : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : 
--- Last update: 2014/04/08
+-- Last update: 2014/10/10
 -- Platform   : Spartan-6 LX150T
 -------------------------------------------------------------------------------
 -- Description: Generates twiddle.vhd based on attributes in package.vhd
 -------------------------------------------------------------------------------
 -- Revisions  :
-- Date        Version  Author   Description
+-- Date        Version  Author   Description
+-- 2014/10/10  1.1      lundal   Refactored
 -- 2014/04/08  1.0      stovneng Created
 -------------------------------------------------------------------------------
 """
-from math import cos,sin,pi,sqrt
-PRES = None
-DSPS = None
-N = None
-for l in file("package.vhd"):
-  if(":=" in l):
-    if((not PRES) and "TW_PRES" in l): PRES = int(l.split(":=")[1].split(";")[0])
-    if((not DSPS) and "DFT_LG_DSPS" in l): DSPS = 2**int(l.split(":=")[1].split(";")[0])
-    if((not N) and "DFT_SIZE" in l): N = int(l.split(":=")[1].split(";")[0])
-RUNS_PER_DSP = N/DSPS
 
-point = 2**PRES
-lz = [False]*(N*N/2)
-def w(i,j,n=N):
-  if(not lz[i*j]):
-    lz[i*j]=(int(cos(2*pi*i*j/n)*point),-int(sin(2*pi*i*j/n)*point))
-  return lz[i*j]
+from cmath import exp,pi
 
-for i in range(N/2+1):
-  for j in range(N):
-    (wr,wi) = w(i,j)
+def read_attributes():
+    for line in file("package.vhd"):
+        if (":=" in line and ";" in line):
+            [declaration, assignment] = line.split(":=")
+            value = assignment.split(";")[0]
+            if ("TW_PRES" in declaration): twiddle_precision = int(value)
+            if ("DFT_LG_DSPS" in declaration): dsp_amount = 2**int(value)
+            if ("DFT_SIZE" in declaration): transform_size = int(value)
+    return (twiddle_precision, dsp_amount, transform_size)
 
-def negate(inn):
-  out = ["0" if i=='1' else "1" for i in inn]
-  b = 0
-  for i in out:
-    b+=int(i)
-    b*=2
-  b/=2
-  b+=1
-  out = str(bin(b))
-  out = out.split('b')[1]
-  return ('1' if inn[0]=='0' else '0')*(PRES-len(out))+out
+def calculate_twiddle(k, n, N):
+    i = 1j
+    twiddle = exp(-i*2*pi*k*n/N)
+    return twiddle
 
-output = """-------------------------------------------------------------------------------
+def calculate_twiddles(N):
+    twiddles = [False]*(N*N/2)
+    for k in range(N/2):
+        for n in range(N):
+            twiddles[k*n] = calculate_twiddle(k, n, N)
+    return twiddles
+
+def binary_of_width(number, width):
+    negate = number < 0
+    if negate:
+        number = -1 - number
+    representation = "{0:0"+str(width)+"b}"
+    binary = representation.format(number)
+    if negate:
+        binary = "".join(["0" if i=="1" else "1" for i in binary])
+    return binary;
+
+def format_twiddle(twiddle, twiddle_precision):
+    twiddle = twiddle * 2**twiddle_precision
+    real = binary_of_width(int(twiddle.real), 8)
+    imag = binary_of_width(int(twiddle.imag), 8)
+    return (real, imag)
+
+(twiddle_precision, dsp_amount, transform_size) = read_attributes()
+operations_per_dsp = transform_size/dsp_amount
+twiddles = calculate_twiddles(transform_size)
+
+output = """\
+-------------------------------------------------------------------------------
 -- Title      : twiddle
 -- Project    : 
 -------------------------------------------------------------------------------
@@ -78,35 +92,22 @@ package twiddle is
   type twa is array(0 to DFT_SIZE/(PERDSP*2)-1) of twat;
   constant TWIDDLES : twa := (
 """
-
-for c in range(DSPS/2):
- output += "("
- for a in range(RUNS_PER_DSP):
-  for b in range(N):
-   x=(a*DSPS/2+c)*b
-   if lz[x]:
-     (r,i) = lz[x]
-   else:
-     (r,i) = (0,0)
-   r=str(bin(r))
-   i=str(bin(i))
-   r=r.split('b')
-   i=i.split('b')
-   nr = r[0][0]=='-'
-   ni = i[0][0]=='-'
-   r=("0")*(8-len(r[1]))+r[1]
-   i=("0")*(8-len(i[1]))+i[1]
-   if nr:
-     nr = negate(r)
-     r = nr
-   if ni:
-     ni = negate(i)
-     i = ni
-   output += '"'+r+i+'"'
-   if(not (b==N-1 and a==RUNS_PER_DSP-1)): output += ","
-   if(not (b+1)%4): output += "\n"
- output += ")"
- if (not c==DSPS/2-1): output+= ",\n"
+for c in range(dsp_amount/2):
+    output += "("
+    for a in range(operations_per_dsp):
+        for b in range(transform_size):
+            x = (a*dsp_amount/2+c)*b
+            if twiddles[x]:
+                twiddle = twiddles[x]
+            else:
+                twiddle = complex(0,0)
+            (real, imag) = format_twiddle(twiddle, twiddle_precision)
+            output += '"'+real+imag+'"'
+            if (not (b==transform_size-1 and a==operations_per_dsp-1)): output += ","
+            if (not (b+1)%4): output += "\n"
+    output += ")"
+    if (not c==dsp_amount/2-1): output+= ",\n"
 output += """);
 end twiddle;"""
+
 print(output)
