@@ -311,6 +311,9 @@ begin  -- toplevel_arch
   );
 
   com40_unit: entity work.com40_compatibility_layer
+  generic map (
+    reverse_payload_endian => true -- Required for x86 systems
+  )
   port map (
     -- COM40
     send         => send,
