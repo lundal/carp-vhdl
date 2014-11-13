@@ -127,6 +127,9 @@ begin
   -- Buffer
   buffer_has_data <= buffer_count(buffer_address_bits-1 downto 0) /= (buffer_address_bits-1 downto 0 => '0');
 
+  -- Reading needs to happen one cycle earlier
+  buffer_read <= '1' when tx_ready = '1' and state = COMPLETE_DATA else '0';
+
   process begin
     wait until rising_edge(clock);
     --
@@ -145,8 +148,8 @@ begin
           --
           state <= COMPLETE_DW0;
         end if;
-        -- Buffer signal
-        buffer_read <= '0';
+--        -- Buffer signal
+--        buffer_read <= '0';
         --
       when COMPLETE_DW0 =>
         if (tx_ready = '1') then
@@ -192,12 +195,12 @@ begin
             state   <= IDLE;
           end if;
         end if;
-        -- Buffer signal
-        if (tx_ready = '1') then
-          buffer_read <= '1';
-        else
-          buffer_read <= '0';
-        end if;
+--        -- Buffer signal
+--        if (tx_ready = '1') then
+--          buffer_read <= '1';
+--        else
+--          buffer_read <= '0';
+--        end if;
         --
       when COMPLETE_REQUEST =>
         if (tx_ready = '1') then
