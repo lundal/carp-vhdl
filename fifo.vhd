@@ -37,10 +37,18 @@ end fifo;
 
 architecture rtl of fifo is
 
+  signal read_address  : std_logic_vector(addr_bits - 1 downto 0);
+  signal write_address : std_logic_vector(addr_bits - 1 downto 0);
+
   signal pointer_read  : std_logic_vector(addr_bits - 1 downto 0);
   signal pointer_write : std_logic_vector(addr_bits - 1 downto 0);
 
 begin
+
+  -- Pre-increase read address so data is available after only one clock cycle
+  read_address  <= pointer_read when data_read = '0' else
+                   std_logic_vector(unsigned(pointer_read) + 1);
+  write_address <= pointer_write;
 
   data_count <= std_logic_vector(unsigned(pointer_write) - unsigned(pointer_read));
 
@@ -68,14 +76,14 @@ begin
     clk_a    => clock,
     clk_b    => clock,
 
-    addr_a   => pointer_read,
+    addr_a   => read_address,
     data_i_a => (others => '0'),
     data_o_a => data_out,
     we_a     => '0',
     en_a     => '1',
     rst_a    => '0',
 
-    addr_b   => pointer_write,
+    addr_b   => write_address,
     data_i_b => data_in,
     data_o_b => open,
     we_b     => '1',
