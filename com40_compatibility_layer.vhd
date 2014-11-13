@@ -51,8 +51,8 @@ end com40_compatibility_layer;
 
 architecture rtl of com40_compatibility_layer is
 
-  type tx_state_type is (IDLE, WRITE_DW1, WRITE_DW2);
-  type rx_state_type is (IDLE, READ_DW1, READ_DW2);
+  type tx_state_type is (IDLE, WRITE_DW1, WRITE_DW2, WRITE_WAIT);
+  type rx_state_type is (IDLE, READ_DW1, READ_DW2, READ_WAIT);
 
   signal tx_state : tx_state_type := IDLE;
   signal rx_state : rx_state_type := IDLE;
@@ -96,7 +96,13 @@ begin
         end if;
         tx_buffer_write <= '1';
         --
-        tx_state <= IDLE;
+        tx_state <= WRITE_WAIT;
+      when WRITE_WAIT =>
+        tx_buffer_write <= '0';
+        --
+        if (send = '0') then
+          tx_state <= IDLE;
+        end if;
     end case;
   end process;
 
@@ -111,6 +117,7 @@ begin
         --
         if (receive = '1' and rx_has_data) then
           rx_state <= READ_DW1;
+          rx_buffer_read <= '1'; -- Set earlier than write signal due to timing
         end if;
       when READ_DW1 =>
         if (reverse_payload_endian) then
@@ -129,9 +136,15 @@ begin
         else
           data_receive(31 downto 0) <= rx_buffer_data;
         end if;
-        rx_buffer_read <= '1';
+        rx_buffer_read <= '0';
         --
-        rx_state <= IDLE;
+        rx_state <= READ_WAIT;
+      when READ_WAIT =>
+        rx_buffer_read <= '0';
+        --
+        if (receive = '0') then
+          rx_state <= IDLE;
+        end if;
     end case;
   end process;
 
