@@ -1,5 +1,6 @@
-BITFILE = toplevel.bit
-PROGFILE = toplevel.mcs
+PROJECT_NAME = toplevel
+BITFILE = $(PROJECT_NAME).bit
+PROGFILE = $(PROJECT_NAME).mcs
 
 $(PROGFILE): $(BITFILE)
 	promgen -w -p mcs -c FF -o $(PROGFILE) -s 4096 -u 0000 $(BITFILE) -spi
