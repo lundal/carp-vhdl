@@ -3,10 +3,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity toplevel_tb is
-end toplevel_tb;
+entity toplevel2_tb is
+end toplevel2_tb;
 
-architecture behavior of toplevel_tb is 
+architecture behavior of toplevel2_tb is 
 
   signal clock_n : std_logic := '0';
   signal reset_n : std_logic := '0';
@@ -101,13 +101,27 @@ begin
     wait for clock_period*10;
     reset_n <= '1';
     
-    wait for clock_period*5;
+    -- writeState(1, 0,0,0)
+    
+    wait for clock_period;
     fifo_rx_write <= '1';
     fifo_rx_in <= x"00000004";
     
     wait for clock_period;
     fifo_rx_write <= '1';
     fifo_rx_in <= x"80000000";
+    
+    -- writeType(11, 0,0,0)
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000001";
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"0000000B";
+    
+    -- readState(0,0,0)
     
     wait for clock_period;
     fifo_rx_write <= '1';
@@ -116,6 +130,18 @@ begin
     wait for clock_period;
     fifo_rx_write <= '1';
     fifo_rx_in <= x"00000000";
+    
+    -- readType(0,0,0)
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000002";
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000000";
+    
+    -- null
     
     wait for clock_period;
     fifo_rx_write <= '0';
