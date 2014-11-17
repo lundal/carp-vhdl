@@ -203,7 +203,7 @@ begin
   clock <= clock_i;
   reset <= reset_i;
 
-  pcie : entity work.sp605_pcie_wrapper
+  pcie : entity work.pcie_wrapper
   port map (
     -- User Interface
     -- General

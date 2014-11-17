@@ -2,7 +2,7 @@
 -- Title      : PCIe Wrapper
 -- Project    : Cellular Automata Research Platform
 -------------------------------------------------------------------------------
--- File       : sp605_pcie_wrapper.vhd
+-- File       : pcie_wrapper.vhd
 -- Author     : Per Thomas Lundal
 -- Company    : NTNU
 -- Last update: 2014/11/07
@@ -21,7 +21,7 @@ use ieee.std_logic_1164.all;
 library unisim;
 use unisim.VCOMPONENTS.all;
 
-entity sp605_pcie_wrapper is
+entity pcie_wrapper is
   port (
     -- User Interface
     -- General
@@ -56,9 +56,9 @@ entity sp605_pcie_wrapper is
     clock_n   : in  std_logic;
     reset_n   : in  std_logic
   );
-end sp605_pcie_wrapper;
+end pcie_wrapper;
 
-architecture rtl of sp605_pcie_wrapper is
+architecture rtl of pcie_wrapper is
 
   ---------------------------------------------------------
   -- Component declarations

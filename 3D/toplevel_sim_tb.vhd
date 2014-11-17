@@ -3,10 +3,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity toplevel2_tb is
-end toplevel2_tb;
+entity toplevel_sim_tb is
+end toplevel_sim_tb;
 
-architecture behavior of toplevel2_tb is 
+architecture behavior of toplevel_sim_tb is 
 
   signal clock_n : std_logic := '0';
   signal reset_n : std_logic := '0';
@@ -33,7 +33,7 @@ architecture behavior of toplevel2_tb is
 
 begin
 
-  uut: entity work.toplevel2
+  uut: entity work.toplevel_sim
   port map(
     tx_buffer_data  => fifo_tx_in,
     tx_buffer_count => fifo_tx_count_extended,

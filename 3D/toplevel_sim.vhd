@@ -26,7 +26,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use work.sblock_package.all;
 
-entity toplevel2 is
+entity toplevel_sim is
   port (
     tx_buffer_data  : out std_logic_vector(31 downto 0);
     tx_buffer_count : in  std_logic_vector(31 downto 0);
@@ -41,9 +41,9 @@ entity toplevel2 is
 
     leds : out std_logic_vector(3 downto 0)
   );
-end toplevel2;
+end toplevel_sim;
 
-architecture rtl of toplevel2 is
+architecture rtl of toplevel_sim is
 
   -- General
   signal clock : std_logic;
