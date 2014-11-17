@@ -111,15 +111,35 @@ begin
     fifo_rx_write <= '1';
     fifo_rx_in <= x"80000000";
     
-    -- writeType(11, 0,0,0)
+    -- writeState(0, 1,0,0)
     
     wait for clock_period;
     fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000001";
+    fifo_rx_in <= x"00000104";
     
     wait for clock_period;
     fifo_rx_write <= '1';
-    fifo_rx_in <= x"0000000B";
+    fifo_rx_in <= x"00000000";
+    
+    -- writeState(1, 2,0,0)
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000204";
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"80000000";
+    
+    -- writeState(0, 3,0,0)
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000304";
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000000";
     
     -- readState(0,0,0)
     
@@ -131,11 +151,31 @@ begin
     fifo_rx_write <= '1';
     fifo_rx_in <= x"00000000";
     
-    -- readType(0,0,0)
+    -- readState(1,0,0)
     
     wait for clock_period;
     fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000002";
+    fifo_rx_in <= x"00000105";
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000000";
+    
+    -- readState(2,0,0)
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000205";
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000000";
+    
+    -- readState(3,0,0)
+    
+    wait for clock_period;
+    fifo_rx_write <= '1';
+    fifo_rx_in <= x"00000305";
     
     wait for clock_period;
     fifo_rx_write <= '1';
