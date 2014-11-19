@@ -59,91 +59,91 @@ begin
     wait for clock_period*10;
     reset_n <= '1';
     
-    -- writeState(1, 0,0,0)
+    -- writeType(1, 0,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000004";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000001";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"80000000";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000001";
     
-    -- writeState(0, 1,0,0)
-    
-    wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000104";
+    -- writeType(2, 1,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000000";
-    
-    -- writeState(1, 2,0,0)
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000101";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000204";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000002";
+    
+    -- writeType(3, 2,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"80000000";
-    
-    -- writeState(0, 3,0,0)
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000201";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000304";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000003";
+    
+    -- writeType(4, 3,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000000";
-    
-    -- readState(0,0,0)
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000301";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000005";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000004";
+    
+    -- readType(0,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000000";
-    
-    -- readState(1,0,0)
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000002";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000105";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(1,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000000";
-    
-    -- readState(2,0,0)
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000102";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000205";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(2,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000000";
-    
-    -- readState(3,0,0)
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000202";
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000305";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(3,0,0)
     
     wait for clock_period;
-    fifo_rx_write <= '1';
-    fifo_rx_in <= x"00000000";
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000302";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
     
     -- null
     
     wait for clock_period;
-    fifo_rx_write <= '0';
-    fifo_rx_in <= x"00000000";
+    rx_buffer_write <= '0';
+    rx_buffer_data <= x"00000000";
     
     wait;
   end process;
