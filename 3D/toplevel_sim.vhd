@@ -22,20 +22,22 @@
 -- 2002/10/28  1.0      djupdal   Created
 -------------------------------------------------------------------------------
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.sblock_package.all;
 
 entity toplevel_sim is
   port (
-    tx_buffer_data  : out std_logic_vector(31 downto 0);
-    tx_buffer_count : in  std_logic_vector(31 downto 0);
-    tx_buffer_write : out std_logic;
+    sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
+    sim_tx_buffer_count : out std_logic_vector(31 downto 0);
+    sim_tx_buffer_read  : in  std_logic;
 
-    rx_buffer_data  : in  std_logic_vector(31 downto 0);
-    rx_buffer_count : in  std_logic_vector(31 downto 0);
-    rx_buffer_read  : out std_logic;
+    sim_rx_buffer_data  : in  std_logic_vector(31 downto 0);
+    sim_rx_buffer_count : out std_logic_vector(31 downto 0);
+    sim_rx_buffer_write : in  std_logic;
 
+    clock_p : in  std_logic;
     clock_n : in  std_logic;
     reset_n : in  std_logic;
 
@@ -52,6 +54,15 @@ architecture rtl of toplevel_sim is
 
   -----------------------------------------------------------------------------
   -- signals connecting components
+
+  -- Communication
+  signal tx_buffer_data  : std_logic_vector(31 downto 0);
+  signal tx_buffer_count : std_logic_vector(31 downto 0);
+  signal tx_buffer_write : std_logic;
+
+  signal rx_buffer_data  : std_logic_vector(31 downto 0);
+  signal rx_buffer_count : std_logic_vector(31 downto 0);
+  signal rx_buffer_read  : std_logic;
 
   -- com40
 
@@ -271,11 +282,40 @@ architecture rtl of toplevel_sim is
 begin  -- toplevel_arch
 
   leds <= "0101";
-  clock <= not clock_n;
-  reset <= not reset_n;
   reset_n_i <= not reset;
 
   -----------------------------------------------------------------------------
+
+  com_unit : entity work.communication_sim
+  generic map (
+    tx_buffer_address_bits => 4,
+    rx_buffer_address_bits => 4,
+    reverse_payload_endian => true -- Required for x86 systems
+  )
+  port map (
+    sim_tx_buffer_data  => sim_tx_buffer_data,
+    sim_tx_buffer_count => sim_tx_buffer_count,
+    sim_tx_buffer_read  => sim_tx_buffer_read,
+
+    sim_rx_buffer_data  => sim_rx_buffer_data,
+    sim_rx_buffer_count => sim_rx_buffer_count,
+    sim_rx_buffer_write => sim_rx_buffer_write,
+
+    clock_p => clock_p,
+    clock_n => clock_n,
+    reset_n => reset_n,
+
+    tx_buffer_data  => tx_buffer_data,
+    tx_buffer_count => tx_buffer_count,
+    tx_buffer_write => tx_buffer_write,
+
+    rx_buffer_data  => rx_buffer_data,
+    rx_buffer_count => rx_buffer_count,
+    rx_buffer_read  => rx_buffer_read,
+
+    clock => clock,
+    reset => reset
+  );
 
   com40_unit: entity work.com40_compatibility_layer
   generic map (

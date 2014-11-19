@@ -8,87 +8,45 @@ end toplevel_sim_tb;
 
 architecture behavior of toplevel_sim_tb is 
 
+  -- UUT
+  signal tx_buffer_data  : std_logic_vector(31 downto 0) := (others => '0');
+  signal tx_buffer_count : std_logic_vector(31 downto 0) := (others => '0');
+  signal tx_buffer_read  : std_logic := '0';
+  signal rx_buffer_data  : std_logic_vector(31 downto 0) := (others => '0');
+  signal rx_buffer_count : std_logic_vector(31 downto 0) := (others => '0');
+  signal rx_buffer_write : std_logic := '0';
+  signal clock_p : std_logic := '1';
   signal clock_n : std_logic := '0';
   signal reset_n : std_logic := '0';
-  signal clock : std_logic := '0';
-  signal reset : std_logic := '0';
-
   signal leds : std_logic_vector(3 downto 0) := (others => '0');
 
-  constant clock_period : time := 10 ns;
-
-  -- FIFO
-  signal fifo_tx_in             : std_logic_vector(31 downto 0) := (others => '0');
-  signal fifo_tx_out            : std_logic_vector(31 downto 0) := (others => '0');
-  signal fifo_tx_count          : std_logic_vector(4-1 downto 0);
-  signal fifo_tx_count_extended : std_logic_vector(31 downto 0);
-  signal fifo_tx_read           : std_logic := '0';
-  signal fifo_tx_write          : std_logic := '0';
-  signal fifo_rx_in             : std_logic_vector(31 downto 0) := (others => '0');
-  signal fifo_rx_out            : std_logic_vector(31 downto 0) := (others => '0');
-  signal fifo_rx_count          : std_logic_vector(4-1 downto 0);
-  signal fifo_rx_count_extended : std_logic_vector(31 downto 0);
-  signal fifo_rx_read           : std_logic := '0';
-  signal fifo_rx_write          : std_logic := '0';
+  constant clock_period : time := 8 ns;
 
 begin
 
   uut: entity work.toplevel_sim
   port map(
-    tx_buffer_data  => fifo_tx_in,
-    tx_buffer_count => fifo_tx_count_extended,
-    tx_buffer_write => fifo_tx_write,
+    sim_tx_buffer_data  => tx_buffer_data,
+    sim_tx_buffer_count => tx_buffer_count,
+    sim_tx_buffer_read  => tx_buffer_read,
 
-    rx_buffer_data  => fifo_rx_out,
-    rx_buffer_count => fifo_rx_count_extended,
-    rx_buffer_read  => fifo_rx_read,
+    sim_rx_buffer_data  => rx_buffer_data,
+    sim_rx_buffer_count => rx_buffer_count,
+    sim_rx_buffer_write => rx_buffer_write,
 
+    clock_p => clock_p,
     clock_n => clock_n,
     reset_n => reset_n,
 
     leds => leds
   );
 
-  tx_fifo : entity work.fifo
-  generic map (
-    addr_bits => 4,
-    data_bits => 32
-  )
-  port map (
-    clock      => clock,
-    reset      => reset,
-    data_in    => fifo_tx_in,
-    data_out   => fifo_tx_out,
-    data_count => fifo_tx_count,
-    data_read  => fifo_tx_read,
-    data_write => fifo_tx_write
-  );
-
-  rx_fifo : entity work.fifo
-  generic map (
-    addr_bits => 4,
-    data_bits => 32
-  )
-  port map (
-    clock      => clock,
-    reset      => reset,
-    data_in    => fifo_rx_in,
-    data_out   => fifo_rx_out,
-    data_count => fifo_rx_count,
-    data_read  => fifo_rx_read,
-    data_write => fifo_rx_write
-  );
-
-  -- FIFO mappings
-  fifo_tx_count_extended <= std_logic_vector(resize(unsigned(fifo_tx_count), 32));
-  fifo_rx_count_extended <= std_logic_vector(resize(unsigned(fifo_rx_count), 32));
-  clock <= not clock_n;
-  reset <= not reset_n;
-
   clock_process: process
   begin
+    clock_p <= '1';
     clock_n <= '0';
     wait for clock_period/2;
+    clock_p <= '0';
     clock_n <= '1';
     wait for clock_period/2;
   end process;
