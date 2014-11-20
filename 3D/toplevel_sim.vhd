@@ -341,7 +341,7 @@ begin  -- toplevel_arch
     reset => reset
   );
 
-  rule_storage_unit: rule_storage
+  rule_storage_unit: entity work.rule_storage
     port map (
       ruleset             => ruleset,
       cache_set_zero      => cache_set_zero,
@@ -354,7 +354,7 @@ begin  -- toplevel_arch
       rst                 => reset_n_i,
       clk                 => clock);
 
-  lutconv_unit: lutconv
+  lutconv_unit: entity work.lutconv
     port map (
       index     => index,
       lut_read  => lut_read,
@@ -364,7 +364,7 @@ begin  -- toplevel_arch
       rst       => reset_n_i,
       clk       => clock);
 
-  sbm_unit: sblock_matrix
+  sbm_unit: entity work.sblock_matrix
     port map (
       databus_read        => databus_read,
       databus_read_funk   => databus_read_funk,
@@ -379,7 +379,7 @@ begin  -- toplevel_arch
       clk                 => clock);
 
 
-  sbm_bram_mgr_unit: sbm_bram_mgr
+  sbm_bram_mgr_unit: entity work.sbm_bram_mgr
     port map (
       type_data_read_0          => type_data_read_0,
       type_data_write_0         => type_data_write_0,
@@ -404,7 +404,7 @@ begin  -- toplevel_arch
       rst                       => reset_n_i,
       clk                       => clock);
 
-  hazard_unit: hazard
+  hazard_unit: entity work.hazard
     port map (
       dont_issue_dec        => dont_issue_dec,
       stall_lss             => stall_lss,
@@ -438,7 +438,7 @@ begin  -- toplevel_arch
       rst                   => reset_n_i,
       clk                   => clock);
 
-  fetch_unit : fetch
+  fetch_unit : entity work.fetch
     port map (
       fetch_instruction       => fetch_instruction,
       fetch_valid             => fetch_valid,
@@ -455,7 +455,7 @@ begin  -- toplevel_arch
       rst                     => reset_n_i,
       clk                     => clock);
 
-  decode_unit: decode
+  decode_unit: entity work.decode
     port map (
       fetch_instruction       => fetch_instruction,
       fetch_valid             => fetch_valid,
@@ -517,7 +517,7 @@ begin  -- toplevel_arch
       rst                     => reset_n_i,
       clk                     => clock);
 
-  lss_unit: lss
+  lss_unit: entity work.lss
     port map (
       type_data_write_0         => type_data_write_0,
       state_data_write_0        => state_data_write_0,
@@ -581,7 +581,7 @@ begin  -- toplevel_arch
       rst                       => reset_n_i,
       clk                       => clock);
 
-  dev_unit: dev
+  dev_unit: entity work.dev
     port map (
       ruleset             => ruleset,
       cache_set_zero      => cache_set_zero,
@@ -616,7 +616,7 @@ begin  -- toplevel_arch
       rst                 => reset_n_i,
       clk                 => clock);
 
-  sbm_pipe_unit: sbm_pipe
+  sbm_pipe_unit: entity work.sbm_pipe
     port map (
       state_data_write_1        => state_data_write_1,
       type_data_read_1          => type_data_read_1,
@@ -650,7 +650,7 @@ begin  -- toplevel_arch
       clk                       => clock);
 
 --Kaa
-  run_step_funk_unit: run_step_funk
+  run_step_funk_unit: entity work.run_step_funk
     port map (
       data_bus         => databus_read_funk,
       active           => run_step_funk_add,
@@ -663,7 +663,7 @@ begin  -- toplevel_arch
       rst      => reset_n_i,
       clk      => clock);
 
-  run_step_mem_unit: run_step_mem
+  run_step_mem_unit: entity work.run_step_mem
     port map (
       address1      => run_step_mem_address1,
       address2      => run_step_mem_address2,
@@ -676,7 +676,7 @@ begin  -- toplevel_arch
       rst          => reset_n_i,
       clk          => clock);
 
-  rulevector_mem_unit: rulevector_mem
+  rulevector_mem_unit: entity work.rulevector_mem
   port map(
     data_read     => lss_rulevector_data_read,
     data_write    => dev_rulevector_data_write,
@@ -687,7 +687,7 @@ begin  -- toplevel_arch
     rst           => reset_n_i,
     clk           => clock);
 
-  dft_unit : dft
+  dft_unit : entity work.dft
    port map(
     start_dft   => dec_start_dft,
     data_in     => run_step_mem_read2,
@@ -699,7 +699,7 @@ begin  -- toplevel_arch
     rst         => reset_n_i,
     clk         => clock);
 
-  fitness_pipe_unit: fitness_pipe
+  fitness_pipe_unit: entity work.fitness_pipe
     port map (
       dec_start_fitness    => dec_start_fitness,
       fitness_data         => fitness_read_data,
@@ -713,7 +713,7 @@ begin  -- toplevel_arch
       rst                  => reset_n_i,
       clk                  => clock);
   
-  usedrules_mem_unit: usedrules_mem
+  usedrules_mem_unit: entity work.usedrules_mem
     port map (
       address_read  => usedrules_addr_read,
       address_write => dev_usedrules_addr_write,
