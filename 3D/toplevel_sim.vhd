@@ -288,8 +288,8 @@ begin  -- toplevel_arch
 
   com_unit : entity work.communication_sim
   generic map (
-    tx_buffer_address_bits => 4,
-    rx_buffer_address_bits => 4,
+    tx_buffer_address_bits => 8,
+    rx_buffer_address_bits => 8,
     reverse_payload_endian => true -- Required for x86 systems
   )
   port map (
