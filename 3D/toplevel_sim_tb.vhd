@@ -59,6 +59,8 @@ begin
     wait for clock_period*10;
     reset_n <= '1';
     
+    -- #WRITES
+    
     -- writeType(1, 0,0,0)
     
     wait for clock_period;
@@ -67,8 +69,8 @@ begin
     
     wait for clock_period;
     rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000001";
-    
+    rx_buffer_data <= x"00000081";
+
     -- writeType(2, 1,0,0)
     
     wait for clock_period;
@@ -77,7 +79,7 @@ begin
     
     wait for clock_period;
     rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000002";
+    rx_buffer_data <= x"00000082";
     
     -- writeType(3, 2,0,0)
     
@@ -87,7 +89,7 @@ begin
     
     wait for clock_period;
     rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000003";
+    rx_buffer_data <= x"00000083";
     
     -- writeType(4, 3,0,0)
     
@@ -97,7 +99,49 @@ begin
     
     wait for clock_period;
     rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000004";
+    rx_buffer_data <= x"00000084";
+    
+    -- writeType(5, 4,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000401";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000085";
+    
+    -- writeType(6, 5,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000501";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000086";
+    
+    -- writeType(7, 6,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000601";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000087";
+    
+    -- writeType(8, 7,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000701";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000088";
+    
+    -- #READS
     
     -- readType(0,0,0)
     
@@ -139,7 +183,211 @@ begin
     rx_buffer_write <= '1';
     rx_buffer_data <= x"00000000";
     
-    -- null
+    -- readType(4,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000402";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(5,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000502";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(6,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000602";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(7,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000702";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- #REVERSE WRITES
+    
+    -- writeType(8, 7,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000701";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000088";
+    
+    -- writeType(7, 6,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000601";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000087";
+    
+    -- writeType(6, 5,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000501";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000086";
+    
+    -- writeType(5, 4,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000401";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000085";
+    
+    -- writeType(4, 3,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000301";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000084";
+    
+    -- writeType(3, 2,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000201";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000083";
+    
+    -- writeType(2, 1,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000101";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000082";
+    
+    -- writeType(1, 0,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000001";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000081";
+    
+    -- #READS
+    
+    -- readType(0,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000002";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(1,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000102";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(2,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000202";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(3,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000302";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(4,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000402";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(5,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000502";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(6,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000602";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- readType(7,0,0)
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000702";
+    
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+    
+    -- NULL
     
     wait for clock_period;
     rx_buffer_write <= '0';
