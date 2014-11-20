@@ -279,6 +279,13 @@ architecture rtl of toplevel_sim is
   signal dft_idle : std_logic;
   signal dft_output : dft_res_t;
 
+  attribute keep_hierarchy : boolean;
+  attribute keep_hierarchy of com_unit : label is true;
+  attribute keep_hierarchy of com40_unit : label is true;
+  attribute keep_hierarchy of lss_unit : label is true;
+  attribute keep_hierarchy of decode_unit : label is true;
+  attribute keep_hierarchy of sbm_bram_mgr_unit : label is true;
+
 begin  -- toplevel_arch
 
   leds <= "0101";
