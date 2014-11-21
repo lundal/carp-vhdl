@@ -6,15 +6,17 @@
 -- Author     : Asbjrn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
+--            : Per Thomas Lundal
 -- Company    :
--- Last update: 2014/02/20
--- Platform   : Spartan-6 LX150T
+-- Last update: 2014/11/21
+-- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Pipeline for reading and modifying BRAM-0 contents and
 --              write sum memory and rulestorage to pci
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
+-- 2014/11/21  3.2      lundal    Replaced non-implementable logic
 -- 2014/02/20  3.1      stoevneng Updated
 -- 2014/01/13  3.0      stoevneng Updated to match the new memory setup
 -- 2005/04/06  2.1      aamodt    Added usedrule sending
