@@ -1,3 +1,21 @@
+-------------------------------------------------------------------------------
+-- Title      : Combiner
+-- Project    : Cellular Automata Research Platform
+-------------------------------------------------------------------------------
+-- File       : combiner.vhd
+-- Author     : Per Thomas Lundal
+-- Company    : 
+-- Last update: 2014/11/21
+-- Platform   : Spartan-6
+-------------------------------------------------------------------------------
+-- Description: Combines two signals by shifting and masking.
+--            : Can be used to insert an entry into a word.
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Date        Version  Author    Description
+-- 2014/11/21  1.0      lundal    Created
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -82,3 +100,4 @@ begin
   data_out <= (data_long_in and (not mask_offset)) or data_offset;
 
 end rtl;
+

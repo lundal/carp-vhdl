@@ -1,21 +1,21 @@
 -------------------------------------------------------------------------------
--- Title      : Toplevel
+-- Title      : Toplevel - Simulation Edition
 -- Project    : Cellular Automata Research Platform
 -------------------------------------------------------------------------------
--- File       : toplevel.vhd
+-- File       : toplevel_sim.vhd
 -- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
 --            : Per Thomas Lundal
 -- Company    : 
--- Last update: 2014/11/09
--- Platform   : Spartan-6 LX45T
+-- Last update: 2014/11/21
+-- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Connects all main components
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
--- 2014/11/09  3.1      lundal    Added compatibility layer
+-- 2014/11/21  3.1      lundal    Replace communication module
 -- 2014/04/09  3.0      stoevneng Added components
 -- 2005/03/17  2.0      aamodt    Added components
 -- 2003/01/17  1.1      djupdal

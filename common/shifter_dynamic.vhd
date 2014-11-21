@@ -1,3 +1,22 @@
+-------------------------------------------------------------------------------
+-- Title      : Dynamic Shifter 
+-- Project    : Cellular Automata Research Platform
+-------------------------------------------------------------------------------
+-- File       : shifter_dynamic.vhd
+-- Author     : Per Thomas Lundal
+-- Company    : 
+-- Last update: 2014/11/21
+-- Platform   : Spartan-6
+-------------------------------------------------------------------------------
+-- Description: Shifts a signal a dynamic amount.
+--            : Supports left, right and arithmetic modes.
+--            : A custom base shift unit can be specified.
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Date        Version  Author    Description
+-- 2014/11/21  1.0      lundal    Created
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -45,3 +64,4 @@ begin
   data_out <= result(shift_amount_width);
 
 end rtl;
+
