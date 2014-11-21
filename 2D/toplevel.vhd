@@ -22,8 +22,8 @@
 -- 2002/10/28  1.0      djupdal   Created
 -------------------------------------------------------------------------------
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library ieee;
+use ieee.std_logic_1164.all;
 use work.sblock_package.all;
 
 entity toplevel is
