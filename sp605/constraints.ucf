@@ -17,9 +17,6 @@ NET leds<1> LOC = AB4;
 NET leds<2> LOC = D21;
 NET leds<3> LOC = W15;
 
-# Timing
-NET reset_n TIG;
-
 ###############################################################################
 # PCIe Constraints
 ###############################################################################
@@ -30,4 +27,5 @@ INST */sp605_pcie_core/GT_i/tile0_gtpa1_dual_wrapper_i/gtpa1_dual_i LOC = GTPA1_
 # Timing
 NET */sys_clock PERIOD = 8ns;
 NET */sp605_pcie_core/gt_refclk_out(0) TNM_NET = GT_REFCLK_OUT;
-TIMESPEC TS_GT_REFCLK_OUT = PERIOD GT_REFCLK_OUT 8ns HIGH 50 % ;
+TIMESPEC TS_GT_REFCLK_OUT = PERIOD GT_REFCLK_OUT 8ns HIGH 50 %;
+
