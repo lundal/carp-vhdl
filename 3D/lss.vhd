@@ -3,7 +3,7 @@
 -- Project    :
 -------------------------------------------------------------------------------
 -- File       : lss.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : Asbjrn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
 -- Company    :
@@ -916,20 +916,36 @@ begin
   end process;
 
   -- merge old BRAM contents with new sblock data before writing to BRAM
-  --
-  -- databus to BRAM is two sblocks wide; to write one sblock to BRAM one must
-  -- first merge the sblock with the old data on that location
-  process (ld2_sblock_number, type_data_read, ld2_type_data,
-           state_data_read, ld2_state_data)
-  begin
-    insert_result_type <= type_data_read(TYPE_BUS_SIZE - 1 downto (ENTRIES_PER_WORD - to_integer(unsigned(ld2_sblock_number))) * TYPE_SIZE)
-                        & ld2_type_data
-                        & type_data_read((ENTRIES_PER_WORD-1 - to_integer(unsigned(ld2_sblock_number))) * TYPE_SIZE - 1 downto 0);
+  
+  combine_type: entity work.combiner
+  generic map (
+    data_long_width  => TYPE_BUS_SIZE,
+    data_short_width => TYPE_SIZE,
+    offset_width     => COORD_SIZE_X - 1,
+    offset_unit      => TYPE_SIZE,
+    offset_from_left => true
+  )
+  port map (
+    data_long_in  => type_data_read,
+    data_short_in => ld2_type_data,
+    data_out      => insert_result_type,
+    offset        => ld2_sblock_number
+  );
 
-    insert_result_state <= state_data_read(STATE_BUS_SIZE - 1 downto (ENTRIES_PER_WORD - to_integer(unsigned(ld2_sblock_number))))
-                        & ld2_state_data
-                        & state_data_read((ENTRIES_PER_WORD-1 - to_integer(unsigned(ld2_sblock_number))) - 1 downto 0);
-  end process;
+  combine_state: entity work.combiner
+  generic map (
+    data_long_width  => STATE_BUS_SIZE,
+    data_short_width => STATE_SIZE,
+    offset_width     => COORD_SIZE_X - 1,
+    offset_unit      => STATE_SIZE,
+    offset_from_left => true
+  )
+  port map (
+    data_long_in  => state_data_read,
+    data_short_in => (0 => ld2_state_data),
+    data_out      => insert_result_state,
+    offset        => ld2_sblock_number
+  );
 
   -----------------------------------------------------------------------------
   -- extract 64 bit from 256 bit vector
