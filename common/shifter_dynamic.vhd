@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 entity shifter_dynamic is
   generic (
     data_width         : natural := 32;
-    shift_amount_width : natural := 4
+    shift_amount_width : natural := 4;
+    shift_unit         : natural := 1
   );
   port (
     data_in      : in  std_logic_vector(data_width - 1 downto 0);
@@ -30,7 +31,7 @@ begin
     shifter: entity work.shifter
     generic map (
       data_width   => data_width,
-      shift_amount => 2 ** i
+      shift_amount => (2 ** i) * shift_unit
     )
     port map (
       data_in    => result(i),
