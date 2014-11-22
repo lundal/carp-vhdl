@@ -10,7 +10,7 @@ This repository contains the hardware design for my work on the Cellular Automat
 
 #### Requirements
 * SP605 Evaluation Kit
-* Xilinx ISE 13.3 or newer
+* Xilinx ISE 13.3 or newer (older versions might work if PCIe ipcore is replaced)
 * USB driver from http://rmdir.de/~michael/xilinx/ if the one provided by Xilinx does not work
 
 #### Board setup
