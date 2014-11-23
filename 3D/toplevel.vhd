@@ -27,6 +27,11 @@ use ieee.std_logic_1164.all;
 use work.sblock_package.all;
 
 entity toplevel is
+  generic (
+    tx_buffer_address_bits : integer := 10; -- PCIe packet length field is 10 bits
+    rx_buffer_address_bits : integer := 10;
+    reverse_payload_endian : boolean := true -- Required for x86 systems
+  );
   port (
     pcie_tx_p : out std_logic;
     pcie_tx_n : out std_logic;
@@ -53,11 +58,11 @@ architecture rtl of toplevel is
 
   -- Communication
   signal tx_buffer_data  : std_logic_vector(31 downto 0);
-  signal tx_buffer_count : std_logic_vector(31 downto 0);
+  signal tx_buffer_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
   signal tx_buffer_write : std_logic;
 
   signal rx_buffer_data  : std_logic_vector(31 downto 0);
-  signal rx_buffer_count : std_logic_vector(31 downto 0);
+  signal rx_buffer_count : std_logic_vector(rx_buffer_address_bits - 1 downto 0);
   signal rx_buffer_read  : std_logic;
 
   -- com40
@@ -284,9 +289,9 @@ begin  -- toplevel_arch
 
   com_unit : entity work.communication
   generic map (
-    tx_buffer_address_bits => 10,
-    rx_buffer_address_bits => 10,
-    reverse_payload_endian => true -- Required for x86 systems
+    tx_buffer_address_bits => tx_buffer_address_bits,
+    rx_buffer_address_bits => rx_buffer_address_bits,
+    reverse_payload_endian => reverse_payload_endian
   )
   port map (
     pcie_tx_p => pcie_tx_p,
@@ -298,11 +303,11 @@ begin  -- toplevel_arch
     clock_n => clock_n,
     reset_n => reset_n,
 
-    tx_buffer_data  => tx_buffer_data,
+    tx_buffer_in    => tx_buffer_data,
     tx_buffer_count => tx_buffer_count,
     tx_buffer_write => tx_buffer_write,
 
-    rx_buffer_data  => rx_buffer_data,
+    rx_buffer_out   => rx_buffer_data,
     rx_buffer_count => rx_buffer_count,
     rx_buffer_read  => rx_buffer_read,
 
@@ -312,7 +317,9 @@ begin  -- toplevel_arch
 
   com40_unit: entity work.com40_compatibility_layer
   generic map (
-    reverse_payload_endian => true -- Required for x86 systems
+    tx_buffer_address_bits => tx_buffer_address_bits,
+    rx_buffer_address_bits => rx_buffer_address_bits,
+    reverse_payload_endian => reverse_payload_endian
   )
   port map (
     -- COM40

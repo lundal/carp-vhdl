@@ -35,12 +35,12 @@ entity communication is
     clock_n : in  std_logic;
     reset_n : in  std_logic;
 
-    tx_buffer_data  : in  std_logic_vector(31 downto 0);
-    tx_buffer_count : out std_logic_vector(31 downto 0);
+    tx_buffer_in    : in  std_logic_vector(31 downto 0);
+    tx_buffer_count : out std_logic_vector(tx_buffer_address_bits - 1 downto 0);
     tx_buffer_write : in  std_logic;
 
-    rx_buffer_data  : out std_logic_vector(31 downto 0);
-    rx_buffer_count : out std_logic_vector(31 downto 0);
+    rx_buffer_out   : out std_logic_vector(31 downto 0);
+    rx_buffer_count : out std_logic_vector(rx_buffer_address_bits - 1 downto 0);
     rx_buffer_read  : in  std_logic;
 
     clock : out std_logic;
@@ -78,26 +78,23 @@ architecture rtl of communication is
   signal rq_id      : std_logic_vector(15 downto 0);
   signal rq_tag     : std_logic_vector(7 downto 0);
   signal rq_bar_hit : std_logic_vector(5 downto 0);
+
+  -- Special
+  signal rq_special      : std_logic;
+  signal rq_special_data : std_logic_vector(31 downto 0);
   
-  -- FIFO
-  signal fifo_tx_in             : std_logic_vector(31 downto 0);
-  signal fifo_tx_out            : std_logic_vector(31 downto 0);
-  signal fifo_tx_count          : std_logic_vector(tx_buffer_address_bits-1 downto 0);
-  signal fifo_tx_count_extended : std_logic_vector(31 downto 0);
-  signal fifo_tx_read           : std_logic;
-  signal fifo_tx_write          : std_logic;
-  signal fifo_rx_in             : std_logic_vector(31 downto 0);
-  signal fifo_rx_out            : std_logic_vector(31 downto 0);
-  signal fifo_rx_count          : std_logic_vector(rx_buffer_address_bits-1 downto 0);
-  signal fifo_rx_count_extended : std_logic_vector(31 downto 0);
-  signal fifo_rx_read           : std_logic;
-  signal fifo_rx_write          : std_logic;
+  -- Buffers
+  signal tx_buffer_out            : std_logic_vector(31 downto 0);
+  signal tx_buffer_count_i        : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal tx_buffer_read           : std_logic;
+  signal rx_buffer_in             : std_logic_vector(31 downto 0);
+  signal rx_buffer_count_i        : std_logic_vector(rx_buffer_address_bits - 1 downto 0);
+  signal rx_buffer_write          : std_logic;
 
 begin
 
   tx_engine : entity work.tx_engine
   generic map (
-    buffer_address_bits => tx_buffer_address_bits,
     reverse_payload_endian => reverse_payload_endian
   )
   port map (
@@ -119,16 +116,16 @@ begin
     rq_length  => rq_length,
     rq_id      => rq_id,
     rq_tag     => rq_tag,
-    rq_bar_hit => rq_bar_hit,
+    -- Special
+    rq_special      => rq_special,
+    rq_special_data => rq_special_data,
     -- Buffer
-    buffer_data  => fifo_tx_out,
-    buffer_count => fifo_tx_count_extended,
-    buffer_read  => fifo_tx_read
+    buffer_data  => tx_buffer_out,
+    buffer_read  => tx_buffer_read
   );
 
   rx_engine : entity work.rx_engine
   generic map (
-    buffer_address_bits => rx_buffer_address_bits,
     reverse_payload_endian => reverse_payload_endian
   )
   port map (
@@ -152,12 +149,35 @@ begin
     rq_tag     => rq_tag,
     rq_bar_hit => rq_bar_hit,
     -- Buffer
-    buffer_data  => fifo_rx_in,
-    buffer_count => fifo_rx_count_extended,
-    buffer_write => fifo_rx_write
+    buffer_data  => rx_buffer_in,
+    buffer_write => rx_buffer_write
   );
 
-  tx_fifo : entity work.fifo
+  rq_special_handler : entity work.rq_special
+  generic map (
+    tx_buffer_address_bits => tx_buffer_address_bits,
+    rx_buffer_address_bits => rx_buffer_address_bits
+  )
+  port map (
+    -- General
+    clock      => clock_i,
+    reset      => reset_i,
+    link_up    => link_up,
+    device_id  => device_id,
+    -- Request
+    rq_ready   => rq_ready,
+    rq_valid   => rq_valid,
+    rq_address => rq_address,
+    rq_bar_hit => rq_bar_hit,
+    -- Special
+    rq_special      => rq_special,
+    rq_special_data => rq_special_data,
+    -- Buffer
+    tx_buffer_count => tx_buffer_count_i,
+    rx_buffer_count => rx_buffer_count_i
+  );
+
+  tx_buffer : entity work.fifo
   generic map (
     addr_bits => tx_buffer_address_bits,
     data_bits => 32
@@ -165,14 +185,14 @@ begin
   port map (
     clock      => clock_i,
     reset      => reset_i,
-    data_in    => fifo_tx_in,
-    data_out   => fifo_tx_out,
-    data_count => fifo_tx_count,
-    data_read  => fifo_tx_read,
-    data_write => fifo_tx_write
+    data_in    => tx_buffer_in,
+    data_out   => tx_buffer_out,
+    data_count => tx_buffer_count_i,
+    data_read  => tx_buffer_read,
+    data_write => tx_buffer_write
   );
 
-  rx_fifo : entity work.fifo
+  rx_buffer : entity work.fifo
   generic map (
     addr_bits => rx_buffer_address_bits,
     data_bits => 32
@@ -180,28 +200,12 @@ begin
   port map (
     clock      => clock_i,
     reset      => reset_i,
-    data_in    => fifo_rx_in,
-    data_out   => fifo_rx_out,
-    data_count => fifo_rx_count,
-    data_read  => fifo_rx_read,
-    data_write => fifo_rx_write
+    data_in    => rx_buffer_in,
+    data_out   => rx_buffer_out,
+    data_count => rx_buffer_count_i,
+    data_read  => rx_buffer_read,
+    data_write => rx_buffer_write
   );
-
-  -- FIFO mappings
-  fifo_tx_count_extended <= std_logic_vector(resize(unsigned(fifo_tx_count), 32));
-  fifo_rx_count_extended <= std_logic_vector(resize(unsigned(fifo_rx_count), 32));
-
-  -- Buffer mappings
-  tx_buffer_count <= fifo_tx_count_extended;
-  rx_buffer_count <= fifo_rx_count_extended;
-  rx_buffer_data <= fifo_rx_out;
-  fifo_tx_in <= tx_buffer_data;
-  fifo_tx_write <= tx_buffer_write;
-  fifo_rx_read  <= rx_buffer_read;
-
-  -- Output mappings
-  clock <= clock_i;
-  reset <= reset_i;
 
   pcie : entity work.pcie_wrapper
   port map (
@@ -238,5 +242,12 @@ begin
     clock_n   => clock_n,
     reset_n   => reset_n
   );
+
+  -- Output mappings
+  clock <= clock_i;
+  reset <= reset_i;
+
+  tx_buffer_count <= tx_buffer_count_i;
+  rx_buffer_count <= rx_buffer_count_i;
 
 end rtl;

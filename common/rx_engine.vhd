@@ -21,8 +21,7 @@ use ieee.numeric_std.all;
 
 entity rx_engine is
   generic (
-    buffer_address_bits : integer;
-    reverse_payload_endian : boolean
+    reverse_payload_endian : boolean := true
   );
   port (
     -- General
@@ -46,7 +45,6 @@ entity rx_engine is
     rq_bar_hit : out std_logic_vector(5 downto 0);
     -- Buffer
     buffer_data  : out std_logic_vector(31 downto 0);
-    buffer_count : in  std_logic_vector(31 downto 0);
     buffer_write : out std_logic
   );
 end rx_engine;
@@ -81,13 +79,12 @@ architecture rtl of rx_engine is
   signal tlp_last_byte_enable  : std_logic_vector(3 downto 0);
   signal tlp_first_byte_enable : std_logic_vector(3 downto 0);
 
-  -- DW 2+3
+  -- DW 2
   signal tlp_address           : std_logic_vector(31 downto 0);
 
   -- Other
   signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
-  signal buffer_has_space      : boolean;
 
   -- Reverse Endian
   function reverse_endian(input : std_logic_vector) return std_logic_vector is
@@ -111,16 +108,10 @@ begin
   rq_tag     <= tlp_tag;
   rq_bar_hit <= tlp_bar_hit;
 
-  -- State dependant variables
-  rx_ready <= '0' when state = READ_WAIT else '1';
-  rq_valid <= '1' when state = READ_WAIT else '0';
-
-  -- Buffer
-  buffer_has_space <= buffer_count(buffer_address_bits-1 downto 0) /= (buffer_address_bits-1 downto 0 => '1');
-
+  -- Clocked part
   process begin
     wait until rising_edge(clock);
-    --
+
     case (state) is
       when IDLE =>
         if (rx_valid = '1') then
@@ -130,7 +121,6 @@ begin
           tlp_poisoned      <= rx_data(14);
           tlp_attributes    <= rx_data(13 downto 12);
           tlp_length        <= rx_data(9 downto 0);
-          tlp_remaining     <= rx_data(9 downto 0);
           --
           tlp_bar_hit       <= rx_user(7 downto 2);
           --
@@ -143,9 +133,7 @@ begin
               state <= DISCARD;
           end case;
         end if;
-        -- Buffer signal
-        buffer_write <= '0';
-        --
+
       when READ_DW1 =>
         if (rx_valid = '1') then
           tlp_requester_id      <= rx_data(31 downto 16);
@@ -155,19 +143,19 @@ begin
           --
           state <= READ_DW2;
         end if;
-        --
+
       when READ_DW2 =>
         if (rx_valid = '1') then
           tlp_address <= rx_data(31 downto 0);
           --
           state <= READ_WAIT;
         end if;
-        --
+
       when READ_WAIT =>
         if (rq_ready = '1') then
           state <= IDLE;
         end if;
-        --
+
       when WRITE_DW1 =>
         if (rx_valid = '1') then
           tlp_requester_id      <= rx_data(31 downto 16);
@@ -177,42 +165,58 @@ begin
           --
           state <= WRITE_DW2;
         end if;
-        --
+
       when WRITE_DW2 =>
         if (rx_valid = '1') then
           tlp_address <= rx_data(31 downto 0);
           --
           state <= WRITE_DATA;
         end if;
-        --
+
       when WRITE_DATA =>
         if (rx_valid = '1') then
-          if (reverse_payload_endian) then
-            buffer_data <= reverse_endian(rx_data);
-          else
-            buffer_data  <= rx_data;
-          end if;
-          --
-          tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
-          if (unsigned(tlp_remaining) = 1) then
+          -- Count down remaining DWs
+          tlp_length <= std_logic_vector(unsigned(tlp_length) - 1);
+          if (unsigned(tlp_length) = 1) then
             state   <= IDLE;
           end if;
         end if;
-        -- Buffer signal
-        if (rx_valid = '1') then
-          buffer_write <= '1';
-        else
-          buffer_write <= '0';
-        end if;
-        --
+
       when DISCARD =>
         if (rx_valid = '1') then
-          --
           if (rx_last = '1') then
             state <= IDLE;
           end if;
         end if;
+
+    end case;
+  end process;
+
+  -- Combinatorial part
+  process (state, rx_valid, rx_data) begin
+    -- Defaults
+    rx_ready <= '1';
+    rq_valid <= '0';
+    buffer_write <= '0';
+    buffer_data <= (others => '0');
+
+    case (state) is
+      when READ_WAIT =>
+        rx_ready <= '0';
+        rq_valid <= '1';
+
+      when WRITE_DATA =>
+        buffer_write <= rx_valid;
         --
+        if (reverse_payload_endian) then
+          buffer_data <= reverse_endian(rx_data);
+        else
+          buffer_data <= rx_data;
+        end if;
+
+      when others =>
+        null;
+
     end case;
   end process;
 

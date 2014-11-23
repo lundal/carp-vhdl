@@ -22,6 +22,8 @@ use ieee.numeric_std.all;
 
 entity com40_compatibility_layer is
   generic (
+    tx_buffer_address_bits : integer := 10; -- PCIe packet length field is 10 bits
+    rx_buffer_address_bits : integer := 10;
     reverse_payload_endian : boolean := true -- Required for x86 systems
   );
   port (
@@ -36,11 +38,11 @@ entity com40_compatibility_layer is
 
     -- PCIe
     tx_buffer_data  : out std_logic_vector(31 downto 0);
-    tx_buffer_count : in  std_logic_vector(31 downto 0);
+    tx_buffer_count : in  std_logic_vector(tx_buffer_address_bits - 1 downto 0);
     tx_buffer_write : out std_logic;
 
     rx_buffer_data  : in  std_logic_vector(31 downto 0);
-    rx_buffer_count : in  std_logic_vector(31 downto 0);
+    rx_buffer_count : in  std_logic_vector(rx_buffer_address_bits - 1 downto 0);
     rx_buffer_read  : out std_logic;
 
     -- System

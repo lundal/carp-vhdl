@@ -22,7 +22,6 @@ use ieee.numeric_std.all;
 
 entity tx_engine is
   generic (
-    buffer_address_bits : integer;
     reverse_payload_endian : boolean
   );
   port (
@@ -44,10 +43,11 @@ entity tx_engine is
     rq_length  : in  std_logic_vector(9 downto 0);
     rq_id      : in  std_logic_vector(15 downto 0);
     rq_tag     : in  std_logic_vector(7 downto 0);
-    rq_bar_hit : in  std_logic_vector(5 downto 0);
+    -- Special
+    rq_special      : in  std_logic;
+    rq_special_data : in  std_logic_vector(31 downto 0);
     -- Buffer
     buffer_data  : in  std_logic_vector(31 downto 0);
-    buffer_count : in  std_logic_vector(31 downto 0);
     buffer_read  : out std_logic
   );
 end tx_engine;
@@ -59,7 +59,7 @@ architecture rtl of tx_engine is
 
   type state_type is (
     IDLE,
-    COMPLETE_DW0, COMPLETE_DW1, COMPLETE_DW2, COMPLETE_REQUEST, COMPLETE_DATA
+    COMPLETE_DW0, COMPLETE_DW1, COMPLETE_DW2, COMPLETE_DATA, COMPLETE_SPECIAL
   );
 
   signal state                 : state_type := IDLE;
@@ -85,9 +85,11 @@ architecture rtl of tx_engine is
   signal tlp_address_lower     : std_logic_vector(6 downto 0);
 
   -- Other
-  signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
-  signal buffer_has_data       : boolean;
+
+  -- Special
+  signal special               : std_logic;
+  signal special_data          : std_logic_vector(31 downto 0);
 
   -- Reverse Endian
   function reverse_endian(input : std_logic_vector) return std_logic_vector is
@@ -121,18 +123,10 @@ begin
   tx_user(2) <= '0'; -- Stream packet
   tx_user(3) <= '0'; -- Source discontinue
 
-  -- State dependant variables
-  rq_ready <= '1' when state = IDLE else '0';
-
-  -- Buffer
-  buffer_has_data <= buffer_count(buffer_address_bits-1 downto 0) /= (buffer_address_bits-1 downto 0 => '0');
-
-  -- Reading needs to happen one cycle earlier
-  buffer_read <= '1' when tx_ready = '1' and state = COMPLETE_DATA else '0';
-
+  -- Clocked part
   process begin
     wait until rising_edge(clock);
-    --
+
     case (state) is
       when IDLE =>
         tx_valid <= '0';
@@ -143,14 +137,13 @@ begin
           tlp_length       <= rq_length;
           tlp_requester_id <= rq_id;
           tlp_tag          <= rq_tag;
-          tlp_remaining    <= rq_length;
-          tlp_bar_hit      <= rq_bar_hit;
+          --
+          special      <= rq_special;
+          special_data <= rq_special_data;
           --
           state <= COMPLETE_DW0;
         end if;
---        -- Buffer signal
---        buffer_read <= '0';
-        --
+
       when COMPLETE_DW0 =>
         if (tx_ready = '1') then
           tx_valid <= '1';
@@ -159,7 +152,7 @@ begin
           --
           state <= COMPLETE_DW1;
         end if;
-        --
+
       when COMPLETE_DW1 =>
         if (tx_ready = '1') then
           tx_valid <= '1';
@@ -167,19 +160,19 @@ begin
           --
           state <= COMPLETE_DW2;
         end if;
-        --
+
       when COMPLETE_DW2 =>
         if (tx_ready = '1') then
           tx_valid <= '1';
           tx_data  <= tlp_requester_id & tlp_tag & "0" & tlp_address_lower;
           --
-          if (tlp_bar_hit(0) = '1') then
+          if (special = '0') then
             state <= COMPLETE_DATA;
           else
-            state <= COMPLETE_REQUEST;
+            state <= COMPLETE_SPECIAL;
           end if;
         end if;
-        --
+
       when COMPLETE_DATA =>
         if (tx_ready = '1') then
           tx_valid <= '1';
@@ -188,37 +181,49 @@ begin
           else
             tx_data <= buffer_data;
           end if;
-          --
-          tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
-          if (unsigned(tlp_remaining) = 1) then
+          -- Count down remaining DWs
+          tlp_length <= std_logic_vector(unsigned(tlp_length) - 1);
+          if (unsigned(tlp_length) = 1) then
             tx_last <= '1';
             state   <= IDLE;
           end if;
         end if;
---        -- Buffer signal
---        if (tx_ready = '1') then
---          buffer_read <= '1';
---        else
---          buffer_read <= '0';
---        end if;
-        --
-      when COMPLETE_REQUEST =>
+
+      when COMPLETE_SPECIAL =>
         if (tx_ready = '1') then
           tx_valid <= '1';
-          -- REQUEST_COUNT
           if (reverse_payload_endian) then
-            tx_data <= reverse_endian(buffer_count);
+            tx_data <= reverse_endian(special_data);
           else
-            tx_data <= buffer_count;
+            tx_data <= special_data;
           end if;
-          --
-          tlp_remaining <= std_logic_vector(unsigned(tlp_remaining) - 1);
-          if (unsigned(tlp_remaining) = 1) then
+          -- Count down remaining DWs
+          tlp_length <= std_logic_vector(unsigned(tlp_length) - 1);
+          if (unsigned(tlp_length) = 1) then
             tx_last <= '1';
             state   <= IDLE;
           end if;
         end if;
-        --
+
+    end case;
+  end process;
+
+  -- Combinatorial part
+  process (state, tx_ready) begin
+    -- Defaults
+    rq_ready <= '0';
+    buffer_read <= '0';
+
+    case (state) is
+      when IDLE =>
+        rq_ready <= '1';
+
+      when COMPLETE_DATA =>
+        buffer_read <= tx_ready;
+
+      when others =>
+        null;
+
     end case;
   end process;
 

@@ -21,8 +21,8 @@ use ieee.numeric_std.all;
 
 entity fifo is
   generic (
-    addr_bits : integer;
-    data_bits : integer
+    addr_bits : integer := 4;
+    data_bits : integer := 32
   );
   port (
     clock      : in  std_logic;
