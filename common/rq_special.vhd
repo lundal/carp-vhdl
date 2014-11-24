@@ -21,8 +21,8 @@ use ieee.numeric_std.all;
 
 entity rq_special is
   generic (
-    tx_buffer_address_bits : integer;
-    rx_buffer_address_bits : integer
+    tx_buffer_address_bits : natural;
+    rx_buffer_address_bits : natural
   );
   port (
     -- General

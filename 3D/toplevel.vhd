@@ -28,8 +28,8 @@ use work.sblock_package.all;
 
 entity toplevel is
   generic (
-    tx_buffer_address_bits : integer := 10; -- PCIe packet length field is 10 bits
-    rx_buffer_address_bits : integer := 10;
+    tx_buffer_address_bits : natural := 10; -- PCIe packet length field is 10 bits
+    rx_buffer_address_bits : natural := 10;
     reverse_payload_endian : boolean := true -- Required for x86 systems
   );
   port (
