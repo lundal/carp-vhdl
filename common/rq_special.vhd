@@ -46,15 +46,41 @@ end rq_special;
 
 architecture rtl of rq_special is
 
-  type state_type is (
-    IDLE
-  );
-
-  signal state : state_type := IDLE;
+  -- Usage of 12 least significant bits assume BAR size is set to 4096
+  constant RQ_TX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"000";
+  constant RQ_TX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"001";
+  constant RQ_RX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"002";
+  constant RQ_RX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"003";
 
 begin
 
-  rq_special <= '0';
-  rq_special_data <= (others => '0');
+  rq_special <= not rq_bar_hit(0);
+
+  process (rq_address, tx_buffer_count, rx_buffer_count) begin
+    -- Default
+    rq_special_data <= (others => '0');
+
+    -- BAR 1
+    if (rq_bar_hit(1) = '1') then
+      case (rq_address(11 downto 0)) is
+
+        when RQ_TX_BUFFER_COUNT =>
+          rq_special_data <= std_logic_vector(resize(unsigned(tx_buffer_count), 32));
+
+        when RQ_TX_BUFFER_SPACE =>
+          rq_special_data <= std_logic_vector(resize(2**tx_buffer_address_bits - unsigned(tx_buffer_count) - 1, 32));
+
+        when RQ_RX_BUFFER_COUNT =>
+          rq_special_data <= std_logic_vector(resize(unsigned(rx_buffer_count), 32));
+
+        when RQ_RX_BUFFER_SPACE =>
+          rq_special_data <= std_logic_vector(resize(2**rx_buffer_address_bits - unsigned(rx_buffer_count) - 1, 32));
+
+        when others =>
+          rq_special_data <= (others => '0');
+
+      end case;
+    end if;
+  end process;
 
 end rtl;
