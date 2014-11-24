@@ -64,8 +64,8 @@ architecture rtl of com40_compatibility_layer is
 
 begin
 
-  tx_has_space <= unsigned(tx_buffer_count) <= 500;
-  rx_has_data  <= unsigned(rx_buffer_count) >= 2;
+  tx_has_space <= unsigned(tx_buffer_count) < 2 ** tx_buffer_address_bits - 2;
+  rx_has_data  <= unsigned(rx_buffer_count) > 1;
 
   process begin
     wait until rising_edge(clock);
@@ -79,6 +79,7 @@ begin
         if (send = '1' and tx_has_space) then
           tx_state <= WRITE_DW1;
         end if;
+
       when WRITE_DW1 =>
         if (reverse_payload_endian) then
           tx_buffer_data <= data_send(31 downto 0);
@@ -88,6 +89,7 @@ begin
         tx_buffer_write <= '1';
         --
         tx_state <= WRITE_DW2;
+
       when WRITE_DW2 =>
         ack_send <= '1';
         --
@@ -99,12 +101,14 @@ begin
         tx_buffer_write <= '1';
         --
         tx_state <= WRITE_WAIT;
+
       when WRITE_WAIT =>
         tx_buffer_write <= '0';
         --
         if (send = '0') then
           tx_state <= IDLE;
         end if;
+
     end case;
   end process;
 
@@ -121,6 +125,7 @@ begin
           rx_state <= READ_DW1;
           rx_buffer_read <= '1'; -- Set earlier than write signal due to timing
         end if;
+
       when READ_DW1 =>
         if (reverse_payload_endian) then
           data_receive(31 downto 0) <= rx_buffer_data;
@@ -130,6 +135,7 @@ begin
         rx_buffer_read <= '1';
         --
         rx_state <= READ_DW2;
+
       when READ_DW2 =>
         ack_receive <= '1';
         --
@@ -141,12 +147,14 @@ begin
         rx_buffer_read <= '0';
         --
         rx_state <= READ_WAIT;
+
       when READ_WAIT =>
         rx_buffer_read <= '0';
         --
         if (receive = '0') then
           rx_state <= IDLE;
         end if;
+
     end case;
   end process;
 

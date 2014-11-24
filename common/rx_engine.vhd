@@ -21,7 +21,7 @@ use ieee.numeric_std.all;
 
 entity rx_engine is
   generic (
-    reverse_payload_endian : boolean := true
+    reverse_payload_endian : boolean
   );
   port (
     -- General
