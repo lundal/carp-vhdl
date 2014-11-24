@@ -243,11 +243,12 @@ begin
     reset_n   => reset_n
   );
 
+  -- Buffer mappings
+  tx_buffer_count <= tx_buffer_count_i;
+  rx_buffer_count <= rx_buffer_count_i;
+
   -- Output mappings
   clock <= clock_i;
   reset <= reset_i;
-
-  tx_buffer_count <= tx_buffer_count_i;
-  rx_buffer_count <= rx_buffer_count_i;
 
 end rtl;
