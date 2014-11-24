@@ -47,10 +47,11 @@ end rq_special;
 architecture rtl of rq_special is
 
   -- Usage of 12 least significant bits assume BAR size is set to 4096
+  -- Note: The two last bits of an address is always "00".
   constant RQ_TX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"000";
-  constant RQ_TX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"001";
-  constant RQ_RX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"002";
-  constant RQ_RX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"003";
+  constant RQ_TX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"004";
+  constant RQ_RX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"008";
+  constant RQ_RX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"00C";
 
 begin
 
