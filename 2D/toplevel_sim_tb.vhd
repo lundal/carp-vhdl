@@ -10,10 +10,10 @@ architecture behavior of toplevel_sim_tb is
 
   -- UUT
   signal tx_buffer_data  : std_logic_vector(31 downto 0) := (others => '0');
-  signal tx_buffer_count : std_logic_vector(31 downto 0) := (others => '0');
+  signal tx_buffer_count : std_logic_vector(9 downto 0) := (others => '0');
   signal tx_buffer_read  : std_logic := '0';
   signal rx_buffer_data  : std_logic_vector(31 downto 0) := (others => '0');
-  signal rx_buffer_count : std_logic_vector(31 downto 0) := (others => '0');
+  signal rx_buffer_count : std_logic_vector(9 downto 0) := (others => '0');
   signal rx_buffer_write : std_logic := '0';
   signal clock_p : std_logic := '1';
   signal clock_n : std_logic := '0';
@@ -25,6 +25,11 @@ architecture behavior of toplevel_sim_tb is
 begin
 
   uut: entity work.toplevel_sim
+  generic map (
+    tx_buffer_address_bits => 10,
+    rx_buffer_address_bits => 10,
+    reverse_payload_endian => true
+  )
   port map(
     sim_tx_buffer_data  => tx_buffer_data,
     sim_tx_buffer_count => tx_buffer_count,
