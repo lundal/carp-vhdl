@@ -43,6 +43,11 @@ architecture rtl of fifo is
   signal pointer_read  : std_logic_vector(addr_bits - 1 downto 0);
   signal pointer_write : std_logic_vector(addr_bits - 1 downto 0);
 
+  signal bram_out : std_logic_vector(data_bits - 1 downto 0);
+
+  signal data_buffer_enable : boolean;
+  signal data_buffer        : std_logic_vector(data_bits - 1 downto 0);
+
 begin
 
   -- Pre-increase read address so data is available after only one clock cycle
@@ -57,6 +62,7 @@ begin
     if (reset = '1') then
       pointer_read  <= (others => '0');
       pointer_write <= (others => '0');
+      data_buffer_enable <= false;
     else
       if (data_read = '1') then
         pointer_read <= std_logic_vector(unsigned(pointer_read) + 1);
@@ -64,8 +70,15 @@ begin
       if (data_write = '1') then
         pointer_write <= std_logic_vector(unsigned(pointer_write) + 1);
       end if;
+      -- Buffer data when empty (write and read addresses are the same).
+      -- This is a workaround to allow the data to be available in the
+      -- following cycle, as the BRAM operates in read before write mode.
+      data_buffer_enable <= read_address = write_address and data_write = '1';
+      data_buffer        <= data_in;
     end if;
   end process;
+
+  data_out <= data_buffer when data_buffer_enable else bram_out;
 
   bram : entity work.bram_inferrer
   generic map (
@@ -78,7 +91,7 @@ begin
 
     addr_a   => read_address,
     data_i_a => (others => '0'),
-    data_o_a => data_out,
+    data_o_a => bram_out,
     we_a     => '0',
     en_a     => '1',
     rst_a    => '0',
@@ -92,4 +105,3 @@ begin
   );
 
 end rtl;
-
