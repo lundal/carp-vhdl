@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : word_select.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : AsbjÃ¸rn Djupdal  <asbjoern@djupdal.org>
 -- Company    : 
 -- Last update: 2005/05/10
 -- Platform   : Spartan-6 LX150T

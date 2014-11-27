@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : fetch.vhd
--- Author     : Asbjoern Djupdal  <asbjoern@djupdal.org>
+-- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Ola Martin Tiseth Stoevneng
 -- Company    : 
 -- Last update: 2014/02/05

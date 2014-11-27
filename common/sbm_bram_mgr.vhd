@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : sbm_bram_mgr.vhd
--- Author     : Asbjørn Djupdal  <djupdal@harryklein>
+-- Author     : AsbjÃ¸rn Djupdal  <djupdal@harryklein>
 --            : Ola Martin Tiseth Stoevneng
 -- Company    : 
 -- Last update: 2014/01/13

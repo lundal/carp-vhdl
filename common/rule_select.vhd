@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : rule_select.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : AsbjÃ¸rn Djupdal  <asbjoern@djupdal.org>
 -- Company    : 
 -- Last update: 2014/01/07
 -- Platform   : Spartan-6 LX150T

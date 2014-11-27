@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : sbm_pipe.vhd
--- Author     : Asbjørn Djupdal  <djupdal@harryklein>
+-- Author     : AsbjÃ¸rn Djupdal  <djupdal@harryklein>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
 -- Company    : 

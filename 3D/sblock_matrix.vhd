@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : sblock_matrix.vhd
--- Author     : Asbjørn Djupdal  <djupdal@idi.ntnu.no>
+-- Author     : AsbjÃ¸rn Djupdal  <djupdal@idi.ntnu.no>
 --            : Ola Martin Tiseth Stoevneng
 -- Company    : 
 -- Last update: 2014/03/25

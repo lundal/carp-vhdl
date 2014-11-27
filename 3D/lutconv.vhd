@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : lutconv.vhd
--- Author     : Asbjrn Djupdal  <djupdal@harryklein>
+-- Author     : Asbjørn Djupdal  <djupdal@harryklein>
 --            : Ola Martin Tiseth Stoevneng
 -- Company    :
 -- Last update: 2014/03/31

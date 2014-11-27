@@ -3,7 +3,7 @@
 -- Project    :
 -------------------------------------------------------------------------------
 -- File       : lss.vhd
--- Author     : Asbjrn Djupdal  <asbjoern@djupdal.org>
+-- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
 --            : Per Thomas Lundal

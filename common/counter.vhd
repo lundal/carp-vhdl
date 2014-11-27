@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : counter.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : AsbjÃ¸rn Djupdal  <asbjoern@djupdal.org>
 -- Company    : 
 -- Last update: 2003/06/04
 -- Platform   : Spartan-6 LX150T

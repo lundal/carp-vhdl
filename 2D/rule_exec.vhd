@@ -3,7 +3,7 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : rule_exec.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+-- Author     : AsbjÃ¸rn Djupdal  <asbjoern@djupdal.org>
 --            : Ola Martin Tiseth Stoevneng
 -- Company    : 
 -- Last update: 2014/02/24
