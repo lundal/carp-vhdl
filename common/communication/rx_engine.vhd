@@ -18,6 +18,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.funct_package.all;
 
 entity rx_engine is
   generic (
@@ -85,19 +86,6 @@ architecture rtl of rx_engine is
   -- Other
   signal tlp_bar_hit           : std_logic_vector(5 downto 0);
   signal tlp_remaining         : std_logic_vector(9 downto 0);
-
-  -- Reverse Endian
-  function reverse_endian(input : std_logic_vector) return std_logic_vector is
-    variable output    : std_logic_vector(input'range);
-    constant num_bytes : natural := input'length / 8;
-  begin
-    for i in 0 to num_bytes-1 loop
-      for j in 7 downto 0 loop
-        output(8*i + j) := input(8*(num_bytes-1-i) + j);
-      end loop;
-    end loop;
-    return output;
-  end function reverse_endian;
 
 begin
 

@@ -49,6 +49,10 @@ package funct_package is
     a : std_logic_vector)
     return std_logic_vector;
 
+  function reverse_endian (
+    input : std_logic_vector
+  ) return std_logic_vector;
+
 end funct_package;
 
 -------------------------------------------------------------------------------
@@ -112,5 +116,19 @@ package body funct_package is
     end loop;
     return result;
   end reverse_slv;
+
+  function reverse_endian (
+    input : std_logic_vector
+  ) return std_logic_vector is
+    variable output    : std_logic_vector(input'range);
+    constant num_bytes : natural := input'length / 8;
+  begin
+    for i in 0 to num_bytes-1 loop
+      for j in 7 downto 0 loop
+        output(8*i + j) := input(8*(num_bytes-1-i) + j);
+      end loop;
+    end loop;
+    return output;
+  end reverse_endian;
 
 end funct_package;
