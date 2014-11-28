@@ -46,12 +46,12 @@ end rq_special;
 
 architecture rtl of rq_special is
 
-  -- Usage of 12 least significant bits assume BAR size is set to 4096
-  -- Note: The two last bits of an address is always "00".
-  constant RQ_TX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"000";
-  constant RQ_TX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"004";
-  constant RQ_RX_BUFFER_COUNT : std_logic_vector(11 downto 0) := x"008";
-  constant RQ_RX_BUFFER_SPACE : std_logic_vector(11 downto 0) := x"00C";
+  -- Usage of 10 least significant bits assume BAR size is set to 1024 bytes or more
+  -- Note: The two last bits of an address are always zero (DW aligned).
+  constant RQ_TX_BUFFER_COUNT : std_logic_vector(9 downto 2) := x"00";
+  constant RQ_TX_BUFFER_SPACE : std_logic_vector(9 downto 2) := x"01";
+  constant RQ_RX_BUFFER_COUNT : std_logic_vector(9 downto 2) := x"02";
+  constant RQ_RX_BUFFER_SPACE : std_logic_vector(9 downto 2) := x"03";
 
 begin
 
@@ -63,7 +63,7 @@ begin
 
     -- BAR 1
     if (rq_bar_hit(1) = '1') then
-      case (rq_address(11 downto 0)) is
+      case (rq_address(9 downto 2)) is
 
         when RQ_TX_BUFFER_COUNT =>
           rq_special_data <= std_logic_vector(resize(unsigned(tx_buffer_count), 32));
