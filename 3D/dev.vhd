@@ -6,14 +6,16 @@
 -- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
+--            : Per Thomas Lundal
 -- Company    :
--- Last update: 2014/03/20
--- Platform   : Spartan-6 LX150T
+-- Last update: 2014/12/03
+-- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Pipeline for doing a development step from BRAM-0 to BRAM-1
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
+-- 2014/12/03  3.6      lundal    Bugfixes
 -- 2014/03/20  3.5      stoevneng Updated for 3D
 -- 2014/02/03  3.0      stoevneng Extended to compute 8 SBLOCKS each cycle
 -- 2005/04/03  2.0      aamodt    Added logic for fired rules control
@@ -628,9 +630,9 @@ begin
           row_counter_zero_reg <= row_counter_zero;
           row_counter_finished_reg <= row_counter_finished;
           -- stop when both counters are finished
-          if layer_value = "1111" and
-             row_value = "1111" and
-             column_value = "1000" then
+          if layer_value = (COORD_SIZE_Z - 1 downto 0 => '1') and
+             row_value = (COORD_SIZE_Y - 1 downto 0 => '1') and
+             column_value = "1" & (COORD_SIZE_X - 2 downto 0 => '0') then
             control_state <= next_ruleset;
           else
             control_state <= run;
@@ -731,12 +733,12 @@ begin
         if column_counter_finished = '1' then
           reset_column_counter <= '1';
         end if;
-        if column_plus_1 = "0000" then
+        if column_plus_1 = (COORD_SIZE_X - 1 downto 0 => '0') then
           count_row <= '1';
           if row_counter_finished = '1' then
             reset_row_counter <= '1';
           end if;
-          if row_plus_1 = "0000" then
+          if row_plus_1 = (COORD_SIZE_Y - 1 downto 0 => '0') then
             count_layer <= '1';
             if layer_counter_finished = '1' then
               reset_layer_counter <= '1';
