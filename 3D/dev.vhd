@@ -667,7 +667,8 @@ begin
   process (control_state, row_counter_zero, row_counter_finished, column_counter_finished,
            layer_counter_finished, port_select, addr_up, addr_north, addr_south,
            addr_down, dec_start_devstep, ex2_access, last_set,
-           addr_center, use_prev, temp_usedrules_addr)
+           addr_center, use_prev, temp_usedrules_addr, 
+           column_plus_1, row_plus_1)
   begin
 
     -- default values
