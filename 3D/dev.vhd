@@ -436,6 +436,7 @@ architecture dev_arch of dev is
     return result;
   end bram_down;
 
+  signal bram_center_workaround : bram_port_t;
 
 begin
 
@@ -1142,10 +1143,11 @@ begin
   -----------------------------------------------------------------------------
 
   -- store to BRAM-1
+  bram_center_workaround <= bram_center(select_port_select); -- (0) need to be on a separate line for some reason
 
   addra1 : for i in 0 to SBM_BRAM_MODULES - 1 generate
     addr_1_write(i) <= select_address when select_access = '1' else (others => 'Z');
-    dev_enable_write_1a(i) <= select_access when bram_center(select_port_select)(0)/2 = i/PARALLEL_DEV_WORDS else '0';
+    dev_enable_write_1a(i) <= select_access when bram_center_workaround(0)/2 = i/PARALLEL_DEV_WORDS else '0';
 
     type_data_write_1(i*2)   <= select_result_type
               (TYPE_BUS_SIZE * ((i mod PARALLEL_DEV_WORDS)+1) - 1 
