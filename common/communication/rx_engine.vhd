@@ -67,7 +67,6 @@ architecture rtl of rx_engine is
   signal state                 : state_type := IDLE;
 
   -- DW 0
-  signal tlp_type              : std_logic_vector(7 downto 0);
   signal tlp_traffic_class     : std_logic_vector(2 downto 0);
   signal tlp_digest            : std_logic;
   signal tlp_poisoned          : std_logic;
@@ -103,7 +102,6 @@ begin
     case (state) is
       when IDLE =>
         if (rx_valid = '1') then
-          tlp_type          <= rx_data(31 downto 24);
           tlp_traffic_class <= rx_data(22 downto 20);
           tlp_digest        <= rx_data(15);
           tlp_poisoned      <= rx_data(14);
@@ -112,7 +110,7 @@ begin
           --
           tlp_bar_hit       <= rx_user(7 downto 2);
           --
-          case (rx_data(31 downto 24)) is
+          case (rx_data(31 downto 24)) is -- TLP type
             when TYPE_READ_32 =>
               state <= READ_DW1;
             when TYPE_WRITE_32 =>
