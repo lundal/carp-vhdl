@@ -57,7 +57,7 @@ begin
 
   rq_special <= not rq_bar_hit(0);
 
-  process (rq_address, tx_buffer_count, rx_buffer_count) begin
+  process (rq_address, tx_buffer_count, rx_buffer_count, rq_bar_hit) begin
     -- Default
     rq_special_data <= (others => '0');
 
