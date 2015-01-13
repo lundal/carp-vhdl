@@ -5,6 +5,7 @@
 -- File       : fetch.vhd
 -- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Ola Martin Tiseth Stoevneng
+--            : Per Thomas Lundal
 -- Company    : 
 -- Last update: 2014/02/05
 -- Platform   : Spartan-6 LX150T
@@ -13,6 +14,7 @@
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
+-- 2015/01/13  2.1      lundal    Fix implementation bug
 -- 2014/02/05  2.0      stoevneng Support for 128 bit instructions
 -- 2003/03/30  1.0      djupdal	  Created
 -------------------------------------------------------------------------------
@@ -74,12 +76,11 @@ architecture fetch_arch of fetch is
   -----------------------------------------------------------------------------
   -- PCI Fetch
 
-  type receive_state_type is (idle, receiving_1, syncing, receiving_2, receiving_3);
+  type receive_state_type is (idle, receiving_1, sync_1, receiving_2, sync_2, receiving_3);
   signal receive_ctrl_state : receive_state_type;
 
   signal ack_receive_ii : std_logic;
   signal ack_receive_i  : std_logic;
-  signal data_2_received : std_logic;
 
   signal pci_instruction : std_logic_vector(INSTR_SIZE - 1 downto 0);
   signal pci_valid       : std_logic;
@@ -142,7 +143,7 @@ begin
 
   -- state machine
   process (pci_instruction, receive_ctrl_state, program_store, data_receive,
-           ack_receive_i, valid, data_2_received, pci_instruction_i)
+           ack_receive_i, valid, pci_instruction_i)
   begin
     next_state <= idle;
     pci_valid_i <= '0';
@@ -150,13 +151,11 @@ begin
     pci_instruction_i <= pci_instruction;
 
     receive <= '0';
---    data_2_received <= '0';
 
     case receive_ctrl_state is
 
       -- wait until COM40 is ready
       when idle =>
-        data_2_received <= '0';
         if ack_receive_i = '0' then
           next_state <= receiving_1;
         else
@@ -170,7 +169,7 @@ begin
         if ack_receive_i = '1' then
           -- check if instruction is 64 bit or 128 bit
           if data_receive(6) = '1' or data_receive(7) = '1' then
-            next_state <= syncing;
+            next_state <= sync_1;
           else
             next_state <= idle;
             pci_valid_i <= not program_store;
@@ -181,17 +180,13 @@ begin
           next_state <= receiving_1;
         end if;
 
-      -- 64 bit instruction; get another word from COM40
+      -- 128 bit instruction; get second word from COM40
       -- wait until COM40 ready
-      when syncing =>
+      when sync_1 =>
         if ack_receive_i = '0' then
-          if data_2_received = '1' then
-            next_state <= receiving_3;
-          else
-            next_state <= receiving_2;
-          end if;
+          next_state <= receiving_2;
         else
-          next_state <= syncing;
+          next_state <= sync_1;
         end if;
 
       -- get second word
@@ -200,21 +195,29 @@ begin
 
         if ack_receive_i = '1' then
           if pci_instruction_i(7) = '1' then
-            next_state <= syncing;
+            next_state <= sync_2;
           else
             next_state <= idle;
             pci_valid_i <= not program_store;
             store_valid_i <= program_store;
           end if;
-          data_2_received <= '1';
           pci_instruction_i(128 - 1 downto 64) <= data_receive;
         else
           next_state <= receiving_2;
         end if;
-        
+
+      -- 192 bit instruction; get third word from COM40
+      -- wait until COM40 ready
+      when sync_2 =>
+        if ack_receive_i = '0' then
+          next_state <= receiving_3;
+        else
+          next_state <= sync_2;
+        end if;
+
+      -- get third word
       when receiving_3 =>
         receive <= '1';
-        data_2_received <= '0';
         
         if ack_receive_i = '1' then
           next_state <= idle;
