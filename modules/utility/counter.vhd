@@ -40,7 +40,7 @@ architecture rtl of counter is
 
   signal zero_i     : std_logic;
   signal finished_i : std_logic;
-  signal value_i    : unsigned(counter_bits - 1 downto 0);
+  signal value_i    : unsigned(counter_bits - 1 downto 0) := (others => '0');
 
 begin
 

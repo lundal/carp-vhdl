@@ -36,7 +36,7 @@ end shift_register;
 
 architecture rtl of shift_register is
 
-  signal register_i : std_logic_vector(2**address_size - 1 downto 0);
+  signal register_i : std_logic_vector(2**address_size - 1 downto 0) := (others => '0');
 
 begin
 
