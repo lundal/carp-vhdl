@@ -57,6 +57,7 @@
 *.xrpt
 
 # Generated folders
+ipcores/
 iseconfig/
 xlnx_auto_0_xdb/
 xst/
@@ -66,7 +67,6 @@ work/
 
 # ISIM
 isim/
-ipcore_dir/
 *isim_beh.*
 isim.cmd
 xilinxsim.ini

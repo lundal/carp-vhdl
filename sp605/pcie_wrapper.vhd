@@ -3,17 +3,17 @@
 -- Project    : Cellular Automata Research Platform
 -------------------------------------------------------------------------------
 -- File       : pcie_wrapper.vhd
--- Author     : Per Thomas Lundal
+-- Author     : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
--- Last update: 2014/11/07
--- Platform   : Spartan-6 LX45T
+-- Last update: 2014-11-07
+-- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: A wrapper for the Spartan-6 PCIe integrated endpoint block,
 --              configured for the SP605 development board.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
--- 2014/11/07  1.0      lundal    Created
+-- 2014-11-07  1.0      lundal    Created
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -125,8 +125,8 @@ architecture rtl of pcie_wrapper is
       PM_CAP_PME_CLOCK                  : boolean    := FALSE;
       PM_CAP_DSI                        : boolean    := FALSE;
       PM_CAP_AUXCURRENT                 : integer    := 0;
-      PM_CAP_D1SUPPORT                  : boolean    := TRUE;
-      PM_CAP_D2SUPPORT                  : boolean    := TRUE;
+      PM_CAP_D1SUPPORT                  : boolean    := FALSE;
+      PM_CAP_D2SUPPORT                  : boolean    := FALSE;
       PM_CAP_PMESUPPORT                 : bit_vector := x"0F";
       PM_DATA0                          : bit_vector := x"00";
       PM_DATA_SCALE0                    : bit_vector := x"0";
