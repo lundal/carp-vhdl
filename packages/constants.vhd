@@ -1,17 +1,17 @@
 -------------------------------------------------------------------------------
 -- Title      : Constants
--- Project    : 
+-- Project    : Cellular Automata Research Project
 -------------------------------------------------------------------------------
 -- File       : constants.vhd
 -- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
---            : Per Thomas Lundal
--- Company    : 
+--            : Per Thomas Lundal <perthomas@gmail.com>
+-- Company    : NTNU
 -- Last update: 201-01-20
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: Constants and component declarations
+-- Description: Constants
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description

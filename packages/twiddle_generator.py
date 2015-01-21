@@ -23,7 +23,7 @@
 from cmath import exp,pi
 
 def read_attributes():
-    for line in open("../../packages/constants.vhd"):
+    for line in open("constants.vhd"):
         if (":=" in line and ";" in line):
             [declaration, assignment] = line.split(":=")
             value = assignment.split(";")[0]

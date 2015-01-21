@@ -20,9 +20,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library work;
-use work.types;
-
 entity bram_1toN is
   generic (
     address_bits : positive := 8;
@@ -54,7 +51,8 @@ architecture rtl of bram_1toN is
 
 begin
 
-  -- XST does not have proper support for VHDL2008 which is needed for generic arrays in ports
+  -- XST does not have proper support for VHDL2008 which is needed for generic
+  -- arrays in port declarations. Hence the conversion to/from std_logic_vector.
 
   slv_to_array : for i in 0 to read_ports - 1 generate
     read_address(i) <= read_address_slv((i+1)*address_bits - 1 downto i*address_bits);

@@ -1,13 +1,13 @@
 -------------------------------------------------------------------------------
 -- Title      : Function Package
--- Project    : 
+-- Project    : Cellular Automata Research Platform
 -------------------------------------------------------------------------------
--- File       : funct_package.vhd
+-- File       : functions.vhd
 -- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
 --            : Kjetil Aamodt
 --            : Ola Martin Tiseth Stoevneng
---            : Per Thomas Lundal
--- Company    : 
+--            : Per Thomas Lundal <perthomas@gmail.com>
+-- Company    : NTNU
 -- Last update: 2015-01-20
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
