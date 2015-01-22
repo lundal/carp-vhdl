@@ -103,7 +103,7 @@ begin
       a_data_in  => write_data,
       a_data_out => read_data(read_ports-1),
       -- Port B
-      b_write    => false,
+      b_write    => '0',
       b_address  => bram_address(read_ports-1),
       b_data_in  => write_data,
       b_data_out => open,
