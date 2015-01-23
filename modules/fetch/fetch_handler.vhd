@@ -156,7 +156,7 @@ begin
 
       when STORE_BRAM =>
         if (communication_done = '1' and running = '1') then
-          case bram_instruction_opcode is
+          case communication_instruction_opcode is
             when INSTRUCTION_END =>
               state <= FETCH_COMMUNICATION;
             when others =>
