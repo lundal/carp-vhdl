@@ -20,6 +20,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library work;
+use work.instructions.all;
+
 entity fetch_handler is
   generic (
     program_counter_bits : positive := 8;
@@ -45,14 +48,6 @@ entity fetch_handler is
 end fetch_handler;
 
 architecture rtl of fetch_handler is
-
-  constant INSTRUCTION_STORE             : std_logic_vector(4 downto 0) := "11010";
-  constant INSTRUCTION_END               : std_logic_vector(4 downto 0) := "11011";
-  constant INSTRUCTION_JUMP              : std_logic_vector(4 downto 0) := "11100";
-  constant INSTRUCTION_BREAK             : std_logic_vector(4 downto 0) := "11101";
-  --constant INSTRUCTION_JUMP_EQUAL        : std_logic_vector(4 downto 0) := "00000";
-  constant INSTRUCTION_COUNTER_INCREMENT : std_logic_vector(4 downto 0) := "11110";
-  constant INSTRUCTION_COUNTER_RESET     : std_logic_vector(4 downto 0) := "11111";
 
   type state_type is (
     FETCH_COMMUNICATION, FETCH_BRAM, STORE_BRAM
