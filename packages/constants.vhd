@@ -8,7 +8,7 @@
 --            : Ola Martin Tiseth Stoevneng
 --            : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
--- Last update: 201-01-20
+-- Last update: 2015-01-20
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Constants
@@ -49,8 +49,6 @@ package constants is
 
   constant INSTR_ADDR_SIZE   : integer := 8;
   constant INSTR_SIZE        : integer := 192;
-  
-  
 
   constant RULE_SIZE         : integer := 89;--6*(TYPE_SIZE+STATE_SIZE+2)+1;
   -- Change this to change the maximum amount of rules:
@@ -71,7 +69,7 @@ package constants is
 
   -- SBM BRAM addr bus size
   constant ADDR_BUS_SIZE : integer := COORD_SIZE_Y + COORD_SIZE_Z - 2;
---Kaa
+
   -- for memory contain data generated on run-steps
   -- address bus can be changed to expand the numbers of values that can be stored
   constant RUN_STEP_ADDR_BUS_SIZE : integer := 13;
@@ -89,11 +87,10 @@ package constants is
   -- for fitness result storage
   constant FITNESS_RESULT_SIZE  : integer := 4 * 32; 
   constant FITNESS_DATA_BUS_SIZE: integer := 32;
---Kaa
 
   -- How many cells are configured per cycle
   constant LUTCONVS_PER_CYCLE : integer := COLUMNS/8;
-  
+
   -- How many types/states per word in the SBM BRAM
   constant ENTRIES_PER_WORD : integer := COLUMNS/2;
 
@@ -111,7 +108,7 @@ package constants is
   --The size of the inferred SRL modules.
   constant SRL_LENGTH   : integer := 2**SRL_IN_SIZE;
   constant SRLS_PER_LUT : integer := (2**NEIGH_SIZE)/SRL_LENGTH;
-  
+
   constant LUTCONV_SELECT_SIZE : integer := 3;
   -- The number of parts the LUTs are split up in in the memory.
   constant LUTCONV_READS_PER_LUT : integer := 2 ** LUTCONV_SELECT_SIZE;
@@ -153,31 +150,31 @@ package constants is
 
   type selected_rule_t is array(DEV_PARALLELITY - 1 downto 0) 
     of std_logic_vector(RULE_NBR_BUS_SIZE - 1 downto 0);
-  
+
   type bram_addr_t is array (SBM_BRAM_MODULES * 2 - 1 downto 0)
     of std_logic_vector(ADDR_BUS_SIZE - 1 downto 0);
-  
+
   type bram_type_bus_t is array (SBM_BRAM_MODULES * 2 - 1 downto 0)
     of std_logic_vector(TYPE_BUS_SIZE - 1 downto 0);
-    
+
   type bram_state_bus_t is array (SBM_BRAM_MODULES * 2 - 1 downto 0)
     of std_logic_vector(STATE_BUS_SIZE - 1 downto 0);
-  
+
   type bram_addr_half_t is array (SBM_BRAM_MODULES - 1 downto 0)
     of std_logic_vector(ADDR_BUS_SIZE - 1 downto 0);
-  
+
   type bram_type_bus_half_t is array (SBM_BRAM_MODULES - 1 downto 0)
     of std_logic_vector(TYPE_BUS_SIZE - 1 downto 0);
-    
+
   type bram_state_bus_half_t is array (SBM_BRAM_MODULES - 1 downto 0)
     of std_logic_vector(STATE_BUS_SIZE - 1 downto 0);
-    
+
   type lutconv_type_bus_t is array (LUTCONV_READS_PER_CYCLE - 1 downto 0)
     of std_logic_vector(TYPE_SIZE - 1 downto 0);
-  
+
   type lutconv_lut_bus_t is array (LUTCONV_READS_PER_CYCLE - 1 downto 0)
     of std_logic_vector(LUTCONV_READ_SIZE - 1 downto 0);
-    
+
   type rule_type_t is array (NEIGH_SIZE - 1 downto 0) 
     of std_logic_vector(TYPE_SIZE - 1 downto 0);
 
@@ -193,7 +190,7 @@ package constants is
   constant DFT_LG_DSPS  : integer := 5;
 
     --------------------------------------------------------------
-  
+
   constant TWIDDLE_SIZE : integer := (TW_PRES+2)*2;
   constant DFT_DSPS     : integer := 2**DFT_LG_DSPS;
   constant PERDSP	      : integer := DFT_SIZE/DFT_DSPS;
