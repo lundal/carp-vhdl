@@ -70,40 +70,40 @@ begin
   types_bram : entity work.bram_tdp
   generic map (
     address_bits => bits(height) + bits(depth) + 1,
-    data_bits => width*type_bits,
-    write_first => false
+    data_bits    => width*type_bits,
+    write_first  => false
   )
   port map (
     a_write    => a_types_write,
     a_address  => a_address_bram,
     a_data_in  => a_types_in,
     a_data_out => a_types_out,
-    
+
     b_write    => b_types_write,
     b_address  => b_address_bram,
     b_data_in  => b_types_in,
     b_data_out => b_types_out,
-    
+
     clock => clock
   );
 
   states_bram : entity work.bram_tdp
   generic map (
     address_bits => bits(height) + bits(depth) + 1,
-    data_bits => width*state_bits,
-    write_first => false
+    data_bits    => width*state_bits,
+    write_first  => false
   )
   port map (
     a_write    => a_states_write,
     a_address  => a_address_bram,
     a_data_in  => a_states_in,
     a_data_out => a_states_out,
-    
+
     b_write    => b_states_write,
     b_address  => b_address_bram,
     b_data_in  => b_states_in,
     b_data_out => b_states_out,
-    
+
     clock => clock
   );
 
