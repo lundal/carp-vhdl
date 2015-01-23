@@ -5,14 +5,14 @@
 -- File       : fetch_communication.vhd
 -- Author     : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
--- Last update: 2014-11-22
+-- Last update: 2015-01-22
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Fetches instructions from a communication buffer
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
--- 2014-11-22  1.0      lundal    Created
+-- 2015-01-22  1.0      lundal    Created
 -------------------------------------------------------------------------------
 
 library ieee;
