@@ -9,7 +9,8 @@
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: BRAM holding cell types and states.
---            : Address is Y & Z. They are combined since Z can be 0 bits.
+--            : It is divided into two regions; one for each port.
+--            : The address is Y & Z. They are combined since Z can be 0 bits.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -32,60 +33,76 @@ entity cell_buffer is
     state_bits : positive := 1
   );
   port (
-    address : in std_logic_vector(bits(height) + bits(depth) - 1 downto 0);
+    -- Port A
+    a_address      : in  std_logic_vector(bits(height) + bits(depth) - 1 downto 0);
+    a_types_write  : in  std_logic;
+    a_types_in     : in  std_logic_vector(width*type_bits - 1 downto 0);
+    a_types_out    : out std_logic_vector(width*type_bits - 1 downto 0);
+    a_states_write : in  std_logic;
+    a_states_in    : in  std_logic_vector(width*state_bits - 1 downto 0);
+    a_states_out   : out std_logic_vector(width*state_bits - 1 downto 0);
 
-    types_write : in  std_logic;
-    types_in    : in  std_logic_vector(width*type_bits - 1 downto 0);
-    types_out   : out std_logic_vector(width*type_bits - 1 downto 0);
+    -- Port B
+    b_address      : in  std_logic_vector(bits(height) + bits(depth) - 1 downto 0);
+    b_types_write  : in  std_logic;
+    b_types_in     : in  std_logic_vector(width*type_bits - 1 downto 0);
+    b_types_out    : out std_logic_vector(width*type_bits - 1 downto 0);
+    b_states_write : in  std_logic;
+    b_states_in    : in  std_logic_vector(width*state_bits - 1 downto 0);
+    b_states_out   : out std_logic_vector(width*state_bits - 1 downto 0);
 
-    states_write : in  std_logic;
-    states_in    : in  std_logic_vector(width*state_bits - 1 downto 0);
-    states_out   : out std_logic_vector(width*state_bits - 1 downto 0);
-    
+    swapped : in std_logic;
+
     clock : in std_logic
   );
 end cell_buffer;
 
 architecture rtl of cell_buffer is
 
+  signal a_address_bram : std_logic_vector(bits(height) + bits(depth) downto 0);
+  signal b_address_bram : std_logic_vector(bits(height) + bits(depth) downto 0);
+
 begin
+
+  a_address_bram <=     swapped & a_address;
+  b_address_bram <= not swapped & b_address;
 
   types_bram : entity work.bram_tdp
   generic map (
-    address_bits => bits(height) + bits(depth),
+    address_bits => bits(height) + bits(depth) + 1,
     data_bits => width*type_bits,
     write_first => false
   )
   port map (
-    a_write    => types_write,
-    a_address  => address,
-    a_data_in  => types_in,
-    a_data_out => types_out,
+    a_write    => a_types_write,
+    a_address  => a_address_bram,
+    a_data_in  => a_types_in,
+    a_data_out => a_types_out,
     
-    b_write    => '0',
-    b_address  => (others => '0'),
-    b_data_in  => (others => '0'),
-    b_data_out => open,
+    b_write    => b_types_write,
+    b_address  => b_address_bram,
+    b_data_in  => b_types_in,
+    b_data_out => b_types_out,
     
     clock => clock
   );
 
   states_bram : entity work.bram_tdp
   generic map (
-    address_bits => bits(height) + bits(depth),
+    address_bits => bits(height) + bits(depth) + 1,
     data_bits => width*state_bits,
     write_first => false
   )
   port map (
-    a_write    => states_write,
-    a_address  => address,
-    a_data_in  => states_in,
-    a_data_out => states_out,
+    a_write    => a_states_write,
+    a_address  => a_address_bram,
+    a_data_in  => a_states_in,
+    a_data_out => a_states_out,
     
-    b_write    => '0',
-    b_address  => (others => '0'),
-    b_data_in  => (others => '0'),
-    b_data_out => open,
+    b_write    => b_states_write,
+    b_address  => b_address_bram,
+    b_data_in  => b_states_in,
+    b_data_out => b_states_out,
     
     clock => clock
   );
