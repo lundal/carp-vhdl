@@ -18,7 +18,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
+
+library work;
+use work.functions.all;
 
 entity lut_configurable is
   generic (
@@ -36,8 +38,8 @@ end lut_configurable;
 
 architecture rtl of lut_configurable is
 
-  constant configuration_data_size_log2 : integer := integer(ceil(log2(real(configuration_data_size))));
-  constant shift_register_address_size  : integer := address_size - configuration_data_size_log2;
+  constant configuration_data_size_bits : natural := bits(configuration_data_size);
+  constant shift_register_address_size  : natural := address_size - configuration_data_size_bits;
   
   signal shift_register_output : std_logic_vector(configuration_data_size - 1 downto 0);
   signal shift_register_select : std_logic_vector(address_size - 1 downto shift_register_address_size);

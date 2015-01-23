@@ -15,9 +15,10 @@
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
+-- 2015-01-23  4.2      lundal    Add bits function
 -- 2015-01-20  4.1      lundal    Removed unused functions
 -- 2014-11-27  4.0      lundal    Added reverse_endian
--- 2014-02-10  3.0      stoevneng Added reverse_slv
+-- 2014-02-10  3.0      stoevneng Added reverse
 -- 2003-03-06  2.0      aamodt	  Updated
 -- 2003-03-06  1.0      djupdal	  Created
 -------------------------------------------------------------------------------
@@ -25,32 +26,37 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 package functions is
 
-  -- reverses the bit order in a signal
+  -- Reverses the bit order in a signal
   function reverse (
-    a : std_logic_vector
+    input : std_logic_vector
   ) return std_logic_vector;
 
-  -- reverses the byte order in a signal
-  -- signal width must be a multiple of 8
+  -- Reverses the byte order in a signal (width must be a multiple of 8)
   function reverse_endian (
     input : std_logic_vector
   ) return std_logic_vector;
+
+  -- Calculates the number of bits required to represent a number
+  function bits (
+    input : positive
+  ) return natural;
 
 end functions;
 
 package body functions is
 
   function reverse (
-    a: std_logic_vector
+    input: std_logic_vector
   ) return std_logic_vector is
-    variable result: std_logic_vector(a'RANGE);
-    alias aa: std_logic_vector(a'REVERSE_RANGE) is a;
+    variable result: std_logic_vector(input'RANGE);
+    alias input_reversed: std_logic_vector(input'REVERSE_RANGE) is input;
   begin
-    for i in aa'RANGE loop
-      result(i) := aa(i);
+    for i in input'RANGE loop
+      result(i) := input_reversed(i);
     end loop;
     return result;
   end reverse;
@@ -68,5 +74,12 @@ package body functions is
     end loop;
     return output;
   end reverse_endian;
+
+  function bits (
+    input : positive
+  ) return natural is
+  begin
+    return natural(ceil(log2(real(input))));
+  end bits;
 
 end functions;
