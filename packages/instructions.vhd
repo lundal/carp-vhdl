@@ -25,10 +25,10 @@ package instructions is
   constant INSTRUCTION_GET_RULEVECTORS   : std_logic_vector(4 downto 0) := "00010";
   constant INSTRUCTION_GET_DEVSTEP_INFO  : std_logic_vector(4 downto 0) := "00011";
 
-  constant INSTRUCTION_GET_STATE_ONE     : std_logic_vector(4 downto 0) := "00100";
-  constant INSTRUCTION_GET_STATE_ALL     : std_logic_vector(4 downto 0) := "00101";
-  constant INSTRUCTION_GET_TYPE_ONE      : std_logic_vector(4 downto 0) := "00110";
-  constant INSTRUCTION_GET_TYPE_ALL      : std_logic_vector(4 downto 0) := "00111";
+  constant INSTRUCTION_READ_STATE_ONE    : std_logic_vector(4 downto 0) := "00100";
+  constant INSTRUCTION_READ_STATE_ALL    : std_logic_vector(4 downto 0) := "00101";
+  constant INSTRUCTION_READ_TYPE_ONE     : std_logic_vector(4 downto 0) := "00110";
+  constant INSTRUCTION_READ_TYPE_ALL     : std_logic_vector(4 downto 0) := "00111";
 
   constant INSTRUCTION_WRITE_LUT         : std_logic_vector(4 downto 0) := "01000";
   constant INSTRUCTION_WRITE_RULE        : std_logic_vector(4 downto 0) := "01001";
