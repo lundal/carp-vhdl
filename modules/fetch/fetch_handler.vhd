@@ -126,6 +126,11 @@ begin
               done_i <= '1';
           end case;
         end if;
+        -- Produce NOPs when waiting to allow instructions in the pipeline to complete
+        if (communication_done = '0' and running = '1') then
+          instruction_i <= (others => '0');
+          done_i <= '1';
+        end if;
 
       when FETCH_BRAM =>
         if (running = '1') then -- TODO: bram_done?
