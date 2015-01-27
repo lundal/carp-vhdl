@@ -151,6 +151,10 @@ begin
               bram_address_i <= bram_address_plus_one;
               instruction_i <= bram_instruction_in;
               done_i <= '1';
+              -- Safety: Break after last memory address
+              if (signed(bram_address_plus_one) = -1) then
+                state <= FETCH_COMMUNICATION;
+              end if;
           end case;
         end if;
 
