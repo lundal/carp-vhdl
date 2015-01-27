@@ -25,7 +25,7 @@ package types is
   );
 
   type cell_writer_reader_operation_type is (
-    NOP, FILL_CELLS,
+    NOP, FILL_ALL,
     READ_STATE_ONE, READ_STATE_ALL, READ_TYPE_ONE, READ_TYPE_ALL,
     WRITE_STATE_ONE, WRITE_STATE_ROW, WRITE_TYPE_ONE, WRITE_TYPE_ROW
   );

@@ -28,7 +28,15 @@ begin
   generic map (
     tx_buffer_address_bits => 10,
     rx_buffer_address_bits => 10,
-    reverse_payload_endian => true
+    reverse_payload_endian => true,
+    program_counter_bits   => 8,
+    matrix_width           => 8,
+    matrix_height          => 8,
+    matrix_depth           => 8,
+    cell_type_bits         => 8,
+    cell_state_bits        => 1,
+    cell_write_width       => 8,
+    instruction_bits       => 256
   )
   port map(
     sim_tx_buffer_data  => tx_buffer_data,
@@ -46,8 +54,7 @@ begin
     leds => leds
   );
 
-  clock_process: process
-  begin
+  clock_process: process begin
     clock_p <= '1';
     clock_n <= '0';
     wait for clock_period/2;
@@ -57,213 +64,30 @@ begin
   end process;
 
   -- Stimulus process
-  stimulus: process
-  begin
+  stimulus: process begin
     reset_n <= '0';
-    
+
     wait for clock_period*10;
     reset_n <= '1';
-    
+
     -- NULL (first instruction disappears in post-translate sim)
-    
+
     wait for clock_period;
     rx_buffer_write <= '0';
     rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '0';
-    rx_buffer_data <= x"00000000";
-    
+
     -- Instructions
-    
-        wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000046";
+
     wait for clock_period;
     rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"FFFF0000";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000046";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000001";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"80008000";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000046";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000002";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"FFFEFFFE";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00010101";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000002";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00020101";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000001";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000104";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"80000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00020004";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"80000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00020204";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"80000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00030104";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"80000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000003";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000007";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000109";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000008";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000003";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000105";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00010105";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00020105";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000109";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000008";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000003";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000105";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00010105";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00020105";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-    
+    rx_buffer_data <= x"0042010B";
+
     -- NULL
-    
+
     wait for clock_period;
     rx_buffer_write <= '0';
     rx_buffer_data <= x"00000000";
-    
+
     wait;
   end process;
 end;

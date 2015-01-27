@@ -41,8 +41,8 @@ architecture rtl of fifo is
   signal read_address  : std_logic_vector(address_bits - 1 downto 0);
   signal write_address : std_logic_vector(address_bits - 1 downto 0);
 
-  signal pointer_read  : std_logic_vector(address_bits - 1 downto 0);
-  signal pointer_write : std_logic_vector(address_bits - 1 downto 0);
+  signal pointer_read  : std_logic_vector(address_bits - 1 downto 0) := (others => '0');
+  signal pointer_write : std_logic_vector(address_bits - 1 downto 0) := (others => '0');
 
   signal bram_out : std_logic_vector(data_bits - 1 downto 0);
 
