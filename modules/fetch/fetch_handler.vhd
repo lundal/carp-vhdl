@@ -80,7 +80,7 @@ begin
 
   running <= run or not done_i;
 
-  communication_run <= done_i;
+  communication_run <= '1' when running = '1' and state /= FETCH_BRAM else '0';
 
   communication_instruction_opcode  <= communication_instruction(4 downto 0);
   communication_instruction_address <= communication_instruction(program_counter_bits - 1 + 16 downto 16);
