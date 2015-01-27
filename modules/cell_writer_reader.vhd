@@ -123,8 +123,11 @@ begin
               buffer_states_write <= '1';
               state <= FILL;
             when WRITE_STATE_ONE =>
+              state <= WRITE_STATE_OR_TYPE;
             when WRITE_STATE_ROW =>
+              state <= WRITE_STATE_OR_TYPE;
             when WRITE_TYPE_ONE =>
+              state <= WRITE_STATE_OR_TYPE;
             when WRITE_TYPE_ROW =>
               state <= WRITE_STATE_OR_TYPE;
             when others =>
