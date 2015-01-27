@@ -51,7 +51,9 @@ entity cell_buffer is
     b_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
     b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
-    swapped : in std_logic;
+    swap : in std_logic;
+
+    run : in std_logic;
 
     clock : in std_logic
   );
@@ -62,7 +64,16 @@ architecture rtl of cell_buffer is
   signal a_address_bram : std_logic_vector(bits(matrix_depth) + bits(matrix_height) downto 0);
   signal b_address_bram : std_logic_vector(bits(matrix_depth) + bits(matrix_height) downto 0);
 
+  signal swapped : std_logic := '0';
+
 begin
+
+  process begin
+    wait until rising_edge(clock) and run = '1';
+    if (swap = '1') then
+      swapped <= not swapped;
+    end if;
+  end process;
 
   a_address_bram <=     swapped & a_address;
   b_address_bram <= not swapped & b_address;
@@ -71,7 +82,7 @@ begin
   generic map (
     address_bits => 1 + bits(matrix_depth) + bits(matrix_height),
     data_bits    => matrix_width*cell_type_bits,
-    write_first  => false
+    write_first  => true
   )
   port map (
     a_write    => a_types_write,
@@ -91,7 +102,7 @@ begin
   generic map (
     address_bits => 1 + bits(matrix_depth) + bits(matrix_height),
     data_bits    => matrix_width*cell_state_bits,
-    write_first  => false
+    write_first  => true
   )
   port map (
     a_write    => a_states_write,

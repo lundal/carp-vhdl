@@ -86,17 +86,26 @@ entity cell_buffer_mux is
     buffer_b_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
     buffer_b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
-    source_select : in cell_buffer_mux_select_type
+    source_select : in cell_buffer_mux_select_type;
+
+    run  : in std_logic;
+
+    clock : in std_logic
   );
 end cell_buffer_mux;
 
 architecture rtl of cell_buffer_mux is
 
-
+  signal source_select_i : cell_buffer_mux_select_type := WRITER_READER_AND_CELLULAR_AUTOMATA;
 
 begin
 
-  process (source_select, buffer_a_types_in, buffer_a_states_in, buffer_b_types_in, buffer_b_states_in,
+  process begin
+    wait until rising_edge(clock) and run = '1';
+    source_select_i <= source_select;
+  end process;
+
+  process (source_select_i, buffer_a_types_in, buffer_a_states_in, buffer_b_types_in, buffer_b_states_in,
            writer_reader_address, writer_reader_types_write, writer_reader_types_in, writer_reader_states_write, writer_reader_states_in,
            cellular_automata_address, cellular_automata_types_write, cellular_automata_types_in, cellular_automata_states_write, cellular_automata_states_in,
            development_a_address, development_a_types_write, development_a_types_in, development_a_states_write, development_a_states_in,
@@ -112,7 +121,7 @@ begin
     development_b_types_out      <= (others => '0');
     development_b_states_out     <= (others => '0');
 
-    case source_select is
+    case source_select_i is
 
       when WRITER_READER_AND_CELLULAR_AUTOMATA =>
         -- Port A
