@@ -45,10 +45,10 @@ end bram_tdp;
 
 architecture rtl of bram_tdp is
 
-  signal a_data_out_i : std_logic_vector(data_bits - 1 downto 0);
-  signal b_data_out_i : std_logic_vector(data_bits - 1 downto 0);
-  signal a_send_b     : boolean;
-  signal b_send_a     : boolean;
+  signal a_data_out_i : std_logic_vector(data_bits - 1 downto 0) := (others => '0');
+  signal b_data_out_i : std_logic_vector(data_bits - 1 downto 0) := (others => '0');
+  signal a_send_b     : boolean := false;
+  signal b_send_a     : boolean := false;
 
   type memory_t is array((2**address_bits) - 1 downto 0) of std_logic_vector(data_bits - 1 downto 0);
   shared variable memory : memory_t := (others => (others => '0'));
