@@ -88,7 +88,7 @@ entity cell_buffer_mux is
 
     source_select : in cell_buffer_mux_select_type;
 
-    run  : in std_logic;
+    run : in std_logic;
 
     clock : in std_logic
   );

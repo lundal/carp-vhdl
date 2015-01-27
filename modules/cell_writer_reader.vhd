@@ -122,13 +122,7 @@ begin
               buffer_states_out   <= state_repeated;
               buffer_states_write <= '1';
               state <= FILL;
-            when WRITE_STATE_ONE =>
-              state <= WRITE_STATE_OR_TYPE;
-            when WRITE_STATE_ROW =>
-              state <= WRITE_STATE_OR_TYPE;
-            when WRITE_TYPE_ONE =>
-              state <= WRITE_STATE_OR_TYPE;
-            when WRITE_TYPE_ROW =>
+            when WRITE_STATE_ONE | WRITE_STATE_ROW | WRITE_TYPE_ONE | WRITE_TYPE_ROW =>
               state <= WRITE_STATE_OR_TYPE;
             when others =>
               done_i <= '1';
@@ -148,20 +142,18 @@ begin
       when WRITE_STATE_OR_TYPE =>
         case operation is
           when WRITE_STATE_ONE =>
-            buffer_states_out   <= combined_state;
-            buffer_states_write <= '1';
+            buffer_states_out <= combined_state;
           when WRITE_STATE_ROW =>
-            buffer_states_out   <= combined_states;
-            buffer_states_write <= '1';
+            buffer_states_out <= combined_states;
           when WRITE_TYPE_ONE =>
-            buffer_types_out   <= combined_type;
-            buffer_types_write <= '1';
+            buffer_types_out <= combined_type;
           when WRITE_TYPE_ROW =>
-            buffer_types_out   <= combined_types;
-            buffer_types_write <= '1';
+            buffer_types_out <= combined_types;
           when others =>
             null;
         end case;
+
+        buffer_types_write <= '1';
 
         state <= IDLE;
         done_i <= '1';
@@ -233,9 +225,8 @@ begin
     offset        => address_x
   );
 
-  buffer_address <= address_zy;
-
   -- Internally used out ports
+  buffer_address <= address_zy;
   done <= done_i;
 
 end rtl;
