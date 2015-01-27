@@ -51,7 +51,7 @@ architecture rtl of bram_tdp is
   signal b_send_a     : boolean;
 
   type memory_t is array((2**address_bits) - 1 downto 0) of std_logic_vector(data_bits - 1 downto 0);
-  shared variable memory : memory_t;
+  shared variable memory : memory_t := (others => (others => '0'));
 
 begin
 
