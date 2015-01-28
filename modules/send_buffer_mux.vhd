@@ -68,6 +68,7 @@ begin
 
     -- Defaults
     cell_writer_reader_count <= (others => '0');
+    information_sender_count <= (others => '0');
 
     case source_select_i is
 
