@@ -46,9 +46,9 @@ entity decode is
 
     cell_buffer_swap       : out std_logic;
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
+    send_buffer_mux_select : out send_buffer_mux_select_type;
 
     run  : in  std_logic;
-    done : out std_logic;
 
     clock : in std_logic
   );
@@ -69,6 +69,24 @@ begin
     cell_writer_reader_operation <= NOP;
 
     case instruction_opcode is
+
+      when INSTRUCTION_READ_STATE_ONE =>
+        cell_writer_reader_operation <= READ_STATE_ONE;
+        cell_writer_reader_zyx       <= instruction(cell_writer_reader_zyx'left + 8 downto 8);
+        send_buffer_mux_select       <= CELL_WRITER_READER;
+
+      when INSTRUCTION_READ_STATE_ALL =>
+        cell_writer_reader_operation <= READ_STATE_ALL;
+        send_buffer_mux_select       <= CELL_WRITER_READER;
+
+      when INSTRUCTION_READ_TYPE_ONE =>
+        cell_writer_reader_operation <= READ_TYPE_ONE;
+        cell_writer_reader_zyx       <= instruction(cell_writer_reader_zyx'left + 8 downto 8);
+        send_buffer_mux_select       <= CELL_WRITER_READER;
+
+      when INSTRUCTION_READ_TYPE_ALL =>
+        cell_writer_reader_operation <= READ_TYPE_ALL;
+        send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_FILL_CELLS =>
         cell_writer_reader_operation <= FILL_ALL;
@@ -105,8 +123,5 @@ begin
 
     end case;
   end process;
-
-  -- Always finishes in one cycle
-  done <= '1';
 
 end rtl;

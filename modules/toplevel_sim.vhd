@@ -85,6 +85,7 @@ architecture rtl of toplevel_sim is
 
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
+  signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
 
   -- Cell Writer Reader
   signal cell_writer_reader_to_mux_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
@@ -94,6 +95,10 @@ architecture rtl of toplevel_sim is
   signal cell_writer_reader_to_mux_states_write : std_logic;
   signal cell_writer_reader_to_mux_states       : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal cell_writer_reader_from_mux_states     : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+
+  signal cell_writer_reader_to_send_mux_data    : std_logic_vector(31 downto 0);
+  signal cell_writer_reader_from_send_mux_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal cell_writer_reader_to_send_mux_write   : std_logic;
 
   -- Cellular Automata
   signal cellular_automata_to_mux_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
@@ -218,6 +223,7 @@ begin
 
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
+    send_buffer_mux_select => decode_to_send_buffer_mux_select,
 
     run  => run,
 
@@ -231,7 +237,8 @@ begin
     matrix_depth     => matrix_depth,
     cell_type_bits   => cell_type_bits,
     cell_state_bits  => cell_state_bits,
-    cell_write_width => cell_write_width
+    cell_write_width => cell_write_width,
+    send_buffer_address_bits => tx_buffer_address_bits
   )
   port map (
     buffer_address      => cell_writer_reader_to_mux_address,
@@ -241,6 +248,10 @@ begin
     buffer_states_write => cell_writer_reader_to_mux_states_write,
     buffer_states_in    => cell_writer_reader_from_mux_states,
     buffer_states_out   => cell_writer_reader_to_mux_states,
+
+    send_buffer_data  => cell_writer_reader_to_send_mux_data,
+    send_buffer_count => cell_writer_reader_from_send_mux_count,
+    send_buffer_write => cell_writer_reader_to_send_mux_write,
 
     decode_operation => decode_to_cell_writer_reader_operation,
     decode_zyx       => decode_to_cell_writer_reader_zyx,
@@ -345,6 +356,30 @@ begin
     b_states_out   => cell_buffer_to_mux_b_states,
 
     swap => decode_to_cell_buffer_swap,
+
+    run => run,
+
+    clock => clock
+  );
+
+  send_buffer_mux : entity work.send_buffer_mux
+  generic map (
+    send_buffer_address_bits => tx_buffer_address_bits
+  )
+  port map (
+    cell_writer_reader_data  => cell_writer_reader_to_send_mux_data,
+    cell_writer_reader_count => cell_writer_reader_from_send_mux_count,
+    cell_writer_reader_write => cell_writer_reader_to_send_mux_write,
+
+    information_sender_data  => (others => '0'),
+    information_sender_count => open,
+    information_sender_write => '0',
+
+    send_buffer_data  => tx_buffer_data,
+    send_buffer_count => tx_buffer_count,
+    send_buffer_write => tx_buffer_write,
+
+    source_select => decode_to_send_buffer_mux_select,
 
     run => run,
 

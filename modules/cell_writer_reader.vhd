@@ -30,7 +30,8 @@ entity cell_writer_reader is
     matrix_depth     : positive := 8;
     cell_type_bits   : positive := 8;
     cell_state_bits  : positive := 1;
-    cell_write_width : positive := 4
+    cell_write_width : positive := 4;
+    send_buffer_address_bits : positive := 10
   );
   port (
     buffer_address      : out std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
@@ -40,6 +41,10 @@ entity cell_writer_reader is
     buffer_states_write : out std_logic;
     buffer_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
     buffer_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+
+    send_buffer_data  : out std_logic_vector(31 downto 0);
+    send_buffer_count : in  std_logic_vector(send_buffer_address_bits - 1 downto 0);
+    send_buffer_write : out std_logic;
 
     decode_operation : in cell_writer_reader_operation_type;
     decode_zyx       : in std_logic_vector(bits(matrix_depth) + bits(matrix_height) + bits(matrix_width) - 1 downto 0);
@@ -58,7 +63,7 @@ end cell_writer_reader;
 architecture rtl of cell_writer_reader is
 
   type state_type is (
-    IDLE, FILL, WRITE_STATE_OR_TYPE, SEND
+    IDLE, FILL, WRITE_STATE_OR_TYPE, SEND_ONE, SEND_ALL
   );
 
   signal state : state_type := IDLE;
@@ -68,10 +73,14 @@ architecture rtl of cell_writer_reader is
   signal type_repeated  : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
 
   -- Combined signals
-  signal combined_type   : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-  signal combined_types  : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal combined_state  : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal combined_states : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+  signal combined_type   : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+  signal combined_types  : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+
+  -- Shifted signals
+  signal shifted_states : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+  signal shifted_types  : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
 
   -- Input registers
   signal operation  : cell_writer_reader_operation_type;
@@ -98,6 +107,8 @@ begin
     -- Defaults
     buffer_types_write  <= '0';
     buffer_states_write <= '0';
+    send_buffer_data    <= (others => '0');
+    send_buffer_write   <= '0';
 
     case state is
 
@@ -124,6 +135,8 @@ begin
               state <= FILL;
             when WRITE_STATE_ONE | WRITE_STATE_ROW | WRITE_TYPE_ONE | WRITE_TYPE_ROW =>
               state <= WRITE_STATE_OR_TYPE;
+            when READ_STATE_ONE | READ_TYPE_ONE =>
+              state <= SEND_ONE;
             when others =>
               done_i <= '1';
           end case;
@@ -158,6 +171,21 @@ begin
         state <= IDLE;
         done_i <= '1';
 
+      when SEND_ONE =>
+        send_buffer_write <= '1';
+
+        case operation is
+          when READ_STATE_ONE =>
+            send_buffer_data(cell_state_bits - 1 downto 0) <= shifted_states(cell_state_bits - 1 downto 0);
+          when READ_TYPE_ONE =>
+            send_buffer_data(cell_type_bits - 1 downto 0) <= shifted_types(cell_type_bits - 1 downto 0);
+          when others =>
+            null;
+        end case;
+
+        state <= IDLE;
+        done_i <= '1';
+
       when others =>
        null;
 
@@ -165,6 +193,36 @@ begin
   end process;
 
   -- Combiners
+  combine_with_state : entity work.combiner
+  generic map (
+    data_width     => matrix_width*cell_state_bits,
+    data_new_width => cell_state_bits,
+    offset_width   => bits(matrix_width),
+    offset_unit    => cell_state_bits,
+    offset_to_left => true
+  )
+  port map (
+    data_original => buffer_states_in,
+    data_new      => state_new,
+    data_combined => combined_state,
+    offset        => address_x
+  );
+
+  combine_with_states : entity work.combiner
+  generic map (
+    data_width     => matrix_width*cell_state_bits,
+    data_new_width => cell_write_width*cell_state_bits,
+    offset_width   => bits(matrix_width),
+    offset_unit    => cell_state_bits,
+    offset_to_left => true
+  )
+  port map (
+    data_original => buffer_states_in,
+    data_new      => states_new,
+    data_combined => combined_states,
+    offset        => address_x
+  );
+
   combine_with_type : entity work.combiner
   generic map (
     data_width     => matrix_width*cell_type_bits,
@@ -195,34 +253,33 @@ begin
     offset        => address_x
   );
 
-  combine_with_state : entity work.combiner
+  -- Shifters
+  shifter_state : entity work.shifter_dynamic
   generic map (
-    data_width     => matrix_width*cell_state_bits,
-    data_new_width => cell_state_bits,
-    offset_width   => bits(matrix_width),
-    offset_unit    => cell_state_bits,
-    offset_to_left => true
+    data_width         => matrix_width*cell_state_bits,
+    shift_amount_width => bits(matrix_width),
+    shift_unit         => cell_state_bits
   )
   port map (
-    data_original => buffer_states_in,
-    data_new      => state_new,
-    data_combined => combined_state,
-    offset        => address_x
+    data_in      => buffer_states_in,
+    data_out     => shifted_states,
+    left         => '0',
+    arithmetic   => '0',
+    shift_amount => address_x
   );
 
-  combine_with_states : entity work.combiner
+  shifter_type : entity work.shifter_dynamic
   generic map (
-    data_width     => matrix_width*cell_state_bits,
-    data_new_width => cell_write_width*cell_state_bits,
-    offset_width   => bits(matrix_width),
-    offset_unit    => cell_state_bits,
-    offset_to_left => true
+    data_width         => matrix_width*cell_type_bits,
+    shift_amount_width => bits(matrix_width),
+    shift_unit         => cell_type_bits
   )
   port map (
-    data_original => buffer_states_in,
-    data_new      => states_new,
-    data_combined => combined_states,
-    offset        => address_x
+    data_in      => buffer_types_in,
+    data_out     => shifted_types,
+    left         => '0',
+    arithmetic   => '0',
+    shift_amount => address_x
   );
 
   -- Internally used out ports

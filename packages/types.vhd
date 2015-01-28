@@ -24,6 +24,10 @@ package types is
     WRITER_READER_AND_CELLULAR_AUTOMATA, DEVELOPMENT
   );
 
+  type send_buffer_mux_select_type is (
+    CELL_WRITER_READER, INFORMATION_SENDER
+  );
+
   type cell_writer_reader_operation_type is (
     NOP, FILL_ALL,
     READ_STATE_ONE, READ_STATE_ALL, READ_TYPE_ONE, READ_TYPE_ALL,
