@@ -45,6 +45,12 @@ package functions is
     input : positive
   ) return natural;
 
+  -- Returns the least of two numbers
+  function min (
+    left : integer;
+    right : integer
+  ) return integer;
+
 end functions;
 
 package body functions is
@@ -81,5 +87,17 @@ package body functions is
   begin
     return natural(ceil(log2(real(input))));
   end bits;
+
+  function min (
+    left : integer;
+    right : integer
+  ) return integer is
+  begin
+    if left < right then
+      return left;
+    else
+      return right;
+    end if;
+  end min;
 
 end functions;

@@ -62,11 +62,23 @@ end cell_writer_reader;
 
 architecture rtl of cell_writer_reader is
 
+  constant states_per_word     : positive := min(matrix_width, 32/cell_state_bits);
+  constant state_words_per_row : positive := matrix_width / states_per_word;
+  constant types_per_word      : positive := min(matrix_width, 32/cell_type_bits);
+  constant type_words_per_row  : positive := matrix_width / types_per_word;
+
   type state_type is (
-    IDLE, FILL, WRITE_STATE_OR_TYPE, SEND_ONE, SEND_ALL
+    IDLE, FILL, WRITE_STATE, WRITE_TYPE, SEND_ONE, SEND_ALL_STATES, SEND_ALL_TYPES
   );
 
   signal state : state_type := IDLE;
+
+  -- Send buffer input source
+  type send_buffer_source_type is (STATE_ONE, STATE_ROW, TYPE_ONE, TYPE_ROW);
+  signal send_buffer_source : send_buffer_source_type;
+
+  -- Buffer checks
+  signal buffer_has_space_one : boolean;
 
   -- Fill signals
   signal state_repeated : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
@@ -96,6 +108,8 @@ architecture rtl of cell_writer_reader is
 
 begin
 
+  buffer_has_space_one <= signed(send_buffer_count) /= -1;
+
   repeated : for i in 0 to matrix_width - 1 generate
     state_repeated((i+1)*cell_state_bits - 1 downto i*cell_state_bits) <= decode_state;
     type_repeated((i+1)*cell_type_bits - 1 downto i*cell_type_bits) <= decode_type;
@@ -107,7 +121,6 @@ begin
     -- Defaults
     buffer_types_write  <= '0';
     buffer_states_write <= '0';
-    send_buffer_data    <= (others => '0');
     send_buffer_write   <= '0';
 
     case state is
@@ -133,10 +146,20 @@ begin
               buffer_states_out   <= state_repeated;
               buffer_states_write <= '1';
               state <= FILL;
-            when WRITE_STATE_ONE | WRITE_STATE_ROW | WRITE_TYPE_ONE | WRITE_TYPE_ROW =>
-              state <= WRITE_STATE_OR_TYPE;
+            when WRITE_STATE_ONE | WRITE_STATE_ROW =>
+              state <= WRITE_STATE;
+            when WRITE_TYPE_ONE | WRITE_TYPE_ROW =>
+              state <= WRITE_TYPE;
             when READ_STATE_ONE | READ_TYPE_ONE =>
               state <= SEND_ONE;
+            when READ_STATE_ALL =>
+              address_zy <= (others => '0');
+              address_x  <= (others => '0');
+              state <= SEND_ALL_STATES;
+            when READ_TYPE_ALL =>
+              address_zy <= (others => '0');
+              address_x  <= (others => '0');
+              state <= SEND_ALL_TYPES;
             when others =>
               done_i <= '1';
           end case;
@@ -152,12 +175,22 @@ begin
           done_i <= '1';
         end if;
 
-      when WRITE_STATE_OR_TYPE =>
+      when WRITE_STATE =>
         case operation is
           when WRITE_STATE_ONE =>
             buffer_states_out <= combined_state;
           when WRITE_STATE_ROW =>
             buffer_states_out <= combined_states;
+          when others =>
+            null;
+        end case;
+
+        buffer_states_write <= '1';
+        state <= IDLE;
+        done_i <= '1';
+
+      when WRITE_TYPE =>
+        case operation is
           when WRITE_TYPE_ONE =>
             buffer_types_out <= combined_type;
           when WRITE_TYPE_ROW =>
@@ -167,28 +200,80 @@ begin
         end case;
 
         buffer_types_write <= '1';
-
         state <= IDLE;
         done_i <= '1';
 
       when SEND_ONE =>
-        send_buffer_write <= '1';
-
         case operation is
           when READ_STATE_ONE =>
-            send_buffer_data(cell_state_bits - 1 downto 0) <= shifted_states(cell_state_bits - 1 downto 0);
+            send_buffer_source <= STATE_ONE;
           when READ_TYPE_ONE =>
-            send_buffer_data(cell_type_bits - 1 downto 0) <= shifted_types(cell_type_bits - 1 downto 0);
+            send_buffer_source <= TYPE_ONE;
           when others =>
             null;
         end case;
 
-        state <= IDLE;
-        done_i <= '1';
+        if (buffer_has_space_one) then
+          send_buffer_write <= '1';
+          state <= IDLE;
+          done_i <= '1';
+        end if;
 
-      when others =>
-       null;
+      when SEND_ALL_STATES =>
+        if (buffer_has_space_one) then
+          send_buffer_source <= STATE_ROW;
+          send_buffer_write <= '1';
+          -- Iterate in raster order (x, then y, then z)
+          -- Fit as many as possible in each word, but align between each state and row
+          if (unsigned(address_x) = states_per_word*state_words_per_row - states_per_word) then
+            address_zy <= std_logic_vector(unsigned(address_zy) + 1);
+            address_x  <= (others => '0');
+            -- Stop when coming full cycle
+            if (unsigned(address_zy) + 1 = 0) then
+              state <= IDLE;
+              done_i <= '1';
+            end if;
+          else
+            address_x <= std_logic_vector(unsigned(address_x) + states_per_word);
+          end if;
+        end if;
 
+      when SEND_ALL_TYPES =>
+        if (buffer_has_space_one) then
+          send_buffer_source <= TYPE_ROW;
+          send_buffer_write <= '1';
+          -- Iterate in raster order (x, then y, then z)
+          -- Fit as many as possible in each word, but align between each type and row
+          if (unsigned(address_x) = types_per_word*type_words_per_row - types_per_word) then
+            address_zy <= std_logic_vector(unsigned(address_zy) + 1);
+            address_x  <= (others => '0');
+            -- Stop when coming full cycle
+            if (unsigned(address_zy) + 1 = 0) then
+              state <= IDLE;
+              done_i <= '1';
+            end if;
+          else
+            address_x <= std_logic_vector(unsigned(address_x) + types_per_word);
+          end if;
+        end if;
+
+    end case;
+  end process;
+
+  -- This part is not clocked 
+  process (send_buffer_source, shifted_states, shifted_types) begin
+    -- Default
+    send_buffer_data <= (others => '0');
+
+    case send_buffer_source is
+      when STATE_ONE =>
+        send_buffer_data(cell_state_bits - 1 downto 0) <= shifted_states(cell_state_bits - 1 downto 0);
+      when STATE_ROW =>
+        send_buffer_data(states_per_word*cell_state_bits - 1 downto 0) <= shifted_states(states_per_word*cell_state_bits - 1 downto 0);
+      when TYPE_ONE =>
+        send_buffer_data(cell_type_bits - 1 downto 0) <= shifted_types(cell_type_bits - 1 downto 0);
+      when TYPE_ROW =>
+        send_buffer_data(types_per_word*cell_type_bits - 1 downto 0) <= shifted_types(types_per_word*cell_type_bits - 1 downto 0);
     end case;
   end process;
 
