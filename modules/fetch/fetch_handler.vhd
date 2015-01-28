@@ -56,6 +56,8 @@ architecture rtl of fetch_handler is
 
   signal running : std_logic;
 
+  signal nop_issued :std_logic;
+
   signal communication_instruction_opcode  : std_logic_vector(4 downto 0);
   signal communication_instruction_address : std_logic_vector(program_counter_bits - 1 downto 0);
 
@@ -78,7 +80,7 @@ architecture rtl of fetch_handler is
 
 begin
 
-  running <= run or not done_i;
+  running <= run or not done_i or nop_issued;
 
   communication_run <= '1' when running = '1' and state /= FETCH_BRAM else '0';
 
@@ -95,6 +97,7 @@ begin
 
     -- Defaults
     bram_write_i <= '0';
+    nop_issued <= '0';
 
     -- Reset done signal when starting by default
     if (run = '1') then
@@ -130,6 +133,7 @@ begin
         if (communication_done = '0' and running = '1') then
           instruction_i <= (others => '0');
           done_i <= '1';
+          nop_issued <= '1'; -- Prevents a NOP if instruction is fetched in time
         end if;
 
       when FETCH_BRAM =>
