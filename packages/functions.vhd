@@ -8,14 +8,14 @@
 --            : Ola Martin Tiseth Stoevneng
 --            : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
--- Last update: 2015-01-20
+-- Last update: 2015-01-29
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Various functions
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
--- 2015-01-23  4.2      lundal    Add bits function
+-- 2015-01-29  4.2      lundal    Add bits, min and if_else functions
 -- 2015-01-20  4.1      lundal    Removed unused functions
 -- 2014-11-27  4.0      lundal    Added reverse_endian
 -- 2014-02-10  3.0      stoevneng Added reverse
@@ -47,8 +47,15 @@ package functions is
 
   -- Returns the least of two numbers
   function min (
-    left : integer;
+    left  : integer;
     right : integer
+  ) return integer;
+
+  -- Allows conditionals in constant declarations
+  function if_else (
+    condition  : boolean;
+    when_true  : integer;
+    when_false : integer
   ) return integer;
 
 end functions;
@@ -99,5 +106,18 @@ package body functions is
       return right;
     end if;
   end min;
+
+  function if_else (
+    condition  : boolean;
+    when_true  : integer;
+    when_false : integer
+  ) return integer is
+  begin
+    if (condition) then
+      return when_true;
+    else
+      return when_false;
+    end if;
+  end if_else;
 
 end functions;
