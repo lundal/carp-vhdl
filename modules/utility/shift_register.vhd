@@ -23,12 +23,12 @@ use ieee.numeric_std.all;
 
 entity shift_register is
   generic (
-    address_size : positive := 4
+    address_bits : positive := 4
   );
   port (
     input   : in  std_logic;
     shift   : in  std_logic;
-    address : in  std_logic_vector(address_size - 1 downto 0);
+    address : in  std_logic_vector(address_bits - 1 downto 0);
     output  : out std_logic;
     clock   : in  std_logic
   );
@@ -36,7 +36,7 @@ end shift_register;
 
 architecture rtl of shift_register is
 
-  signal register_i : std_logic_vector(2**address_size - 1 downto 0) := (others => '0');
+  signal register_i : std_logic_vector(2**address_bits - 1 downto 0) := (others => '0');
 
 begin
 
@@ -44,7 +44,7 @@ begin
     wait until rising_edge(clock);
 
     if (shift = '1') then
-      register_i <= register_i(2**address_size - 2 downto 0) & input;
+      register_i <= register_i(2**address_bits - 2 downto 0) & input;
     end if;
 
   end process;

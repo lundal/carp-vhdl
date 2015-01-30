@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 entity sblock is
   generic (
     neighborhood_size      : positive := 7; -- 5 for 2D grid, 7 for 3D grid
-    lut_configuration_bits : positive := 2  -- Must be a power of two
+    lut_configuration_bits : positive := 8
   );
   port (
     state                : out std_logic;
@@ -54,8 +54,8 @@ begin
 
   lut : entity work.lut_configurable
   generic map (
-    address_size            => neighborhood_size,
-    configuration_data_size => lut_configuration_bits
+    address_bits            => neighborhood_size,
+    configuration_data_bits => lut_configuration_bits
   )
   port map (
     configuration_data   => configuration_lut,

@@ -24,13 +24,13 @@ use work.functions.all;
 
 entity lut_configurable is
   generic (
-    address_size            : positive := 5;
-    configuration_data_size : positive := 2  -- Must be a power of two
+    address_bits            : positive := 5;
+    configuration_data_bits : positive := 2  -- Must be a power of two
   );
   port (
-    configuration_data   : in  std_logic_vector(configuration_data_size - 1 downto 0);
+    configuration_data   : in  std_logic_vector(configuration_data_bits - 1 downto 0);
     configuration_enable : in  std_logic;
-    address              : in  std_logic_vector(address_size - 1 downto 0);
+    address              : in  std_logic_vector(address_bits - 1 downto 0);
     output               : out std_logic;
     clock                : in  std_logic
   );
@@ -38,11 +38,11 @@ end lut_configurable;
 
 architecture rtl of lut_configurable is
 
-  constant configuration_data_size_bits : natural := bits(configuration_data_size);
-  constant shift_register_address_size  : natural := address_size - configuration_data_size_bits;
+  constant configuration_data_bits_bits : natural := bits(configuration_data_bits);
+  constant shift_register_address_bits  : natural := address_bits - configuration_data_bits_bits;
   
-  signal shift_register_output : std_logic_vector(configuration_data_size - 1 downto 0);
-  signal shift_register_select : std_logic_vector(address_size - 1 downto shift_register_address_size);
+  signal shift_register_output : std_logic_vector(configuration_data_bits - 1 downto 0);
+  signal shift_register_select : std_logic_vector(address_bits - 1 downto shift_register_address_bits);
 
   function is_pow_2 (
     number : positive
@@ -55,23 +55,23 @@ architecture rtl of lut_configurable is
 begin
 
   -- Generic checks
-  assert (is_pow_2(configuration_data_size)) report "Unsupported configuration_data_size. Supported values are [2^N]." severity FAILURE;
+  assert (is_pow_2(configuration_data_bits)) report "Unsupported configuration_data_bits. Supported values are [2^N]." severity FAILURE;
 
-  shift_registers : for i in 0 to configuration_data_size-1 generate
+  shift_registers : for i in 0 to configuration_data_bits-1 generate
     shift_register : entity work.shift_register
     generic map (
-      address_size  => shift_register_address_size
+      address_bits  => shift_register_address_bits
     )
     port map (
       input   => configuration_data(i),
       shift   => configuration_enable,
-      address => address(shift_register_address_size - 1 downto 0),
+      address => address(shift_register_address_bits - 1 downto 0),
       output  => shift_register_output(i),
       clock   => clock
     );
   end generate;
 
-  shift_register_select <= address(address_size-1 downto shift_register_address_size);
+  shift_register_select <= address(address_bits-1 downto shift_register_address_bits);
   output <= shift_register_output(to_integer(unsigned(shift_register_select)));
 
 end rtl;
