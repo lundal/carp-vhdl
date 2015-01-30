@@ -112,6 +112,9 @@ architecture rtl of cell_writer_reader is
 
 begin
 
+  -- Generic checks
+  assert (cell_type_bits <= 32) report "Unsupported cell_type_bits. Supported values are [1-32]." severity FAILURE;
+
   buffer_has_space_one <= signed(send_buffer_count) /= -1;
 
   repeated : for i in 0 to matrix_width - 1 generate

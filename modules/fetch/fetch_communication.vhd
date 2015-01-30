@@ -59,6 +59,9 @@ architecture rtl of fetch_communication is
 
 begin
 
+  -- Generic checks
+  assert (instruction_bits = 256) report "Unsupported instruction_bits. Supported values are [256]." severity FAILURE;
+
   running <= run or not done_i;
 
   buffer_has_data <= unsigned(buffer_count) /= 0;

@@ -62,6 +62,11 @@ architecture rtl of decode is
 
 begin
 
+  -- Generic checks
+  assert (matrix_width <= 256)  report "Unsupported matrix_width. Supported values are [2-256]."  severity FAILURE;
+  assert (matrix_height <= 256) report "Unsupported matrix_height. Supported values are [1-256]." severity FAILURE;
+  assert (matrix_depth <= 256)  report "Unsupported matrix_depth. Supported values are [1-256]."  severity FAILURE;
+
   instruction_opcode <= instruction (4 downto 0);
 
   process begin
