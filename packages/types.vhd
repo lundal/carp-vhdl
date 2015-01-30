@@ -34,4 +34,8 @@ package types is
     WRITE_STATE_ONE, WRITE_STATE_ROW, WRITE_TYPE_ONE, WRITE_TYPE_ROW
   );
 
+  type cellular_automata_operation_type is (
+    NOP, CONFIGURE, READBACK, STEP
+  );
+
 end types;

@@ -31,10 +31,12 @@ entity toplevel_sim is
     matrix_width           : positive := 8;
     matrix_height          : positive := 8;
     matrix_depth           : positive := 8;
+    matrix_wrap            : boolean  := true;
     cell_type_bits         : positive := 8;
     cell_state_bits        : positive := 1; -- Must be 1 due to implementation of CA
     cell_write_width       : positive := 8;
-    instruction_bits       : positive := 256 -- Must be 256 due to implementation of fetch_communication
+    instruction_bits       : positive := 256; -- Must be 256 due to implementation of fetch_communication
+    lut_configuration_bits : positive := 8
   );
   port (
     sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
@@ -63,6 +65,7 @@ architecture rtl of toplevel_sim is
   signal run                     : std_logic;
   signal done_fetch              : std_logic;
   signal done_cell_writer_reader : std_logic;
+  signal done_cellular_automata  : std_logic;
 
   -- Communication
   signal tx_buffer_data  : std_logic_vector(31 downto 0);
@@ -84,6 +87,9 @@ architecture rtl of toplevel_sim is
   signal decode_to_cell_writer_reader_states    : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal decode_to_cell_writer_reader_type      : std_logic_vector(cell_type_bits - 1 downto 0);
   signal decode_to_cell_writer_reader_types     : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+
+  signal decode_to_cellular_automata_operation  : cellular_automata_operation_type;
+  signal decode_to_cellular_automata_step_count : std_logic_vector(15 downto 0);
 
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
@@ -151,11 +157,16 @@ architecture rtl of toplevel_sim is
   signal cell_buffer_from_mux_b_states       : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal cell_buffer_to_mux_b_states         : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
+  -- LUT writer
+  signal lut_writer_to_cellular_automata_write   : std_logic;
+  signal lut_writer_to_cellular_automata_address : std_logic_vector(cell_type_bits - 1 downto 0);
+  signal lut_writer_to_cellular_automata_data    : std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
+
 begin
 
   leds <= "0101";
 
-  run <= done_fetch and done_cell_writer_reader;
+  run <= done_fetch and done_cell_writer_reader and done_cellular_automata;
 
   -----------------------------------------------------------------------------
 
@@ -230,6 +241,9 @@ begin
     cell_writer_reader_states    => decode_to_cell_writer_reader_states,
     cell_writer_reader_type      => decode_to_cell_writer_reader_type,
     cell_writer_reader_types     => decode_to_cell_writer_reader_types,
+
+    cellular_automata_operation  => decode_to_cellular_automata_operation,
+    cellular_automata_step_count => decode_to_cellular_automata_step_count,
 
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
@@ -403,6 +417,39 @@ begin
     source_select => decode_to_send_buffer_mux_select,
 
     run => run,
+
+    clock => clock
+  );
+
+  cellular_automata : entity work.cellular_automata
+  generic map (
+    matrix_width           => matrix_width,
+    matrix_height          => matrix_height,
+    matrix_depth           => matrix_depth,
+    matrix_wrap            => matrix_wrap,
+    cell_type_bits         => cell_type_bits,
+    cell_state_bits        => cell_state_bits,
+    lut_configuration_bits => lut_configuration_bits
+  )
+  port map (
+    buffer_address_z    => cellular_automata_to_mux_address_z,
+    buffer_address_y    => cellular_automata_to_mux_address_y,
+    buffer_types_write  => cellular_automata_to_mux_types_write,
+    buffer_types_in     => cellular_automata_from_mux_types,
+    buffer_types_out    => cellular_automata_to_mux_types,
+    buffer_states_write => cellular_automata_to_mux_states_write,
+    buffer_states_in    => cellular_automata_from_mux_states,
+    buffer_states_out   => cellular_automata_to_mux_states,
+
+    lut_storage_write   => lut_writer_to_cellular_automata_write,
+    lut_storage_address => lut_writer_to_cellular_automata_address,
+    lut_storage_data    => lut_writer_to_cellular_automata_data,
+
+    decode_operation  => decode_to_cellular_automata_operation,
+    decode_step_count => decode_to_cellular_automata_step_count,
+
+    run  => run,
+    done => done_cellular_automata,
 
     clock => clock
   );

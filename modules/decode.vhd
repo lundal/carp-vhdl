@@ -46,6 +46,9 @@ entity decode is
     cell_writer_reader_type      : out std_logic_vector(cell_type_bits - 1 downto 0);
     cell_writer_reader_types     : out std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
 
+    cellular_automata_operation  : out cellular_automata_operation_type;
+    cellular_automata_step_count : out std_logic_vector(15 downto 0);
+
     cell_buffer_swap       : out std_logic;
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
     send_buffer_mux_select : out send_buffer_mux_select_type;
@@ -74,6 +77,8 @@ begin
 
     -- Defaults
     cell_writer_reader_operation <= NOP;
+    cellular_automata_operation <= NOP;
+    cell_buffer_swap <= '0';
 
     case instruction_opcode is
 
@@ -136,6 +141,19 @@ begin
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'left + 8 downto 8);
         cell_writer_reader_types     <= instruction(cell_writer_reader_types'left + 32 downto 32);
         cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+
+      when INSTRUCTION_SWAP_CELL_BUFFERS =>
+        cell_buffer_swap <= '1';
+
+      when INSTRUCTION_RUNSTEP =>
+        cellular_automata_operation  <= STEP;
+        cellular_automata_step_count <= instruction(cellular_automata_step_count'left + 16 downto 16);
+
+      when INSTRUCTION_CONFIGURE_SBM =>
+        cellular_automata_operation <= CONFIGURE;
+
+      when INSTRUCTION_READBACK_SBM =>
+        cellular_automata_operation <= READBACK;
 
       when others =>
         null;

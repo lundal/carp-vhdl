@@ -45,6 +45,9 @@ package instructions is
   constant INSTRUCTION_CONFIGURE_SBM     : std_logic_vector(4 downto 0) := "10010";
   constant INSTRUCTION_READBACK_SBM      : std_logic_vector(4 downto 0) := "10011";
 
+
+  constant INSTRUCTION_SWAP_CELL_BUFFERS : std_logic_vector(4 downto 0) := "10100";
+
   -- TODO: FITNESS
   -- TODO: WRAP ON/OFF
   -- TODO: JUMP_EQUAL

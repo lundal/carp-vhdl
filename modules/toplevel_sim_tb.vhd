@@ -33,10 +33,12 @@ begin
     matrix_width           => 8,
     matrix_height          => 8,
     matrix_depth           => 8,
+    matrix_wrap            => true,
     cell_type_bits         => 8,
     cell_state_bits        => 1,
     cell_write_width       => 8,
-    instruction_bits       => 256
+    instruction_bits       => 256,
+    lut_configuration_bits => 8
   )
   port map(
     sim_tx_buffer_data  => tx_buffer_data,
