@@ -34,7 +34,8 @@ entity cell_writer_reader is
     send_buffer_address_bits : positive := 10
   );
   port (
-    buffer_address      : out std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    buffer_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    buffer_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
     buffer_types_write  : out std_logic;
     buffer_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     buffer_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -47,7 +48,9 @@ entity cell_writer_reader is
     send_buffer_write : out std_logic;
 
     decode_operation : in cell_writer_reader_operation_type;
-    decode_zyx       : in std_logic_vector(bits(matrix_depth) + bits(matrix_height) + bits(matrix_width) - 1 downto 0);
+    decode_address_z : in std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    decode_address_y : in std_logic_vector(bits(matrix_height) - 1 downto 0);
+    decode_address_x : in std_logic_vector(bits(matrix_width) - 1 downto 0);
     decode_state     : in std_logic_vector(cell_state_bits - 1 downto 0);
     decode_states    : in std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
     decode_type      : in std_logic_vector(cell_type_bits - 1 downto 0);
@@ -96,7 +99,8 @@ architecture rtl of cell_writer_reader is
 
   -- Input registers
   signal operation  : cell_writer_reader_operation_type;
-  signal address_zy : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal address_z  : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal address_y  : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal address_x  : std_logic_vector(bits(matrix_width) - 1 downto 0);
   signal state_new  : std_logic_vector(cell_state_bits - 1 downto 0);
   signal states_new : std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
@@ -131,8 +135,9 @@ begin
 
           -- Copy values
           operation  <= decode_operation;
-          address_zy <= decode_zyx(bits(matrix_depth) + bits(matrix_height) + bits(matrix_width) - 1 downto bits(matrix_width));
-          address_x  <= decode_zyx(bits(matrix_width) - 1 downto 0);
+          address_z  <= decode_address_z;
+          address_y  <= decode_address_y;
+          address_x  <= decode_address_x;
           state_new  <= decode_state;
           states_new <= decode_states;
           type_new   <= decode_type;
@@ -140,7 +145,8 @@ begin
 
           case decode_operation is
             when FILL_ALL =>
-              address_zy          <= (others => '0');
+              address_z <= (others => '0');
+              address_y <= (others => '0');
               buffer_types_out    <= type_repeated;
               buffer_types_write  <= '1';
               buffer_states_out   <= state_repeated;
@@ -153,12 +159,14 @@ begin
             when READ_STATE_ONE | READ_TYPE_ONE =>
               state <= SEND_ONE;
             when READ_STATE_ALL =>
-              address_zy <= (others => '0');
-              address_x  <= (others => '0');
+              address_z <= (others => '0');
+              address_y <= (others => '0');
+              address_x <= (others => '0');
               state <= SEND_ALL_STATES;
             when READ_TYPE_ALL =>
-              address_zy <= (others => '0');
-              address_x  <= (others => '0');
+              address_z <= (others => '0');
+              address_y <= (others => '0');
+              address_x <= (others => '0');
               state <= SEND_ALL_TYPES;
             when others =>
               done_i <= '1';
@@ -166,13 +174,16 @@ begin
         end if;
 
       when FILL =>
-        -- Iterate through buffer
-        address_zy          <= std_logic_vector(unsigned(address_zy) + 1);
         buffer_types_write  <= '1';
         buffer_states_write <= '1';
-        if (unsigned(address_zy) + 1 = matrix_depth*matrix_height - 1) then
-          state <= IDLE;
-          done_i <= '1';
+        -- Iterate through buffer
+        address_y <= std_logic_vector(unsigned(address_y) + 1);
+        if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+          address_z <= std_logic_vector(unsigned(address_z) + 1);
+          if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
+            state <= IDLE;
+            done_i <= '1';
+          end if;
         end if;
 
       when WRITE_STATE =>
@@ -226,12 +237,14 @@ begin
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each state and row
           if (unsigned(address_x) = states_per_word*state_words_per_row - states_per_word) then
-            address_zy <= std_logic_vector(unsigned(address_zy) + 1);
-            address_x  <= (others => '0');
-            -- Stop when coming full cycle
-            if (unsigned(address_zy) + 1 = 0) then
-              state <= IDLE;
-              done_i <= '1';
+            address_x <= (others => '0');
+            address_y <= std_logic_vector(unsigned(address_y) + 1);
+            if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+              address_z <= std_logic_vector(unsigned(address_z) + 1);
+              if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
+                state <= IDLE;
+                done_i <= '1';
+              end if;
             end if;
           else
             address_x <= std_logic_vector(unsigned(address_x) + states_per_word);
@@ -245,12 +258,14 @@ begin
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each type and row
           if (unsigned(address_x) = types_per_word*type_words_per_row - types_per_word) then
-            address_zy <= std_logic_vector(unsigned(address_zy) + 1);
-            address_x  <= (others => '0');
-            -- Stop when coming full cycle
-            if (unsigned(address_zy) + 1 = 0) then
-              state <= IDLE;
-              done_i <= '1';
+            address_x <= (others => '0');
+            address_y <= std_logic_vector(unsigned(address_y) + 1);
+            if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+              address_z <= std_logic_vector(unsigned(address_z) + 1);
+              if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
+                state <= IDLE;
+                done_i <= '1';
+              end if;
             end if;
           else
             address_x <= std_logic_vector(unsigned(address_x) + types_per_word);
@@ -368,7 +383,8 @@ begin
   );
 
   -- Internally used out ports
-  buffer_address <= address_zy;
+  buffer_address_z <= address_z;
+  buffer_address_y <= address_y;
   done <= done_i;
 
 end rtl;

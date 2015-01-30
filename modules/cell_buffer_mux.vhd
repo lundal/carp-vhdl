@@ -33,7 +33,8 @@ entity cell_buffer_mux is
   );
   port (
     -- Cell Writer Reader
-    writer_reader_address      : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    writer_reader_address_z    : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    writer_reader_address_y    : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     writer_reader_types_write  : in  std_logic;
     writer_reader_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     writer_reader_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -42,7 +43,8 @@ entity cell_buffer_mux is
     writer_reader_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Cellular Automata
-    cellular_automata_address      : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    cellular_automata_address_z    : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    cellular_automata_address_y    : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     cellular_automata_types_write  : in  std_logic;
     cellular_automata_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     cellular_automata_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -51,7 +53,8 @@ entity cell_buffer_mux is
     cellular_automata_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Development - Port A
-    development_a_address      : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    development_a_address_z    : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    development_a_address_y    : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     development_a_types_write  : in  std_logic;
     development_a_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     development_a_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -60,7 +63,8 @@ entity cell_buffer_mux is
     development_a_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Development - Port B
-    development_b_address      : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    development_b_address_z    : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    development_b_address_y    : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     development_b_types_write  : in  std_logic;
     development_b_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     development_b_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -69,7 +73,8 @@ entity cell_buffer_mux is
     development_b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Buffer - Port A
-    buffer_a_address      : out std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    buffer_a_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    buffer_a_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
     buffer_a_types_write  : out std_logic;
     buffer_a_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     buffer_a_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -78,7 +83,8 @@ entity cell_buffer_mux is
     buffer_a_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Buffer - Port B
-    buffer_b_address      : out std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    buffer_b_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    buffer_b_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
     buffer_b_types_write  : out std_logic;
     buffer_b_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     buffer_b_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -106,10 +112,10 @@ begin
   end process;
 
   process (source_select_i, buffer_a_types_in, buffer_a_states_in, buffer_b_types_in, buffer_b_states_in,
-           writer_reader_address, writer_reader_types_write, writer_reader_types_in, writer_reader_states_write, writer_reader_states_in,
-           cellular_automata_address, cellular_automata_types_write, cellular_automata_types_in, cellular_automata_states_write, cellular_automata_states_in,
-           development_a_address, development_a_types_write, development_a_types_in, development_a_states_write, development_a_states_in,
-           development_b_address, development_b_types_write, development_b_types_in, development_b_states_write, development_b_states_in) begin
+           writer_reader_address_z, writer_reader_address_y, writer_reader_types_write, writer_reader_types_in, writer_reader_states_write, writer_reader_states_in,
+           cellular_automata_address_z, cellular_automata_address_y, cellular_automata_types_write, cellular_automata_types_in, cellular_automata_states_write, cellular_automata_states_in,
+           development_a_address_z, development_a_address_y, development_a_types_write, development_a_types_in, development_a_states_write, development_a_states_in,
+           development_b_address_z, development_b_address_y, development_b_types_write, development_b_types_in, development_b_states_write, development_b_states_in) begin
 
     -- Defaults
     writer_reader_types_out      <= (others => '0');
@@ -125,7 +131,8 @@ begin
 
       when WRITER_READER_AND_CELLULAR_AUTOMATA =>
         -- Port A
-        buffer_a_address      <= writer_reader_address;
+        buffer_a_address_z    <= writer_reader_address_z;
+        buffer_a_address_y    <= writer_reader_address_y;
         buffer_a_types_write  <= writer_reader_types_write;
         writer_reader_types_out    <= buffer_a_types_in;
         buffer_a_types_out    <= writer_reader_types_in;
@@ -134,7 +141,8 @@ begin
         buffer_a_states_out   <= writer_reader_states_in;
 
         -- Port B
-        buffer_b_address      <= cellular_automata_address;
+        buffer_b_address_z    <= cellular_automata_address_z;
+        buffer_b_address_y    <= cellular_automata_address_y;
         buffer_b_types_write  <= cellular_automata_types_write;
         cellular_automata_types_out    <= buffer_b_types_in;
         buffer_b_types_out    <= cellular_automata_types_in;
@@ -144,7 +152,8 @@ begin
 
       when DEVELOPMENT =>
         -- Port A
-        buffer_a_address      <= development_a_address;
+        buffer_a_address_z    <= development_a_address_z;
+        buffer_a_address_y    <= development_a_address_y;
         buffer_a_types_write  <= development_a_types_write;
         development_a_types_out    <= buffer_a_types_in;
         buffer_a_types_out    <= development_a_types_in;
@@ -153,7 +162,8 @@ begin
         buffer_a_states_out   <= development_a_states_in;
 
         -- Port B
-        buffer_b_address      <= development_b_address;
+        buffer_b_address_z    <= development_b_address_z;
+        buffer_b_address_y    <= development_b_address_y;
         buffer_b_types_write  <= development_b_types_write;
         development_b_types_out    <= buffer_b_types_in;
         buffer_b_types_out    <= development_b_types_in;

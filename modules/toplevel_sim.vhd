@@ -77,7 +77,9 @@ architecture rtl of toplevel_sim is
   signal decode_from_fetch_instruction : std_logic_vector(instruction_bits - 1 downto 0);
 
   signal decode_to_cell_writer_reader_operation : cell_writer_reader_operation_type;
-  signal decode_to_cell_writer_reader_zyx       : std_logic_vector(bits(matrix_depth) + bits(matrix_height) + bits(matrix_width) - 1 downto 0);
+  signal decode_to_cell_writer_reader_address_z : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal decode_to_cell_writer_reader_address_y : std_logic_vector(bits(matrix_height) - 1 downto 0);
+  signal decode_to_cell_writer_reader_address_x : std_logic_vector(bits(matrix_width) - 1 downto 0);
   signal decode_to_cell_writer_reader_state     : std_logic_vector(cell_state_bits - 1 downto 0);
   signal decode_to_cell_writer_reader_states    : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal decode_to_cell_writer_reader_type      : std_logic_vector(cell_type_bits - 1 downto 0);
@@ -88,7 +90,8 @@ architecture rtl of toplevel_sim is
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
 
   -- Cell Writer Reader
-  signal cell_writer_reader_to_mux_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal cell_writer_reader_to_mux_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal cell_writer_reader_to_mux_address_y    : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal cell_writer_reader_to_mux_types_write  : std_logic;
   signal cell_writer_reader_to_mux_types        : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal cell_writer_reader_from_mux_types      : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -101,7 +104,8 @@ architecture rtl of toplevel_sim is
   signal cell_writer_reader_to_send_mux_write   : std_logic;
 
   -- Cellular Automata
-  signal cellular_automata_to_mux_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal cellular_automata_to_mux_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal cellular_automata_to_mux_address_y    : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal cellular_automata_to_mux_types_write  : std_logic;
   signal cellular_automata_to_mux_types        : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal cellular_automata_from_mux_types      : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -110,7 +114,8 @@ architecture rtl of toplevel_sim is
   signal cellular_automata_from_mux_states     : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
   -- Development
-  signal development_to_mux_a_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal development_to_mux_a_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal development_to_mux_a_address_y    : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal development_to_mux_a_types_write  : std_logic;
   signal development_to_mux_a_types        : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal development_from_mux_a_types      : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -118,7 +123,8 @@ architecture rtl of toplevel_sim is
   signal development_to_mux_a_states       : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal development_from_mux_a_states     : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
-  signal development_to_mux_b_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal development_to_mux_b_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal development_to_mux_b_address_y    : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal development_to_mux_b_types_write  : std_logic;
   signal development_to_mux_b_types        : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal development_from_mux_b_types      : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -127,7 +133,8 @@ architecture rtl of toplevel_sim is
   signal development_from_mux_b_states     : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
   -- Cell buffer
-  signal cell_buffer_from_mux_a_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal cell_buffer_from_mux_a_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal cell_buffer_from_mux_a_address_y    : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal cell_buffer_from_mux_a_types_write  : std_logic;
   signal cell_buffer_from_mux_a_types        : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal cell_buffer_to_mux_a_types          : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -135,7 +142,8 @@ architecture rtl of toplevel_sim is
   signal cell_buffer_from_mux_a_states       : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal cell_buffer_to_mux_a_states         : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
-  signal cell_buffer_from_mux_b_address      : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal cell_buffer_from_mux_b_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal cell_buffer_from_mux_b_address_y    : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal cell_buffer_from_mux_b_types_write  : std_logic;
   signal cell_buffer_from_mux_b_types        : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
   signal cell_buffer_to_mux_b_types          : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -215,7 +223,9 @@ begin
     instruction => decode_from_fetch_instruction,
 
     cell_writer_reader_operation => decode_to_cell_writer_reader_operation,
-    cell_writer_reader_zyx       => decode_to_cell_writer_reader_zyx,
+    cell_writer_reader_address_z => decode_to_cell_writer_reader_address_z,
+    cell_writer_reader_address_y => decode_to_cell_writer_reader_address_y,
+    cell_writer_reader_address_x => decode_to_cell_writer_reader_address_x,
     cell_writer_reader_state     => decode_to_cell_writer_reader_state,
     cell_writer_reader_states    => decode_to_cell_writer_reader_states,
     cell_writer_reader_type      => decode_to_cell_writer_reader_type,
@@ -241,7 +251,8 @@ begin
     send_buffer_address_bits => tx_buffer_address_bits
   )
   port map (
-    buffer_address      => cell_writer_reader_to_mux_address,
+    buffer_address_z    => cell_writer_reader_to_mux_address_z,
+    buffer_address_y    => cell_writer_reader_to_mux_address_y,
     buffer_types_write  => cell_writer_reader_to_mux_types_write,
     buffer_types_in     => cell_writer_reader_from_mux_types,
     buffer_types_out    => cell_writer_reader_to_mux_types,
@@ -254,7 +265,9 @@ begin
     send_buffer_write => cell_writer_reader_to_send_mux_write,
 
     decode_operation => decode_to_cell_writer_reader_operation,
-    decode_zyx       => decode_to_cell_writer_reader_zyx,
+    decode_address_z => decode_to_cell_writer_reader_address_z,
+    decode_address_y => decode_to_cell_writer_reader_address_y,
+    decode_address_x => decode_to_cell_writer_reader_address_x,
     decode_state     => decode_to_cell_writer_reader_state,
     decode_states    => decode_to_cell_writer_reader_states,
     decode_type      => decode_to_cell_writer_reader_type,
@@ -275,7 +288,8 @@ begin
     cell_state_bits => cell_state_bits
   )
   port map (
-    writer_reader_address      => cell_writer_reader_to_mux_address,
+    writer_reader_address_z    => cell_writer_reader_to_mux_address_z,
+    writer_reader_address_y    => cell_writer_reader_to_mux_address_y,
     writer_reader_types_write  => cell_writer_reader_to_mux_types_write,
     writer_reader_types_in     => cell_writer_reader_to_mux_types,
     writer_reader_types_out    => cell_writer_reader_from_mux_types,
@@ -283,7 +297,8 @@ begin
     writer_reader_states_in    => cell_writer_reader_to_mux_states,
     writer_reader_states_out   => cell_writer_reader_from_mux_states,
 
-    cellular_automata_address      => cellular_automata_to_mux_address,
+    cellular_automata_address_z    => cellular_automata_to_mux_address_z,
+    cellular_automata_address_y    => cellular_automata_to_mux_address_y,
     cellular_automata_types_write  => cellular_automata_to_mux_types_write,
     cellular_automata_types_in     => cellular_automata_to_mux_types,
     cellular_automata_types_out    => cellular_automata_from_mux_types,
@@ -291,7 +306,8 @@ begin
     cellular_automata_states_in    => cellular_automata_to_mux_states,
     cellular_automata_states_out   => cellular_automata_from_mux_states,
     
-    development_a_address      => development_to_mux_a_address,
+    development_a_address_z    => development_to_mux_a_address_z,
+    development_a_address_y    => development_to_mux_a_address_y,
     development_a_types_write  => development_to_mux_a_types_write,
     development_a_types_in     => development_to_mux_a_types,
     development_a_types_out    => development_from_mux_a_types,
@@ -299,7 +315,8 @@ begin
     development_a_states_in    => development_to_mux_a_states,
     development_a_states_out   => development_from_mux_a_states,
 
-    development_b_address      => development_to_mux_b_address,
+    development_b_address_z    => development_to_mux_b_address_z,
+    development_b_address_y    => development_to_mux_b_address_y,
     development_b_types_write  => development_to_mux_b_types_write,
     development_b_types_in     => development_to_mux_b_types,
     development_b_types_out    => development_from_mux_b_types,
@@ -307,7 +324,8 @@ begin
     development_b_states_in    => development_to_mux_b_states,
     development_b_states_out   => development_from_mux_b_states,
 
-    buffer_a_address      => cell_buffer_from_mux_a_address,
+    buffer_a_address_z    => cell_buffer_from_mux_a_address_z,
+    buffer_a_address_y    => cell_buffer_from_mux_a_address_y,
     buffer_a_types_write  => cell_buffer_from_mux_a_types_write,
     buffer_a_types_in     => cell_buffer_to_mux_a_types,
     buffer_a_types_out    => cell_buffer_from_mux_a_types,
@@ -315,7 +333,8 @@ begin
     buffer_a_states_in    => cell_buffer_to_mux_a_states,
     buffer_a_states_out   => cell_buffer_from_mux_a_states,
 
-    buffer_b_address      => cell_buffer_from_mux_b_address,
+    buffer_b_address_z    => cell_buffer_from_mux_b_address_z,
+    buffer_b_address_y    => cell_buffer_from_mux_b_address_y,
     buffer_b_types_write  => cell_buffer_from_mux_b_types_write,
     buffer_b_types_in     => cell_buffer_to_mux_b_types,
     buffer_b_types_out    => cell_buffer_from_mux_b_types,
@@ -339,7 +358,8 @@ begin
     cell_state_bits => cell_state_bits
   )
   port map (
-    a_address      => cell_buffer_from_mux_a_address,
+    a_address_z    => cell_buffer_from_mux_a_address_z,
+    a_address_y    => cell_buffer_from_mux_a_address_y,
     a_types_write  => cell_buffer_from_mux_a_types_write,
     a_types_in     => cell_buffer_from_mux_a_types,
     a_types_out    => cell_buffer_to_mux_a_types,
@@ -347,7 +367,8 @@ begin
     a_states_in    => cell_buffer_from_mux_a_states,
     a_states_out   => cell_buffer_to_mux_a_states,
 
-    b_address      => cell_buffer_from_mux_b_address,
+    b_address_z    => cell_buffer_from_mux_b_address_z,
+    b_address_y    => cell_buffer_from_mux_b_address_y,
     b_types_write  => cell_buffer_from_mux_b_types_write,
     b_types_in     => cell_buffer_from_mux_b_types,
     b_types_out    => cell_buffer_to_mux_b_types,

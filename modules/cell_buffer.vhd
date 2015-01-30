@@ -10,7 +10,6 @@
 -------------------------------------------------------------------------------
 -- Description: BRAM holding cell types and states.
 --            : It is divided into two regions; one for each port.
---            : The address is Z & Y. They are combined since Z can be 0 bits.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -34,7 +33,8 @@ entity cell_buffer is
   );
   port (
     -- Port A
-    a_address      : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    a_address_z    : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    a_address_y    : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     a_types_write  : in  std_logic;
     a_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     a_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -43,7 +43,8 @@ entity cell_buffer is
     a_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Port B
-    b_address      : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    b_address_z    : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    b_address_y    : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     b_types_write  : in  std_logic;
     b_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
     b_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
@@ -75,8 +76,8 @@ begin
     end if;
   end process;
 
-  a_address_bram <=     swapped & a_address;
-  b_address_bram <= not swapped & b_address;
+  a_address_bram <=     swapped & a_address_z & a_address_y;
+  b_address_bram <= not swapped & b_address_z & b_address_y;
 
   types_bram : entity work.bram_tdp
   generic map (
