@@ -91,6 +91,10 @@ architecture rtl of toplevel_sim is
   signal decode_to_cellular_automata_operation  : cellular_automata_operation_type;
   signal decode_to_cellular_automata_step_count : std_logic_vector(15 downto 0);
 
+  signal decode_to_lut_writer_operation : lut_writer_operation_type;
+  signal decode_to_lut_writer_address   : std_logic_vector(cell_type_bits - 1 downto 0);
+  signal decode_to_lut_writer_data      : std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
+
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
@@ -244,6 +248,10 @@ begin
 
     cellular_automata_operation  => decode_to_cellular_automata_operation,
     cellular_automata_step_count => decode_to_cellular_automata_step_count,
+
+    lut_writer_operation => decode_to_lut_writer_operation,
+    lut_writer_address   => decode_to_lut_writer_address,
+    lut_writer_data      => decode_to_lut_writer_data,
 
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
@@ -450,6 +458,25 @@ begin
 
     run  => run,
     done => done_cellular_automata,
+
+    clock => clock
+  );
+
+  lut_writer : entity work.lut_writer
+  generic map (
+    cell_type_bits => cell_type_bits,
+    neighborhood_bits => if_else(matrix_depth = 1, 5, 7)
+  )
+  port map (
+    lut_storage_write   => lut_writer_to_cellular_automata_write,
+    lut_storage_address => lut_writer_to_cellular_automata_address,
+    lut_storage_data    => lut_writer_to_cellular_automata_data,
+
+    decode_operation => decode_to_lut_writer_operation,
+    decode_address   => decode_to_lut_writer_address,
+    decode_data      => decode_to_lut_writer_data,
+
+    run => run,
 
     clock => clock
   );

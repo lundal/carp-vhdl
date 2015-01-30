@@ -38,4 +38,8 @@ package types is
     NOP, CONFIGURE, READBACK, STEP
   );
 
+  type lut_writer_operation_type is (
+    NOP, STORE
+  );
+
 end types;
