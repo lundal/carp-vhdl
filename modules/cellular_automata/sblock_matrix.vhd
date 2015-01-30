@@ -31,7 +31,7 @@ entity sblock_matrix is
     matrix_height          : positive := 8;
     matrix_depth           : positive := 8;
     matrix_wrap            : boolean := true;
-    lut_configuration_bits : positive := 8  -- Must be a power of two
+    lut_configuration_bits : positive := 8
   );
   port (
     configuration_lut_slv    : in std_logic_vector(matrix_width * lut_configuration_bits - 1 downto 0);
@@ -40,9 +40,9 @@ entity sblock_matrix is
 
     states_slv : out std_logic_vector(matrix_depth * matrix_height * matrix_width - 1 downto 0);
 
-    update : in  std_logic;
+    update : in std_logic;
 
-    clock : in  std_logic
+    clock : in std_logic
   );
 end sblock_matrix;
 

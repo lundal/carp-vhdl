@@ -12,6 +12,8 @@
 -------------------------------------------------------------------------------
 -- Description: TODO
 --            : Neighborhood includes itself.
+--            : 2**neighborhood_size / lut_configuration_bits should be 16 or
+--            : more for optimal shift_register usage.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -46,7 +48,7 @@ architecture rtl of sblock is
 
   signal neighborhood_states : std_logic_vector(neighborhood_size - 1 downto 0);
   signal lut_output          : std_logic;
-  signal state_i             : std_logic;
+  signal state_i             : std_logic := '0';
 
 begin
 
