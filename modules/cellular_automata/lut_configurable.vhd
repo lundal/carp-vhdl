@@ -44,7 +44,18 @@ architecture rtl of lut_configurable is
   signal shift_register_output : std_logic_vector(configuration_data_size - 1 downto 0);
   signal shift_register_select : std_logic_vector(address_size - 1 downto shift_register_address_size);
 
+  function is_pow_2 (
+    number : positive
+  ) return boolean is
+    constant num : unsigned := to_unsigned(number, bits(number));
+  begin
+     return (num and (num - 1)) = 0;
+  end is_pow_2;
+
 begin
+
+  -- Generic checks
+  assert (is_pow_2(configuration_data_size)) report "Unsupported configuration_data_size. Supported values are [2^N]." severity FAILURE;
 
   shift_registers : for i in 0 to configuration_data_size-1 generate
     shift_register : entity work.shift_register
