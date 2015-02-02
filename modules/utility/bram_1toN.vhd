@@ -17,13 +17,13 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all
+use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 entity bram_1toN is
   generic (
     address_bits : positive := 8;
-    data_bits    : positive := 32
+    data_bits    : positive := 32;
     read_ports   : positive := 7
   );
   port (
