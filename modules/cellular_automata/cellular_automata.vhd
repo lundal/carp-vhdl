@@ -147,7 +147,7 @@ begin
       when CONFIGURE_THIRD =>
         -- Next cell buffer address
         address_y <= std_logic_vector(unsigned(address_y) + 1);
-        if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+        if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
           address_z <= std_logic_vector(unsigned(address_z) + 1);
         end if;
         lut_storage_shift_register <= lut_storage_data_slv;
@@ -160,11 +160,11 @@ begin
         if (lut_storage_shift_amount = shift_register_bits - 1) then
           -- Next cell buffer address
           address_y <= std_logic_vector(unsigned(address_y) + 1);
-          if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+          if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
             address_z <= std_logic_vector(unsigned(address_z) + 1);
           end if;
           -- Check if done
-          if ((unsigned(address_z) = 0 or matrix_depth = 1) and (unsigned(address_y) = 0 or matrix_width = 1)) then
+          if ((unsigned(address_z) = 0 or matrix_depth = 1) and (unsigned(address_y) = 0 or matrix_height = 1)) then
             state <= IDLE;
             done_i <= '1';
           end if;
@@ -180,7 +180,7 @@ begin
 
       when READBACK =>
         address_y <= std_logic_vector(unsigned(address_y) + 1);
-        if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+        if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
           address_z <= std_logic_vector(unsigned(address_z) + 1);
           if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
             state <= IDLE;

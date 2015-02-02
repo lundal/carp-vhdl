@@ -181,7 +181,7 @@ begin
         buffer_states_write <= '1';
         -- Iterate through buffer
         address_y <= std_logic_vector(unsigned(address_y) + 1);
-        if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+        if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
           address_z <= std_logic_vector(unsigned(address_z) + 1);
           if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
             state <= IDLE;
@@ -242,7 +242,7 @@ begin
           if (unsigned(address_x) = states_per_word*state_words_per_row - states_per_word) then
             address_x <= (others => '0');
             address_y <= std_logic_vector(unsigned(address_y) + 1);
-            if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+            if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
               address_z <= std_logic_vector(unsigned(address_z) + 1);
               if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
                 state <= IDLE;
@@ -263,7 +263,7 @@ begin
           if (unsigned(address_x) = types_per_word*type_words_per_row - types_per_word) then
             address_x <= (others => '0');
             address_y <= std_logic_vector(unsigned(address_y) + 1);
-            if (unsigned(address_y) = matrix_height-1 or matrix_width = 1) then
+            if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
               address_z <= std_logic_vector(unsigned(address_z) + 1);
               if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
                 state <= IDLE;
