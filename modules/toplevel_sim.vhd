@@ -327,7 +327,7 @@ begin
     cellular_automata_states_write => cellular_automata_to_mux_states_write,
     cellular_automata_states_in    => cellular_automata_to_mux_states,
     cellular_automata_states_out   => cellular_automata_from_mux_states,
-    
+
     development_a_address_z    => development_to_mux_a_address_z,
     development_a_address_y    => development_to_mux_a_address_y,
     development_a_types_write  => development_to_mux_a_types_write,

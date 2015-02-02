@@ -61,5 +61,5 @@ begin
   zero     <= zero_i;
   finished <= finished_i;
   value    <= value_i;
-                                          
+
 end rtl;

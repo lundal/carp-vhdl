@@ -64,7 +64,7 @@ architecture rtl of tx_engine is
   );
 
   signal state                 : state_type := IDLE;
-  
+
   -- DW 0
   signal tlp_type              : std_logic_vector(7 downto 0);
   signal tlp_traffic_class     : std_logic_vector(2 downto 0);
@@ -72,7 +72,7 @@ architecture rtl of tx_engine is
   signal tlp_poisoned          : std_logic;
   signal tlp_attributes        : std_logic_vector(1 downto 0);
   signal tlp_length            : std_logic_vector(9 downto 0);
-  
+
   -- DW 1
   signal tlp_completer_id      : std_logic_vector(15 downto 0);
   signal tlp_status            : std_logic_vector(2 downto 0);

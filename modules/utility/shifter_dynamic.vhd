@@ -39,7 +39,7 @@ end shifter_dynamic;
 architecture rtl of shifter_dynamic is
 
   type result_a is array (shift_amount_width downto 0) of std_logic_vector(data_width - 1 downto 0);
-  
+
   signal result : result_a := (others => (others => '0'));
 
 begin

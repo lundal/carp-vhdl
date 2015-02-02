@@ -55,7 +55,7 @@ architecture rtl of communication is
   signal reset_i    : std_logic;
   signal link_up    : std_logic;
   signal device_id  : std_logic_vector(15 downto 0);
-  
+
   -- Tx
   signal tx_ready   : std_logic;
   signal tx_valid   : std_logic;
@@ -69,7 +69,7 @@ architecture rtl of communication is
   signal rx_last    : std_logic;
   signal rx_data    : std_logic_vector(31 downto 0);
   signal rx_user    : std_logic_vector(21 downto 0);
-  
+
   -- Request
   signal rq_ready   : std_logic;
   signal rq_valid   : std_logic;
@@ -82,7 +82,7 @@ architecture rtl of communication is
   -- Special
   signal rq_special      : std_logic;
   signal rq_special_data : std_logic_vector(31 downto 0);
-  
+
   -- Buffers
   signal tx_buffer_out            : std_logic_vector(31 downto 0);
   signal tx_buffer_count_i        : std_logic_vector(tx_buffer_address_bits - 1 downto 0);

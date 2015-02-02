@@ -32,7 +32,7 @@ entity fetch_handler is
     communication_instruction : in  std_logic_vector(instruction_bits - 1 downto 0);
     communication_run         : out std_logic;
     communication_done        : in  std_logic;
-  
+
     bram_write           : out std_logic;
     bram_address         : out std_logic_vector(program_counter_bits - 1 downto 0);
     bram_instruction_in  : in  std_logic_vector(instruction_bits - 1 downto 0);

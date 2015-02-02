@@ -17,13 +17,13 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.numeric_std.all
 use ieee.math_real.all;
 
 entity bram_1toN is
   generic (
     address_bits : positive := 8;
-    data_bits    : positive := 32;
+    data_bits    : positive := 32
     read_ports   : positive := 7
   );
   port (
@@ -37,7 +37,7 @@ entity bram_1toN is
     read_data_slv    : out std_logic_vector(read_ports*data_bits - 1 downto 0);
 
     clock : in std_logic
-	);
+  );
 end bram_1toN;
 
 architecture rtl of bram_1toN is

@@ -44,7 +44,7 @@ architecture rtl of fetch is
   signal communication_instruction : std_logic_vector(instruction_bits - 1 downto 0);
   signal communication_run         : std_logic;
   signal communication_done        : std_logic;
-  
+
   signal bram_write                    : std_logic;
   signal bram_address                  : std_logic_vector(program_counter_bits - 1 downto 0);
   signal bram_instruction_from_handler : std_logic_vector(instruction_bits - 1 downto 0);
@@ -69,7 +69,7 @@ begin
 
     clock => clock
   );
-  
+
   instruction_bram : entity work.bram_tdp
   generic map (
     address_bits => program_counter_bits,
@@ -90,7 +90,7 @@ begin
     b_data_out => open,
 
     clock => clock
-	);
+  );
 
   fetch_handler : entity work.fetch_handler
   generic map (
@@ -101,7 +101,7 @@ begin
     communication_instruction => communication_instruction,
     communication_run         => communication_run,
     communication_done        => communication_done,
-  
+
     bram_write           => bram_write,
     bram_address         => bram_address,
     bram_instruction_in  => bram_instruction_to_handler,

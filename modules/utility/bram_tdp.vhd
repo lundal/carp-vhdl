@@ -40,7 +40,7 @@ entity bram_tdp is
     b_data_out : out std_logic_vector(data_bits - 1 downto 0);
 
     clock : in std_logic
-	);
+  );
 end bram_tdp;
 
 architecture rtl of bram_tdp is

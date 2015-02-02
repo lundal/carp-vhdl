@@ -111,7 +111,7 @@ begin
       when IDLE =>
         if (run = '1') then
           done_i <= '0';
-          
+
           case (decode_operation) is
             when CONFIGURE =>
               address_z <= (others => '0');

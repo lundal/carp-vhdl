@@ -40,7 +40,7 @@ architecture rtl of lut_configurable is
 
   constant configuration_data_bits_bits : natural := bits(configuration_data_bits);
   constant shift_register_address_bits  : natural := address_bits - configuration_data_bits_bits;
-  
+
   signal shift_register_output : std_logic_vector(configuration_data_bits - 1 downto 0);
   signal shift_register_select : std_logic_vector(address_bits - 1 downto shift_register_address_bits);
 
