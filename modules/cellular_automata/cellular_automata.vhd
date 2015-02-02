@@ -65,7 +65,7 @@ architecture rtl of cellular_automata is
 
   type state_type is (
     IDLE,
-    CONFIGURE_FIRST, CONFIGURE_SECOND, CONFIGURE_THIRD, CONFIGURE,
+    CONFIGURE_WARMUP_1, CONFIGURE_WARMUP_2, CONFIGURE_FIRST, CONFIGURE,
     READBACK,
     STEP
   );
@@ -116,7 +116,7 @@ begin
             when CONFIGURE =>
               address_z <= (others => '0');
               address_y <= (others => '0');
-              state <= CONFIGURE_FIRST;
+              state <= CONFIGURE_WARMUP_1;
             when READBACK =>
               address_z <= (others => '0');
               address_y <= (others => '0');
@@ -136,49 +136,52 @@ begin
           end case;
         end if;
 
+      when CONFIGURE_WARMUP_1 =>
+        -- Types and states are output from cell buffer
+        state <= CONFIGURE_WARMUP_2;
+
+      when CONFIGURE_WARMUP_2 =>
+        -- LUTs for given types are output from LUT storage
+        state <= CONFIGURE_FIRST;
+
       when CONFIGURE_FIRST =>
-        -- Types and states are output from buffer
-        state <= CONFIGURE_SECOND;
-
-      when CONFIGURE_SECOND =>
-        -- LUTs are output from storage
-        state <= CONFIGURE_THIRD;
-
-      when CONFIGURE_THIRD =>
         -- Next cell buffer address
         address_y <= std_logic_vector(unsigned(address_y) + 1);
         if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
           address_z <= std_logic_vector(unsigned(address_z) + 1);
         end if;
+        -- Copy LUTs to shift register and begin configuration of first row
         lut_storage_shift_register <= lut_storage_data_slv;
         lut_storage_shift_amount <= (others => '0');
         configuration_state_slv <= buffer_states_in;
-        configuration_enable_slv <= (configuration_enable_slv'left downto 1 => '0') & '1'; -- Enable first row
+        configuration_enable_slv <= (configuration_enable_slv'left downto 1 => '0') & '1';
         state <= CONFIGURE;
 
       when CONFIGURE =>
+        -- Shift LUT register to get next configuration values
+        lut_storage_shift_register <= std_logic_vector(shift_right(unsigned(lut_storage_shift_register), 1));
+        lut_storage_shift_amount <= lut_storage_shift_amount + 1;
+        -- If these are the last configuration bits, proceed to next row
         if (lut_storage_shift_amount = shift_register_bits - 1) then
           -- Next cell buffer address
           address_y <= std_logic_vector(unsigned(address_y) + 1);
           if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
             address_z <= std_logic_vector(unsigned(address_z) + 1);
           end if;
+          -- Copy LUTs to shift register and begin configuration of next row
+          lut_storage_shift_register <= lut_storage_data_slv;
+          lut_storage_shift_amount <= (others => '0');
+          configuration_state_slv <= buffer_states_in;
+          configuration_enable_slv <= std_logic_vector(shift_left(unsigned(configuration_enable_slv), 1));
           -- Check if done
           if ((unsigned(address_z) = 0 or matrix_depth = 1) and (unsigned(address_y) = 0 or matrix_height = 1)) then
             state <= IDLE;
             done_i <= '1';
           end if;
-          lut_storage_shift_register <= lut_storage_data_slv;
-          lut_storage_shift_amount <= (others => '0');
-          configuration_state_slv <= buffer_states_in;
-          configuration_enable_slv <= std_logic_vector(shift_left(unsigned(configuration_enable_slv), 1)); -- Enable next row
-        else
-          -- Shift register to get next configuration values
-          lut_storage_shift_register <= std_logic_vector(shift_right(unsigned(lut_storage_shift_register), 1));
-          lut_storage_shift_amount <= lut_storage_shift_amount + 1;
         end if;
 
       when READBACK =>
+        -- Next cell buffer address
         address_y <= std_logic_vector(unsigned(address_y) + 1);
         if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
           address_z <= std_logic_vector(unsigned(address_z) + 1);
@@ -187,6 +190,7 @@ begin
             done_i <= '1';
           end if;
         end if;
+        -- Write row
         buffer_states_selected <= std_logic_vector(unsigned(buffer_states_selected) + 1);
         buffer_states_write <= '1';
 
@@ -216,7 +220,7 @@ begin
     read_data_slv    => lut_storage_data_slv,
 
     clock => clock
-	);
+  );
 
   matrix : entity work.sblock_matrix
   generic map (
@@ -238,10 +242,12 @@ begin
     clock => clock
   );
 
+  -- Maps signals from LUT shift register to cell configuration ports
   configuration_select : for i in 0 to matrix_width*lut_configuration_bits - 1 generate
     configuration_lut_slv(i) <= lut_storage_shift_register(i*shift_register_bits);
   end generate;
 
+  -- Selects one row of states
   readback_selector : entity work.selector
   generic map (
     entry_bits   => matrix_width,
