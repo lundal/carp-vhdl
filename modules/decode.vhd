@@ -95,10 +95,12 @@ begin
         cell_writer_reader_address_z <= instruction(cell_writer_reader_address_z'left + 24 downto 24);
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'left + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'left + 8 downto 8);
+        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_READ_STATE_ALL =>
         cell_writer_reader_operation <= READ_STATE_ALL;
+        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_READ_TYPE_ONE =>
@@ -106,10 +108,12 @@ begin
         cell_writer_reader_address_z <= instruction(cell_writer_reader_address_z'left + 24 downto 24);
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'left + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'left + 8 downto 8);
+        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_READ_TYPE_ALL =>
         cell_writer_reader_operation <= READ_TYPE_ALL;
+        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_FILL_CELLS =>
