@@ -42,4 +42,8 @@ package types is
     NOP, STORE
   );
 
+  type development_operation_type is (
+    NOP, DEVELOP
+  );
+
 end types;

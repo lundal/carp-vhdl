@@ -49,6 +49,8 @@ entity decode is
     cellular_automata_operation  : out cellular_automata_operation_type;
     cellular_automata_step_count : out std_logic_vector(15 downto 0);
 
+    development_operation : out development_operation_type;
+
     lut_writer_operation : out lut_writer_operation_type;
     lut_writer_address   : out std_logic_vector(cell_type_bits - 1 downto 0);
     lut_writer_data      : out std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
@@ -82,6 +84,7 @@ begin
     -- Defaults
     cell_writer_reader_operation <= NOP;
     cellular_automata_operation <= NOP;
+    development_operation <= NOP;
     lut_writer_operation <= NOP;
     cell_buffer_swap <= '0';
 
@@ -156,14 +159,20 @@ begin
 
       when INSTRUCTION_CONFIGURE_SBM =>
         cellular_automata_operation <= CONFIGURE;
+        cell_buffer_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_READBACK_SBM =>
         cellular_automata_operation <= READBACK;
+        cell_buffer_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_WRITE_LUT =>
         lut_writer_operation <= STORE;
         lut_writer_address   <= instruction(lut_writer_address'left + 32 downto 32);
         lut_writer_data      <= instruction(lut_writer_data'left + 64 downto 64);
+
+      when INSTRUCTION_DEVSTEP =>
+        development_operation  <= DEVELOP;
+        cell_buffer_mux_select <= DEVELOPMENT;
 
       when others =>
         null;

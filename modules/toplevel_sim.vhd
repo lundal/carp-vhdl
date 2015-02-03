@@ -36,7 +36,8 @@ entity toplevel_sim is
     cell_state_bits        : positive := 1; -- Must be 1 due to implementation of CA
     cell_write_width       : positive := 8;
     instruction_bits       : positive := 256; -- Must be 256 due to implementation of fetch_communication
-    lut_configuration_bits : positive := 8
+    lut_configuration_bits : positive := 8;
+    rule_storage_address_bits : positive := 8
   );
   port (
     sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
@@ -90,6 +91,8 @@ architecture rtl of toplevel_sim is
 
   signal decode_to_cellular_automata_operation  : cellular_automata_operation_type;
   signal decode_to_cellular_automata_step_count : std_logic_vector(15 downto 0);
+
+  signal decode_to_development_operation : development_operation_type;
 
   signal decode_to_lut_writer_operation : lut_writer_operation_type;
   signal decode_to_lut_writer_address   : std_logic_vector(cell_type_bits - 1 downto 0);
@@ -166,11 +169,16 @@ architecture rtl of toplevel_sim is
   signal lut_writer_to_cellular_automata_address : std_logic_vector(cell_type_bits - 1 downto 0);
   signal lut_writer_to_cellular_automata_data    : std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
 
+  -- Rule writer
+  signal rule_writer_to_development_write   : std_logic;
+  signal rule_writer_to_development_address : std_logic_vector(rule_storage_address_bits - 1 downto 0);
+  signal rule_writer_to_development_data    : std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
+
 begin
 
   leds <= "0101";
 
-  run <= done_fetch and done_cell_writer_reader and done_cellular_automata;
+  run <= done_fetch and done_cell_writer_reader and done_cellular_automata and done_development;
 
   -----------------------------------------------------------------------------
 
@@ -248,6 +256,8 @@ begin
 
     cellular_automata_operation  => decode_to_cellular_automata_operation,
     cellular_automata_step_count => decode_to_cellular_automata_step_count,
+
+    development_operation => decode_to_development_operation,
 
     lut_writer_operation => decode_to_lut_writer_operation,
     lut_writer_address   => decode_to_lut_writer_address,
@@ -477,6 +487,47 @@ begin
     decode_data      => decode_to_lut_writer_data,
 
     run => run,
+
+    clock => clock
+  );
+
+  development : entity work.development
+  generic map (
+    matrix_width             => matrix_width,
+    matrix_height            => matrix_height,
+    matrix_depth             => matrix_depth,
+    matrix_wrap              => matrix_wrap,
+    cell_type_bits           => cell_type_bits,
+    cell_state_bits          => cell_state_bits,
+    rule_storage_address_bits => rule_storage_address_bits
+  )
+  port map (
+    buffer_a_address_z    => development_to_mux_a_address_z,
+    buffer_a_address_y    => development_to_mux_a_address_y,
+    buffer_a_types_write  => development_to_mux_a_types_write,
+    buffer_a_types_in     => development_from_mux_a_types,
+    buffer_a_types_out    => development_to_mux_a_types,
+    buffer_a_states_write => development_to_mux_a_states_write,
+    buffer_a_states_in    => development_from_mux_a_states,
+    buffer_a_states_out   => development_to_mux_a_states,
+
+    buffer_b_address_z    => development_to_mux_b_address_z,
+    buffer_b_address_y    => development_to_mux_b_address_y,
+    buffer_b_types_write  => development_to_mux_b_types_write,
+    buffer_b_types_in     => development_from_mux_b_types,
+    buffer_b_types_out    => development_to_mux_b_types,
+    buffer_b_states_write => development_to_mux_b_states_write,
+    buffer_b_states_in    => development_from_mux_b_states,
+    buffer_b_states_out   => development_to_mux_b_states,
+
+    rule_storage_write   => rule_writer_to_development_write,
+    rule_storage_address => rule_writer_to_development_address,
+    rule_storage_data    => rule_writer_to_development_data,
+
+    decode_operation => decode_to_development_operation,
+
+    run  => run,
+    done => done_development,
 
     clock => clock
   );
