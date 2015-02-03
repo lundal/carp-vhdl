@@ -103,7 +103,6 @@ begin
 
     -- Defaults
     buffer_states_write <= '0';
-    buffer_types_write <= '0';
     update_matrix <= '0';
 
     case (state) is
@@ -258,6 +257,10 @@ begin
     entry_out  => buffer_states_out,
     selected   => buffer_states_selected
   );
+
+  -- Output tie-offs
+  buffer_types_write <= '0';
+  buffer_types_out   <= (others => '0');
 
   -- Internally used out ports
   buffer_address_z <= address_z;
