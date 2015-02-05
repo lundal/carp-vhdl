@@ -31,8 +31,8 @@ entity rule_tester_multi is
     rules_tested_in_parallel : positive := 2
   );
   port (
-    types_slv  : in std_logic_vector(cell_type_bits * neighborhood_size - 1 downto 0);
-    states_slv : in std_logic_vector(cell_state_bits * neighborhood_size - 1 downto 0);
+    neighborhood_types_slv  : in std_logic_vector(cell_type_bits * neighborhood_size - 1 downto 0);
+    neighborhood_states_slv : in std_logic_vector(cell_state_bits * neighborhood_size - 1 downto 0);
 
     rules_slv : in std_logic_vector(rules_tested_in_parallel * (cell_type_bits + 1 + cell_state_bits + 1) * (neighborhood_size + 1) - 1 downto 0);
 
@@ -77,8 +77,8 @@ begin
       neighborhood_size => neighborhood_size
     )
     port map (
-      types_slv  => types_slv,
-      states_slv => states_slv,
+      neighborhood_types_slv  => neighborhood_types_slv,
+      neighborhood_states_slv => neighborhood_states_slv,
 
       rule => rules(i),
 
@@ -95,8 +95,8 @@ begin
     -- Default
     hit        <= '0';
     hit_number <= (others => '0');
-    type_out   <= types_slv(cell_type_bits - 1 downto 0);
-    state_out  <= states_slv(cell_state_bits - 1 downto 0);
+    type_out   <= neighborhood_types_slv(cell_type_bits - 1 downto 0);
+    state_out  <= neighborhood_states_slv(cell_state_bits - 1 downto 0);
 
     -- Select output
     for i in 0 to rules_tested_in_parallel - 1 loop
