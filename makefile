@@ -2,6 +2,8 @@ PROJECT_NAME = toplevel
 BITFILE = $(PROJECT_NAME).bit
 PROGFILE = $(PROJECT_NAME).mcs
 
+.PHONY: clean purge
+
 $(PROGFILE): $(BITFILE)
 	promgen -w -p mcs -c FF -o $(PROGFILE) -s 4096 -u 0000 $(BITFILE) -spi
 
@@ -16,5 +18,9 @@ flash: $(PROGFILE)
 	impact -batch flash.tmp
 
 clean:
+	git clean -Xdf
+
+purge::
 	git clean -xdf
+	git reset --hard
 
