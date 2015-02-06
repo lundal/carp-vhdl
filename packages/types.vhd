@@ -42,6 +42,10 @@ package types is
     NOP, STORE
   );
 
+  type rule_writer_operation_type is (
+    NOP, STORE
+  );
+
   type development_operation_type is (
     NOP, DEVELOP
   );

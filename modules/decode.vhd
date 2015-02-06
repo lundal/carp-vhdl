@@ -32,7 +32,8 @@ entity decode is
     cell_type_bits   : positive := 8;
     cell_state_bits  : positive := 1;
     cell_write_width : positive := 8;
-    instruction_bits : positive := 256
+    instruction_bits : positive := 256;
+    rule_amount      : positive := 256
   );
   port (
     instruction : in std_logic_vector(instruction_bits - 1 downto 0);
@@ -55,6 +56,10 @@ entity decode is
     lut_writer_address   : out std_logic_vector(cell_type_bits - 1 downto 0);
     lut_writer_data      : out std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
 
+    rule_writer_operation : out rule_writer_operation_type;
+    rule_writer_address   : out std_logic_vector(bits(rule_amount) - 1 downto 0);
+    rule_writer_data      : out std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
+
     cell_buffer_swap       : out std_logic;
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
     send_buffer_mux_select : out send_buffer_mux_select_type;
@@ -75,6 +80,8 @@ begin
   assert (matrix_width <= 256)  report "Unsupported matrix_width. Supported values are [2-256]."  severity FAILURE;
   assert (matrix_height <= 256) report "Unsupported matrix_height. Supported values are [1-256]." severity FAILURE;
   assert (matrix_depth <= 256)  report "Unsupported matrix_depth. Supported values are [1-256]."  severity FAILURE;
+  assert (cell_type_bits <= 32) report "Unsupported cell_type_bits. Supported values are [1-32]."  severity FAILURE; -- Write LUT
+  assert (rule_amount <= 2**32) report "Unsupported rule_amount. Supported values are [1-2**32]."  severity FAILURE; -- Write RULE
 
   instruction_opcode <= instruction (4 downto 0);
 
@@ -86,6 +93,7 @@ begin
     cellular_automata_operation <= NOP;
     development_operation <= NOP;
     lut_writer_operation <= NOP;
+    rule_writer_operation <= NOP;
     cell_buffer_swap <= '0';
 
     case instruction_opcode is
@@ -173,6 +181,11 @@ begin
         lut_writer_operation <= STORE;
         lut_writer_address   <= instruction(lut_writer_address'left + 32 downto 32);
         lut_writer_data      <= instruction(lut_writer_data'left + 64 downto 64);
+
+      when INSTRUCTION_WRITE_RULE =>
+        rule_writer_operation <= STORE;
+        rule_writer_address   <= instruction(rule_writer_address'left + 32 downto 32);
+        rule_writer_data      <= instruction(rule_writer_data'left + 64 downto 64);
 
       when INSTRUCTION_DEVSTEP =>
         development_operation  <= DEVELOP;

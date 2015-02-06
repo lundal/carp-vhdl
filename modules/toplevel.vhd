@@ -96,6 +96,10 @@ architecture rtl of toplevel is
   signal decode_to_lut_writer_address   : std_logic_vector(cell_type_bits - 1 downto 0);
   signal decode_to_lut_writer_data      : std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
 
+  signal decode_to_rule_writer_operation : rule_writer_operation_type;
+  signal decode_to_rule_writer_address   : std_logic_vector(bits(rule_amount) - 1 downto 0);
+  signal decode_to_rule_writer_data      : std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
+
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
@@ -169,7 +173,7 @@ architecture rtl of toplevel is
 
   -- Rule writer
   signal rule_writer_to_development_write   : std_logic;
-  signal rule_writer_to_development_address : std_logic_vector(rule_storage_address_bits - 1 downto 0);
+  signal rule_writer_to_development_address : std_logic_vector(bits(rule_amount) - 1 downto 0);
   signal rule_writer_to_development_data    : std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
 
 begin
@@ -235,7 +239,8 @@ begin
     cell_type_bits   => cell_type_bits,
     cell_state_bits  => cell_state_bits,
     cell_write_width => cell_write_width,
-    instruction_bits => instruction_bits
+    instruction_bits => instruction_bits,
+    rule_amount      => rule_amount
   )
   port map (
     instruction => decode_from_fetch_instruction,
@@ -257,6 +262,10 @@ begin
     lut_writer_operation => decode_to_lut_writer_operation,
     lut_writer_address   => decode_to_lut_writer_address,
     lut_writer_data      => decode_to_lut_writer_data,
+
+    rule_writer_operation => decode_to_rule_writer_operation,
+    rule_writer_address   => decode_to_rule_writer_address,
+    rule_writer_data      => decode_to_rule_writer_data,
 
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
@@ -486,6 +495,27 @@ begin
     clock => clock
   );
 
+  rule_writer : entity work.rule_writer
+  generic map (
+    cell_state_bits   => cell_state_bits,
+    cell_type_bits    => cell_type_bits,
+    neighborhood_size => if_else(matrix_depth = 1, 5, 7),
+    rule_amount       => rule_amount
+  )
+  port map (
+    rule_storage_write   => rule_writer_to_development_write,
+    rule_storage_address => rule_writer_to_development_address,
+    rule_storage_data    => rule_writer_to_development_data,
+
+    decode_operation => decode_to_rule_writer_operation,
+    decode_address   => decode_to_rule_writer_address,
+    decode_data      => decode_to_rule_writer_data,
+
+    run => run,
+
+    clock => clock
+  );
+
   development : entity work.development
   generic map (
     matrix_width             => matrix_width,
@@ -494,7 +524,8 @@ begin
     matrix_wrap              => matrix_wrap,
     cell_type_bits           => cell_type_bits,
     cell_state_bits          => cell_state_bits,
-    rule_storage_address_bits => rule_storage_address_bits
+    rule_amount              => rule_amount,
+    rules_tested_in_parallel => rules_tested_in_parallel
   )
   port map (
     buffer_a_address_z    => development_to_mux_a_address_z,
