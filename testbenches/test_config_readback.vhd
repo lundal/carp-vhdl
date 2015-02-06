@@ -3,10 +3,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity toplevel_sim_tb is
-end toplevel_sim_tb;
+entity test_config_readback is
+end test_config_readback;
 
-architecture behavior of toplevel_sim_tb is 
+architecture behavior of test_config_readback is 
 
   -- UUT
   signal tx_buffer_data  : std_logic_vector(31 downto 0) := (others => '0');
@@ -24,7 +24,7 @@ architecture behavior of toplevel_sim_tb is
 
 begin
 
-  uut: entity work.toplevel_sim
+  toplevel : entity work.toplevel_sim
   generic map (
     tx_buffer_address_bits => 10,
     rx_buffer_address_bits => 10,
@@ -38,7 +38,9 @@ begin
     cell_state_bits        => 1,
     cell_write_width       => 8,
     instruction_bits       => 256,
-    lut_configuration_bits => 8
+    lut_configuration_bits => 8,
+    rule_amount            => 256,
+    rules_tested_in_parallel => 2
   )
   port map(
     sim_tx_buffer_data  => tx_buffer_data,
@@ -80,9 +82,33 @@ begin
 
     -- Instructions
 
+    -- Fill (x42, 1)
     wait for clock_period;
     rx_buffer_write <= '1';
     rx_buffer_data <= x"0042010B";
+
+    -- State(3,2,1) = 0
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"0302012C";
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000000";
+
+    -- Swap
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000014";
+
+    -- Configure
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000012";
+
+    -- Readback
+    wait for clock_period;
+    rx_buffer_write <= '1';
+    rx_buffer_data <= x"00000013";
 
     -- NULL
 
