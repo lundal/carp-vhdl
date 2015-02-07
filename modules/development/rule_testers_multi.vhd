@@ -62,7 +62,7 @@ begin
     )
     port map (
       neighborhood_types_slv  => neighborhoods_types_slv((i+1) * cell_type_bits * neighborhood_size - 1 downto i * cell_type_bits * neighborhood_size),
-      neighborhood_states_slv => neighborhoods_types_slv((i+1) * cell_state_bits * neighborhood_size - 1 downto i * cell_state_bits * neighborhood_size),
+      neighborhood_states_slv => neighborhoods_states_slv((i+1) * cell_state_bits * neighborhood_size - 1 downto i * cell_state_bits * neighborhood_size),
 
       rules_slv => rules_slv,
 
