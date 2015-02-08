@@ -61,11 +61,11 @@ architecture rtl of toplevel is
   signal reset : std_logic;
 
   -- Pipeline control
-  signal run                     : std_logic := '1';
-  signal done_fetch              : std_logic := '1';
-  signal done_cell_writer_reader : std_logic := '1';
-  signal done_cellular_automata  : std_logic := '1';
-  signal done_development        : std_logic := '1';
+  signal run                     : std_logic;
+  signal done_fetch              : std_logic;
+  signal done_cell_writer_reader : std_logic;
+  signal done_cellular_automata  : std_logic;
+  signal done_development        : std_logic;
 
   -- Communication
   signal tx_buffer_data  : std_logic_vector(31 downto 0);
