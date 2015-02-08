@@ -147,6 +147,7 @@ begin
         -- Next cell buffer address
         address_y <= std_logic_vector(unsigned(address_y) + 1);
         if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
+          address_y <= (others => '0');
           address_z <= std_logic_vector(unsigned(address_z) + 1);
         end if;
         -- Copy LUTs to shift register and begin configuration of first row
@@ -165,6 +166,7 @@ begin
           -- Next cell buffer address
           address_y <= std_logic_vector(unsigned(address_y) + 1);
           if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
+            address_y <= (others => '0');
             address_z <= std_logic_vector(unsigned(address_z) + 1);
           end if;
           -- Copy LUTs to shift register and begin configuration of next row
@@ -183,6 +185,7 @@ begin
         -- Next cell buffer address
         address_y <= std_logic_vector(unsigned(address_y) + 1);
         if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
+          address_y <= (others => '0');
           address_z <= std_logic_vector(unsigned(address_z) + 1);
           if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
             state <= IDLE;
