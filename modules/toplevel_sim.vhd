@@ -38,7 +38,7 @@ entity toplevel_sim is
     instruction_bits       : positive := 256; -- Must be 256 due to implementation of fetch_communication
     lut_configuration_bits : positive := 8;
     rule_amount            : positive := 256;
-    rules_tested_in_parallel : positive := 4
+    rules_tested_in_parallel : positive := 2
   );
   port (
     sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
