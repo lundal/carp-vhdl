@@ -75,7 +75,7 @@ begin
 
       -- Check if some rules from storage needs to be cleared
       for i in 0 to rules_tested_in_parallel - 1 loop
-        if (rules_current + i < unsigned(rules_active)) then
+        if (rules_current + i <= unsigned(rules_active)) then
           rules_clear(i) <= '0';
         else
           rules_clear(i) <= '1';
@@ -88,6 +88,8 @@ begin
     end if;
   end process;
 
+  -- Clear rules that should not be tested
+  -- Required for when (rule_amount mod rules_active != 0)
   rule_clearer : for i in 0 to rules_tested_in_parallel - 1 generate
     rules_slv((i+1) * rule_size - 1 downto (i) * rule_size)
       <= (others => '0') when (rules_clear(i) = '1') else
