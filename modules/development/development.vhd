@@ -33,7 +33,7 @@ entity development is
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1;
     rule_amount              : positive := 256;
-    rules_tested_in_parallel : positive := 2
+    rules_tested_in_parallel : positive := 8
   );
   port (
     -- Buffer - Port A
@@ -74,7 +74,7 @@ architecture rtl of development is
   constant neighborhood_size : positive := if_else(matrix_depth = 1, 5, 7);
 
   type state_type is (
-    IDLE, FETCH_FIRST, MAIN_LOOP, TEST_LAST
+    IDLE, FETCH_FIRST, MAIN_LOOP, TEST_LAST, WAIT_1
   );
 
   signal state : state_type := IDLE;
@@ -93,24 +93,29 @@ architecture rtl of development is
   signal rule_fetcher_to_storage_address_slv : std_logic_vector(rules_tested_in_parallel * rule_storage_address'length - 1 downto 0);
   signal rule_fetcher_from_storage_data_slv  : std_logic_vector(rules_tested_in_parallel * rule_storage_data'length - 1 downto 0);
   signal rule_fetcher_to_tester_rules_slv    : std_logic_vector(rules_tested_in_parallel * rule_storage_data'length - 1 downto 0);
+  signal rule_fetcher_to_tester_rules_first  : std_logic;
   signal rule_fetcher_run  : std_logic;
   signal rule_fetcher_done : std_logic;
 
   -- Rule Tester
   signal rule_testers_types_slv   : std_logic_vector(matrix_width * cell_type_bits * if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
   signal rule_testers_states_slv  : std_logic_vector(matrix_width * cell_state_bits * if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
-  signal rule_testers_hits        : std_logic_vector(matrix_width - 1 downto 0);
-  signal rule_testers_hits_number : std_logic_vector(matrix_width * bits(rules_tested_in_parallel) - 1 downto 0);
+  signal rule_testers_hits_slv    : std_logic_vector(matrix_width * rules_tested_in_parallel - 1 downto 0);
 
   -- Write signals
   signal write_address_z : std_logic_vector(bits(matrix_depth) - 1 downto 0);
   signal write_address_y : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal write_enable    : std_logic := '0';
 
-  -- Delayed signals
-  signal write_address_z_delayed : std_logic_vector(bits(matrix_depth) - 1 downto 0);
-  signal write_address_y_delayed : std_logic_vector(bits(matrix_height) - 1 downto 0);
-  signal write_enable_delayed    : std_logic := '0';
+  -- Signals delayed once
+  signal write_address_z_delayed_1 : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal write_address_y_delayed_1 : std_logic_vector(bits(matrix_height) - 1 downto 0);
+  signal write_enable_delayed_1    : std_logic := '0';
+
+  -- Signals delayed twice
+  signal write_address_z_delayed_2 : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal write_address_y_delayed_2 : std_logic_vector(bits(matrix_height) - 1 downto 0);
+  signal write_enable_delayed_2    : std_logic := '0';
 
   -- Internally used out-signals
   signal done_i : std_logic := '1';
@@ -195,10 +200,15 @@ begin
           cell_fetcher_address_z <= (others => '0');
           -- Reset write signals
           write_enable <= '0';
-          -- Return to idle
-          state <= IDLE;
-          done_i <= '1';
+          -- Wait N-1 cycles where N is the amount of cycles the rule tester uses
+          -- This is needed to assure everything is done when returning to idle
+          state <= WAIT_1;
         end if;
+
+      when WAIT_1 =>
+        -- Return to idle
+        state <= IDLE;
+        done_i <= '1';
 
     end case;
   end process;
@@ -215,7 +225,7 @@ begin
       when MAIN_LOOP =>
         cell_fetcher_run <= cell_fetcher_done and rule_fetcher_done;
         rule_fetcher_run <= cell_fetcher_done and rule_fetcher_done;
-      when TEST_LAST =>
+      when others =>
         cell_fetcher_run <= '0';
         rule_fetcher_run <= '0';
     end case;
@@ -224,9 +234,14 @@ begin
   -- Propagate delayed signals
   process begin
     wait until rising_edge(clock);
-    write_address_z_delayed <= write_address_z;
-    write_address_y_delayed <= write_address_y;
-    write_enable_delayed    <= write_enable;
+    -- One cycle
+    write_address_z_delayed_1 <= write_address_z;
+    write_address_y_delayed_1 <= write_address_y;
+    write_enable_delayed_1    <= write_enable;
+    -- Two cycles
+    write_address_z_delayed_2 <= write_address_z_delayed_1;
+    write_address_y_delayed_2 <= write_address_y_delayed_1;
+    write_enable_delayed_2    <= write_enable_delayed_1;
   end process;
 
   cell_fetcher : entity work.cell_fetcher
@@ -289,6 +304,7 @@ begin
 
     rules_active => rules_active,
     rules_slv    => rule_fetcher_to_tester_rules_slv,
+    rules_first => rule_fetcher_to_tester_rules_first,
 
     run  => rule_fetcher_run,
     done => rule_fetcher_done,
@@ -308,25 +324,25 @@ begin
     neighborhoods_types_slv  => rule_testers_types_slv,
     neighborhoods_states_slv => rule_testers_states_slv,
 
-    rules_slv => rule_fetcher_to_tester_rules_slv,
+    rules_slv   => rule_fetcher_to_tester_rules_slv,
+    rules_first => rule_fetcher_to_tester_rules_first,
 
-    types_out  => buffer_b_types_out,
-    states_out => buffer_b_states_out,
+    hits_slv      => rule_testers_hits_slv,
 
-    hits        => rule_testers_hits,
-    hits_number => rule_testers_hits_number,
+    results_type  => buffer_b_types_out,
+    results_state => buffer_b_states_out,
 
     clock => clock
   );
 
   -- Buffer write signals
-  -- Note: Delayed as many cycles as the testers take (one)
-  buffer_b_address_z    <= write_address_z_delayed;
-  buffer_b_address_y    <= write_address_y_delayed;
-  buffer_b_types_write  <= write_enable_delayed;
-  buffer_b_states_write <= write_enable_delayed;
+  -- Note: Delayed as many cycles as the testers take (two)
+  buffer_b_address_z    <= write_address_z_delayed_2;
+  buffer_b_address_y    <= write_address_y_delayed_2;
+  buffer_b_types_write  <= write_enable_delayed_2;
+  buffer_b_states_write <= write_enable_delayed_2;
 
-  -- Internally used out-signals
+  -- Internally used out ports
   done <= done_i;
 
 end rtl;

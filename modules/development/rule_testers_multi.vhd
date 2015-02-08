@@ -8,7 +8,8 @@
 -- Last update: 2015-02-06
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: Tests multiple development rules against cell neighborhoods
+-- Description: Tests multiple development rules against cell neighborhoods.
+--            : Note: Output is available after one clock cycle
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -29,20 +30,20 @@ entity rule_testers_multi is
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1;
     neighborhood_size        : positive := 7;
-    rules_tested_in_parallel : positive := 2;
+    rules_tested_in_parallel : positive := 8;
     cells_tested_in_parallel : positive := 8
   );
   port (
     neighborhoods_types_slv  : in std_logic_vector(cells_tested_in_parallel * cell_type_bits * neighborhood_size - 1 downto 0);
     neighborhoods_states_slv : in std_logic_vector(cells_tested_in_parallel * cell_state_bits * neighborhood_size - 1 downto 0);
 
-    rules_slv : in std_logic_vector(rules_tested_in_parallel * (cell_type_bits + 1 + cell_state_bits + 1) * (neighborhood_size + 1) - 1 downto 0);
+    rules_slv   : in std_logic_vector(rules_tested_in_parallel * (cell_type_bits + 1 + cell_state_bits + 1) * (neighborhood_size + 1) - 1 downto 0);
+    rules_first : in std_logic;
 
-    types_out  : out std_logic_vector(cells_tested_in_parallel * cell_type_bits - 1 downto 0);
-    states_out : out std_logic_vector(cells_tested_in_parallel * cell_state_bits - 1 downto 0);
+    hits_slv : out std_logic_vector(cells_tested_in_parallel * rules_tested_in_parallel - 1 downto 0);
 
-    hits        : out std_logic_vector(cells_tested_in_parallel - 1 downto 0);
-    hits_number : out std_logic_vector(cells_tested_in_parallel * bits(rules_tested_in_parallel) - 1 downto 0);
+    results_type  : out std_logic_vector(cells_tested_in_parallel * cell_type_bits - 1 downto 0);
+    results_state : out std_logic_vector(cells_tested_in_parallel * cell_state_bits - 1 downto 0);
 
     clock : in std_logic
   );
@@ -65,12 +66,12 @@ begin
       neighborhood_states_slv => neighborhoods_states_slv((i+1) * cell_state_bits * neighborhood_size - 1 downto i * cell_state_bits * neighborhood_size),
 
       rules_slv => rules_slv,
+      rules_first => rules_first,
 
-      type_out  => types_out((i+1) * cell_type_bits - 1 downto i * cell_type_bits),
-      state_out => states_out((i+1) * cell_state_bits - 1 downto i * cell_state_bits),
+      hits => hits_slv((i+1) * rules_tested_in_parallel - 1 downto i * rules_tested_in_parallel),
 
-      hit        => hits(i),
-      hit_number => hits_number((i+1) * bits(rules_tested_in_parallel) - 1 downto i * bits(rules_tested_in_parallel)),
+      result_type  => results_type((i+1) * cell_type_bits - 1 downto i * cell_type_bits),
+      result_state => results_state((i+1) * cell_state_bits - 1 downto i * cell_state_bits),
 
       clock => clock
     );

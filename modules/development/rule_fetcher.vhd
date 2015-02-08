@@ -36,6 +36,7 @@ entity rule_fetcher is
 
     rules_active : in  std_logic_vector(bits(rule_amount) - 1 downto 0);
     rules_slv    : out std_logic_vector(rules_tested_in_parallel * rule_size - 1 downto 0);
+    rules_first  : out std_logic;
 
     run  : in std_logic;
     done : out std_logic;
@@ -80,6 +81,9 @@ begin
           rules_clear(i) <= '1';
         end if;
       end loop;
+
+      -- Mark the first rules
+      rules_first <= run and done_i;
 
     end if;
   end process;

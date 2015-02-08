@@ -8,7 +8,8 @@
 -- Last update: 2015-02-03
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: Tests multiple development rules against a cell neighborhood
+-- Description: Tests multiple development rules against a cell neighborhood.
+--            : Note: Output is available after two clock cycles.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -28,19 +29,20 @@ entity rule_tester_multi is
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1;
     neighborhood_size        : positive := 7;
-    rules_tested_in_parallel : positive := 2
+    rule_amount              : positive := 256;
+    rules_tested_in_parallel : positive := 8
   );
   port (
     neighborhood_types_slv  : in std_logic_vector(cell_type_bits * neighborhood_size - 1 downto 0);
     neighborhood_states_slv : in std_logic_vector(cell_state_bits * neighborhood_size - 1 downto 0);
 
-    rules_slv : in std_logic_vector(rules_tested_in_parallel * (cell_type_bits + 1 + cell_state_bits + 1) * (neighborhood_size + 1) - 1 downto 0);
+    rules_slv   : in std_logic_vector(rules_tested_in_parallel * (cell_type_bits + 1 + cell_state_bits + 1) * (neighborhood_size + 1) - 1 downto 0);
+    rules_first : in std_logic;
 
-    type_out  : out std_logic_vector(cell_type_bits - 1 downto 0);
-    state_out : out std_logic_vector(cell_state_bits - 1 downto 0);
+    hits : out std_logic_vector(rules_tested_in_parallel - 1 downto 0);
 
-    hit        : out std_logic;
-    hit_number : out std_logic_vector(bits(rules_tested_in_parallel) - 1 downto 0);
+    result_type  : out std_logic_vector(cell_type_bits - 1 downto 0);
+    result_state : out std_logic_vector(cell_state_bits - 1 downto 0);
 
     clock : in std_logic
   );
@@ -53,15 +55,17 @@ architecture rtl of rule_tester_multi is
 
   type rules_type is array (rules_tested_in_parallel - 1 downto 0) of std_logic_vector(rule_size - 1 downto 0);
 
-  signal rules : rules_type;
+  signal rules           : rules_type;
+  signal rules_first_slv : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
+
+  signal change_types  : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
+  signal change_states : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
 
   type types_type  is array (rules_tested_in_parallel - 1 downto 0) of std_logic_vector(cell_type_bits - 1 downto 0);
   type states_type is array (rules_tested_in_parallel - 1 downto 0) of std_logic_vector(cell_state_bits - 1 downto 0);
 
-  signal types  : types_type;
-  signal states : states_type;
-
-  signal hits : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
+  signal result_types  : types_type;
+  signal result_states : states_type;
 
 begin
 
@@ -80,34 +84,38 @@ begin
       neighborhood_types_slv  => neighborhood_types_slv,
       neighborhood_states_slv => neighborhood_states_slv,
 
-      rule => rules(i),
+      rule       => rules(i),
+      rule_first => rules_first_slv(i),
 
-      type_out  => types(i),
-      state_out => states(i),
+      hit => hits(i),
 
-      hit => hits(i)
+      change_type  => change_types(i),
+      change_state => change_states(i),
+
+      result_type  => result_types(i),
+      result_state => result_states(i),
+
+      clock => clock
     );
   end generate;
 
+  -- Propagate rule_first signal
+  process (rules_first) begin
+    rules_first_slv    <= (others => '0');
+    rules_first_slv(0) <= rules_first;
+  end process;
+
+  -- Copy output from tester with hit
   process begin
     wait until rising_edge(clock);
-
-    -- Default
-    hit        <= '0';
-    hit_number <= (others => '0');
-    type_out   <= neighborhood_types_slv(cell_type_bits - 1 downto 0);
-    state_out  <= neighborhood_states_slv(cell_state_bits - 1 downto 0);
-
-    -- Select output
     for i in 0 to rules_tested_in_parallel - 1 loop
-      if (hits(i) = '1') then
-        hit        <= '1';
-        hit_number <= std_logic_vector(to_unsigned(i, hit_number'length));
-        type_out   <= types(i);
-        state_out  <= states(i);
+      if (change_types(i) = '1') then
+        result_type  <= result_types(i);
+      end if;
+      if (change_states(i) = '1') then
+        result_state <= result_states(i);
       end if;
     end loop;
-
   end process;
 
 end rtl;
