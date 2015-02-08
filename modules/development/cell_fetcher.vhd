@@ -96,6 +96,9 @@ architecture rtl of cell_fetcher is
   signal address_y_center   : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal address_y_positive : std_logic_vector(bits(matrix_height) - 1 downto 0);
 
+  -- Internally used out-signals
+  signal done_i : std_logic := '1';
+
 begin
 
   array_to_slv : for i in 0 to matrix_width * neighborhood_size - 1 generate
@@ -138,7 +141,7 @@ begin
         buffer_address_y <= address_y;
         if (run = '1') then
           address_state <= FETCH_Y_POSITIVE;
-          done <= '0';
+          done_i <= '0';
         end if;
 
       when FETCH_Y_POSITIVE =>
@@ -171,7 +174,7 @@ begin
 
       when WAIT_2 =>
         address_state <= FETCH_CENTER;
-        done <= '1';
+        done_i <= '1';
 
     end case;
   end process;
@@ -304,5 +307,12 @@ begin
     end generate;
 
   end generate;
+
+  -- Output tie-offs
+  buffer_types_out <= (others => '0');
+  buffer_states_out <= (others => '0');
+
+  -- Internally used out-signals
+  done <= done_i;
 
 end rtl;
