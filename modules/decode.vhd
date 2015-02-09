@@ -83,7 +83,6 @@ begin
   assert (matrix_height <= 256) report "Unsupported matrix_height. Supported values are [1-256]." severity FAILURE;
   assert (matrix_depth <= 256)  report "Unsupported matrix_depth. Supported values are [1-256]."  severity FAILURE;
   assert (cell_type_bits <= 32) report "Unsupported cell_type_bits. Supported values are [1-32]."  severity FAILURE; -- Write LUT
-  assert (rule_amount <= 2**32) report "Unsupported rule_amount. Supported values are [1-2**32]."  severity FAILURE; -- Write RULE
 
   instruction_opcode <= instruction (4 downto 0);
 
