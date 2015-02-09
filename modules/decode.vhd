@@ -38,6 +38,8 @@ entity decode is
   port (
     instruction : in std_logic_vector(instruction_bits - 1 downto 0);
 
+    information_sender_operation : out information_sender_operation_type;
+
     cell_writer_reader_operation : out cell_writer_reader_operation_type;
     cell_writer_reader_address_z : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
     cell_writer_reader_address_y : out std_logic_vector(bits(matrix_height) - 1 downto 0);
@@ -89,6 +91,7 @@ begin
     wait until rising_edge(clock) and run = '1';
 
     -- Defaults
+    information_sender_operation <= NOP;
     cell_writer_reader_operation <= NOP;
     cellular_automata_operation <= NOP;
     development_operation <= NOP;
@@ -97,6 +100,10 @@ begin
     cell_buffer_swap <= '0';
 
     case instruction_opcode is
+
+      when INSTRUCTION_GET_INFORMATION =>
+        information_sender_operation <= SEND;
+        send_buffer_mux_select       <= INFORMATION_SENDER;
 
       when INSTRUCTION_READ_STATE_ONE =>
         cell_writer_reader_operation <= READ_STATE_ONE;

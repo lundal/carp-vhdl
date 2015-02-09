@@ -58,6 +58,16 @@ package functions is
     when_false : integer
   ) return integer;
 
+  -- Converts boolean to std_logic
+  function to_std_logic(
+    input : boolean
+  ) return std_logic;
+
+  -- Converts std_logic to boolean
+  function to_boolean(
+    input : std_logic
+  ) return boolean;
+
 end functions;
 
 package body functions is
@@ -119,5 +129,24 @@ package body functions is
       return when_false;
     end if;
   end if_else;
+
+  function to_std_logic(
+    input : boolean
+  ) return std_logic is
+  begin
+    if (input) then
+      return '1';
+    else
+      return '0';
+    end if;
+  end to_std_logic;
+
+  -- Converts std_logic to boolean
+  function to_boolean(
+    input : std_logic
+  ) return boolean is
+  begin
+    return input = '1';
+  end to_boolean;
 
 end functions;

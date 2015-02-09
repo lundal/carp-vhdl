@@ -28,6 +28,10 @@ package types is
     CELL_WRITER_READER, INFORMATION_SENDER
   );
 
+  type information_sender_operation_type is (
+    NOP, SEND
+  );
+
   type cell_writer_reader_operation_type is (
     NOP, FILL_ALL,
     READ_STATE_ONE, READ_STATE_ALL, READ_TYPE_ONE, READ_TYPE_ALL,

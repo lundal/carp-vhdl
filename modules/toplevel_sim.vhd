@@ -66,6 +66,7 @@ architecture rtl of toplevel_sim is
   -- Pipeline control
   signal run                     : std_logic;
   signal done_fetch              : std_logic;
+  signal done_information_sender : std_logic;
   signal done_cell_writer_reader : std_logic;
   signal done_cellular_automata  : std_logic;
   signal done_development        : std_logic;
@@ -81,6 +82,8 @@ architecture rtl of toplevel_sim is
 
   -- Decode
   signal decode_from_fetch_instruction : std_logic_vector(instruction_bits - 1 downto 0);
+
+  signal decode_to_information_sender_operation : information_sender_operation_type;
 
   signal decode_to_cell_writer_reader_operation : cell_writer_reader_operation_type;
   signal decode_to_cell_writer_reader_address_z : std_logic_vector(bits(matrix_depth) - 1 downto 0);
@@ -107,6 +110,11 @@ architecture rtl of toplevel_sim is
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
+
+  -- Information Sender
+  signal information_sender_to_send_mux_data    : std_logic_vector(31 downto 0);
+  signal information_sender_from_send_mux_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal information_sender_to_send_mux_write   : std_logic;
 
   -- Cell Writer Reader
   signal cell_writer_reader_to_mux_address_z    : std_logic_vector(bits(matrix_depth) - 1 downto 0);
@@ -184,7 +192,7 @@ begin
 
   leds <= "0101";
 
-  run <= done_fetch and done_cell_writer_reader and done_cellular_automata and done_development;
+  run <= done_fetch and done_information_sender and done_cell_writer_reader and done_cellular_automata and done_development;
 
   -----------------------------------------------------------------------------
 
@@ -252,6 +260,8 @@ begin
   port map (
     instruction => decode_from_fetch_instruction,
 
+    information_sender_operation => decode_to_information_sender_operation,
+
     cell_writer_reader_operation => decode_to_cell_writer_reader_operation,
     cell_writer_reader_address_z => decode_to_cell_writer_reader_address_z,
     cell_writer_reader_address_y => decode_to_cell_writer_reader_address_y,
@@ -279,6 +289,29 @@ begin
     send_buffer_mux_select => decode_to_send_buffer_mux_select,
 
     run  => run,
+
+    clock => clock
+  );
+
+  information_sender : entity work.information_sender
+  generic map (
+    matrix_width             => matrix_width,
+    matrix_height            => matrix_height,
+    matrix_depth             => matrix_depth,
+    matrix_wrap              => matrix_wrap,
+    cell_type_bits           => cell_type_bits,
+    cell_state_bits          => cell_state_bits,
+    send_buffer_address_bits => tx_buffer_address_bits
+  )
+  port map (
+    send_buffer_data  => information_sender_to_send_mux_data,
+    send_buffer_count => information_sender_from_send_mux_count,
+    send_buffer_write => information_sender_to_send_mux_write,
+
+    decode_operation => decode_to_information_sender_operation,
+
+    run  => run,
+    done => done_information_sender,
 
     clock => clock
   );
@@ -435,9 +468,9 @@ begin
     cell_writer_reader_count => cell_writer_reader_from_send_mux_count,
     cell_writer_reader_write => cell_writer_reader_to_send_mux_write,
 
-    information_sender_data  => (others => '0'),
-    information_sender_count => open,
-    information_sender_write => '0',
+    information_sender_data  => information_sender_to_send_mux_data,
+    information_sender_count => information_sender_from_send_mux_count,
+    information_sender_write => information_sender_to_send_mux_write,
 
     send_buffer_data  => tx_buffer_data,
     send_buffer_count => tx_buffer_count,
