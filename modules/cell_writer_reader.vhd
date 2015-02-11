@@ -107,6 +107,10 @@ architecture rtl of cell_writer_reader is
   signal type_new   : std_logic_vector(cell_type_bits - 1 downto 0);
   signal types_new  : std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
 
+  -- Cell buffer source
+  type buffer_source_type is (ONE, ROW, REPEATED);
+  signal buffer_source : buffer_source_type;
+
   -- Internally used out ports
   signal done_i : std_logic := '1';
 
@@ -117,7 +121,7 @@ begin
 
   buffer_has_space_one <= signed(send_buffer_count) /= -1;
 
-  repeated : for i in 0 to matrix_width - 1 generate
+  repeated_states_and_types : for i in 0 to matrix_width - 1 generate
     state_repeated((i+1)*cell_state_bits - 1 downto i*cell_state_bits) <= decode_state;
     type_repeated((i+1)*cell_type_bits - 1 downto i*cell_type_bits) <= decode_type;
   end generate;
@@ -150,9 +154,8 @@ begin
             when FILL_ALL =>
               address_z <= (others => '0');
               address_y <= (others => '0');
-              buffer_types_out    <= type_repeated;
+              buffer_source <= REPEATED;
               buffer_types_write  <= '1';
-              buffer_states_out   <= state_repeated;
               buffer_states_write <= '1';
               state <= FILL;
             when WRITE_STATE_ONE | WRITE_STATE_ROW =>
@@ -192,9 +195,9 @@ begin
       when WRITE_STATE =>
         case operation is
           when WRITE_STATE_ONE =>
-            buffer_states_out <= combined_state;
+            buffer_source <= ONE;
           when WRITE_STATE_ROW =>
-            buffer_states_out <= combined_states;
+            buffer_source <= ROW;
           when others =>
             null;
         end case;
@@ -206,9 +209,9 @@ begin
       when WRITE_TYPE =>
         case operation is
           when WRITE_TYPE_ONE =>
-            buffer_types_out <= combined_type;
+            buffer_source <= ONE;
           when WRITE_TYPE_ROW =>
-            buffer_types_out <= combined_types;
+            buffer_source <= ROW;
           when others =>
             null;
         end case;
@@ -279,7 +282,8 @@ begin
   end process;
 
   -- This part is not clocked 
-  process (send_buffer_source, shifted_states, shifted_types) begin
+  process (send_buffer_source, shifted_states, shifted_types,
+           buffer_source, combined_state, combined_type, combined_states, combined_types) begin
     -- Default
     send_buffer_data <= (others => '0');
 
@@ -292,6 +296,18 @@ begin
         send_buffer_data(cell_type_bits - 1 downto 0) <= shifted_types(cell_type_bits - 1 downto 0);
       when TYPE_ROW =>
         send_buffer_data(types_per_word*cell_type_bits - 1 downto 0) <= shifted_types(types_per_word*cell_type_bits - 1 downto 0);
+    end case;
+
+    case buffer_source is
+      when ONE =>
+        buffer_states_out <= combined_state;
+        buffer_types_out  <= combined_type;
+      when ROW =>
+        buffer_states_out <= combined_states;
+        buffer_types_out  <= combined_types;
+      when REPEATED =>
+        buffer_states_out <= state_repeated;
+        buffer_types_out  <= type_repeated;
     end case;
   end process;
 
