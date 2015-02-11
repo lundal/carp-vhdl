@@ -96,6 +96,7 @@ architecture rtl of cell_writer_reader is
   -- Shifted signals
   signal shifted_states : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal shifted_types  : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+  signal shift_amount   : std_logic_vector(bits(matrix_width) - 1 downto 0);
 
   -- Input registers
   signal operation  : cell_writer_reader_operation_type;
@@ -240,6 +241,7 @@ begin
         if (buffer_has_space_one) then
           send_buffer_source <= STATE_ROW;
           send_buffer_write <= '1';
+          shift_amount <= address_x;
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each state and row
           if (unsigned(address_x) = states_per_word*state_words_per_row - states_per_word) then
@@ -261,6 +263,7 @@ begin
         if (buffer_has_space_one) then
           send_buffer_source <= TYPE_ROW;
           send_buffer_write <= '1';
+          shift_amount <= address_x;
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each type and row
           if (unsigned(address_x) = types_per_word*type_words_per_row - types_per_word) then
@@ -384,7 +387,7 @@ begin
     data_out     => shifted_states,
     left         => '0',
     arithmetic   => '0',
-    shift_amount => address_x
+    shift_amount => shift_amount
   );
 
   shifter_type : entity work.shifter_dynamic
@@ -398,7 +401,7 @@ begin
     data_out     => shifted_types,
     left         => '0',
     arithmetic   => '0',
-    shift_amount => address_x
+    shift_amount => shift_amount
   );
 
   -- Internally used out ports
