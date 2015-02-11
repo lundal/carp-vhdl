@@ -159,7 +159,7 @@ begin
 
       when CONFIGURE =>
         -- Shift LUT register to get next configuration values
-        lut_storage_shift_register <= std_logic_vector(shift_right(unsigned(lut_storage_shift_register), 1));
+        lut_storage_shift_register <= std_logic_vector(shift_left(unsigned(lut_storage_shift_register), 1));
         lut_storage_shift_amount <= lut_storage_shift_amount + 1;
         -- If these are the last configuration bits, proceed to next row
         if (lut_storage_shift_amount = shift_register_bits - 1) then
@@ -245,8 +245,9 @@ begin
   );
 
   -- Maps signals from LUT shift register to cell configuration ports
+  -- Sblock shift registers shift towards left, high values are therefore inserted first
   configuration_select : for i in 0 to matrix_width*lut_configuration_bits - 1 generate
-    configuration_lut_slv(i) <= lut_storage_shift_register(i*shift_register_bits);
+    configuration_lut_slv(i) <= lut_storage_shift_register((i+1)*shift_register_bits - 1);
   end generate;
 
   -- Selects one row of states
