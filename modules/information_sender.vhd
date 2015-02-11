@@ -33,6 +33,7 @@ entity information_sender is
     matrix_wrap              : boolean  := true;
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1;
+    rule_amount              : positive := 256;
     send_buffer_address_bits : positive := 10
   );
   port (
@@ -52,7 +53,7 @@ end information_sender;
 architecture rtl of information_sender is
 
   type state_type is (
-    IDLE, SEND_MATRIX_SIZE, SEND_CELL_SIZE
+    IDLE, SEND_MATRIX_SIZE, SEND_CELL_SIZE, SEND_RULE_AMOUNT
   );
 
   signal state : state_type := IDLE;
@@ -89,9 +90,16 @@ begin
 
       when SEND_CELL_SIZE =>
         if (buffer_has_space_one) then
-          send_buffer_data(7 downto 0)   <= std_logic_vector(to_unsigned(cell_state_bits, 8));
-          send_buffer_data(15 downto 8)  <= std_logic_vector(to_unsigned(cell_type_bits, 8));
-          send_buffer_write              <= '1';
+          send_buffer_data(7 downto 0)  <= std_logic_vector(to_unsigned(cell_state_bits, 8));
+          send_buffer_data(15 downto 8) <= std_logic_vector(to_unsigned(cell_type_bits, 8));
+          send_buffer_write             <= '1';
+          state <= SEND_RULE_AMOUNT;
+        end if;
+
+      when SEND_RULE_AMOUNT =>
+        if (buffer_has_space_one) then
+          send_buffer_data  <= std_logic_vector(to_unsigned(rule_amount, 32));
+          send_buffer_write <= '1';
           state <= IDLE;
         end if;
         

@@ -295,6 +295,7 @@ begin
     matrix_wrap              => matrix_wrap,
     cell_type_bits           => cell_type_bits,
     cell_state_bits          => cell_state_bits,
+    rule_amount              => rule_amount,
     send_buffer_address_bits => tx_buffer_address_bits
   )
   port map (
