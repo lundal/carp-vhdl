@@ -233,6 +233,7 @@ begin
 
         if (buffer_has_space_one) then
           send_buffer_write <= '1';
+          shift_amount <= address_x;
           state <= IDLE;
           done_i <= '1';
         end if;
