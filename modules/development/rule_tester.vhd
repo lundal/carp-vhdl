@@ -139,7 +139,9 @@ begin
     -- This is needed to "reset" the rule tester.
     if (rule_first = '1') then
       hit <= '1';
+      change_type  <= '1';
       result_type  <= neighborhood_types(0);
+      change_state <= '1';
       result_state <= neighborhood_states(0);
     end if;
 
