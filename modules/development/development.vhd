@@ -32,6 +32,7 @@ entity development is
     matrix_wrap              : boolean  := true;
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1;
+    rule_vector_amount       : positive := 64;
     rule_amount              : positive := 256;
     rules_tested_in_parallel : positive := 8
   );
@@ -59,6 +60,13 @@ entity development is
     rule_storage_write   : in std_logic;
     rule_storage_address : in std_logic_vector(bits(rule_amount) - 1 downto 0);
     rule_storage_data    : in std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
+
+    rule_vector_reader_data  : out std_logic_vector(rule_amount - 1 downto 0);
+    rule_vector_reader_count : out std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
+    rule_vector_reader_read  : in  std_logic;
+
+    rule_numbers_reader_address : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+    rule_numbers_reader_data    : out std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
 
     decode_operation : in development_operation_type;
 
@@ -125,6 +133,15 @@ architecture rtl of development is
   signal write_address_y_delayed_3 : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal write_enable_delayed_3    : std_logic := '0';
 
+  -- Rule vector
+  signal rule_vector_to_fifo : std_logic_vector(rule_amount - 1 downto 0);
+  signal rule_vector_write   : std_logic := '0';
+
+  -- Rule numbers
+  signal rule_numbers_to_bram : std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
+  signal rule_numbers_address : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal rule_numbers_write   : std_logic := '0';
+
   -- Internally used out-signals
   signal done_i : std_logic := '1';
 
@@ -136,6 +153,9 @@ begin
   -- State machine
   process begin
     wait until rising_edge(clock);
+
+    -- Defaults
+    rule_vector_write <= '0';
 
     case (state) is
 
@@ -217,6 +237,8 @@ begin
         state <= WAIT_2;
 
       when WAIT_2 =>
+        -- Write rulevector
+        rule_vector_write <= '1';
         -- Return to idle
         state <= IDLE;
         done_i <= '1';
@@ -359,7 +381,7 @@ begin
   port map (
     hits_slv    => rule_testers_hits_slv,
     rule_number => rule_fetcher_rules_number,
-    rule_vector => open,
+    rule_vector => rule_vector_to_fifo,
     clock       => clock
   );
 
@@ -372,8 +394,44 @@ begin
   port map (
     hits_slv         => rule_testers_hits_slv,
     rule_number      => rule_fetcher_rules_number,
-    rule_numbers_slv => open,
+    rule_numbers_slv => rule_numbers_to_bram,
     clock            => clock
+  );
+
+  rule_vector_fifo : entity work.fifo
+  generic map (
+    address_bits => bits(rule_vector_amount),
+    data_bits    => rule_amount
+  )
+  port map (
+    data_in    => rule_vector_to_fifo,
+    data_out   => rule_vector_reader_data,
+    data_count => rule_vector_reader_count,
+    data_read  => rule_vector_reader_read,
+    data_write => rule_vector_write,
+    clock      => clock,
+    reset      => '0' -- TODO
+  );
+
+  rule_numbers_bram : entity work.bram_tdp
+  generic map (
+    address_bits => bits(matrix_depth) + bits(matrix_height),
+    data_bits    => matrix_width * bits(rule_amount),
+    write_first  => true
+  )
+  port map (
+    -- Port A
+    a_write    => rule_numbers_write,
+    a_address  => rule_numbers_address,
+    a_data_in  => rule_numbers_to_bram,
+    a_data_out => open,
+    -- Port B
+    b_write    => '0',
+    b_address  => rule_numbers_reader_address,
+    b_data_in  => (others => '0'),
+    b_data_out => rule_numbers_reader_data,
+
+    clock => clock
   );
 
   -- Notify rule tester when first rule is sent
@@ -386,8 +444,9 @@ begin
   buffer_b_types_write  <= write_enable_delayed_2;
   buffer_b_states_write <= write_enable_delayed_2;
 
-  -- Hits write signals
-  -- TODO
+  -- Rule numbers write signals
+  rule_numbers_address <= write_address_z_delayed_3 & write_address_y_delayed_3;
+  rule_numbers_write   <= write_enable_delayed_3;
 
   -- Internally used out ports
   done <= done_i;

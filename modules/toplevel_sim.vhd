@@ -24,21 +24,22 @@ use work.types.all;
 
 entity toplevel_sim is
   generic (
-    tx_buffer_address_bits : positive := 10; -- PCIe packet length field is 10 bits
-    rx_buffer_address_bits : positive := 10;
-    reverse_payload_endian : boolean  := true; -- Required for x86 systems
-    program_counter_bits   : positive := 8;
-    matrix_width           : positive := 8;
-    matrix_height          : positive := 8;
-    matrix_depth           : positive := 8;
-    matrix_wrap            : boolean  := true;
-    cell_type_bits         : positive := 8;
-    cell_state_bits        : positive := 1; -- Must be 1 due to implementation of CA
-    cell_write_width       : positive := 8;
-    instruction_bits       : positive := 256; -- Must be 256 due to implementation of fetch_communication
-    lut_configuration_bits : positive := 8;
-    rule_amount            : positive := 256;
-    rules_tested_in_parallel : positive := 2
+    tx_buffer_address_bits   : positive := 10; -- PCIe packet length field is 10 bits
+    rx_buffer_address_bits   : positive := 10;
+    reverse_payload_endian   : boolean  := true; -- Required for x86 systems
+    program_counter_bits     : positive := 8;
+    matrix_width             : positive := 8;
+    matrix_height            : positive := 8;
+    matrix_depth             : positive := 8;
+    matrix_wrap              : boolean  := true;
+    cell_type_bits           : positive := 8;
+    cell_state_bits          : positive := 1; -- Must be 1 due to implementation of CA
+    cell_write_width         : positive := 8;
+    instruction_bits         : positive := 256; -- Must be 256 due to implementation of fetch_communication
+    lut_configuration_bits   : positive := 8;
+    rule_vector_amount       : positive := 64;
+    rule_amount              : positive := 256;
+    rules_tested_in_parallel : positive := 4
   );
   port (
     sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
@@ -187,6 +188,15 @@ architecture rtl of toplevel_sim is
   signal rule_writer_to_development_write   : std_logic;
   signal rule_writer_to_development_address : std_logic_vector(bits(rule_amount) - 1 downto 0);
   signal rule_writer_to_development_data    : std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
+
+  -- Rule vector reader
+  signal rule_vector_reader_from_development_data  : std_logic_vector(rule_amount - 1 downto 0);
+  signal rule_vector_reader_from_development_count : std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
+  signal rule_vector_reader_to_development_read    : std_logic;
+
+  -- Rule numbers reader
+  signal rule_numbers_reader_to_development_address : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+  signal rule_numbers_reader_from_development_data  : std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
 
 begin
 
@@ -590,6 +600,13 @@ begin
     rule_storage_write   => rule_writer_to_development_write,
     rule_storage_address => rule_writer_to_development_address,
     rule_storage_data    => rule_writer_to_development_data,
+
+    rule_vector_reader_data  => rule_vector_reader_from_development_data,
+    rule_vector_reader_count => rule_vector_reader_from_development_count,
+    rule_vector_reader_read  => rule_vector_reader_to_development_read,
+
+    rule_numbers_reader_address => rule_numbers_reader_to_development_address,
+    rule_numbers_reader_data    => rule_numbers_reader_from_development_data,
 
     decode_operation => decode_to_development_operation,
 
