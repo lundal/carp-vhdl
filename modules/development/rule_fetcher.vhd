@@ -67,7 +67,7 @@ begin
 
     if (run = '1' or not done_i = '1') then
       -- Next rules
-      if (rules_current + rules_tested_in_parallel < unsigned(rules_active)) then
+      if (rules_current + rules_tested_in_parallel <= unsigned(rules_active)) then
         rules_current <= rules_current + rules_tested_in_parallel;
         done_i <= '0';
       else
