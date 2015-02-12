@@ -9,7 +9,6 @@
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Processes hits from rule testers into rule vectors.
---            : Note: (rule_number mod rules_tested_in_parallel) must be zero.
 --            : Note: Generates up to (rules_tested_in_parallel) unconnected.
 -------------------------------------------------------------------------------
 -- Revisions  :
@@ -48,11 +47,8 @@ architecture rtl of hits_to_vector is
 
   type hits_type is array (cells_tested_in_parallel - 1 downto 0) of std_logic_vector(rules_tested_in_parallel - 1 downto 0);
 
-  signal hits : hits_type;
-
-  type hits_ored_type is array (cells_tested_in_parallel - 1 downto 0) of std_logic_vector(rules_tested_in_parallel - 1 downto 0);
-
-  signal hits_ored : hits_ored_type;
+  signal hits      : hits_type;
+  signal hits_ored : hits_type;
 
   -- Internally used out ports
   signal rule_vector_i : std_logic_vector(vector_padding_bits + rule_amount - 1 downto 0);
