@@ -9,7 +9,9 @@
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Fetches N rules from storage each cycle.
---            : rules_current is extended to prevent wrap-around errors.
+--            : Note: rules_current is extended to prevent wrap-around errors.
+--            : Note: Depending on rules_tested_in_parallel, some registers of
+--            : rules_current and rules_number may be trimmed.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
