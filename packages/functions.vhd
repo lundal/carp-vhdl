@@ -59,14 +59,20 @@ package functions is
   ) return integer;
 
   -- Converts boolean to std_logic
-  function to_std_logic(
+  function to_std_logic (
     input : boolean
   ) return std_logic;
 
   -- Converts std_logic to boolean
-  function to_boolean(
+  function to_boolean (
     input : std_logic
   ) return boolean;
+
+  -- Returns dividend / divisor rounded up
+  function divide_ceil (
+    dividend : integer;
+    divisor  : integer
+  ) return integer;
 
 end functions;
 
@@ -130,7 +136,7 @@ package body functions is
     end if;
   end if_else;
 
-  function to_std_logic(
+  function to_std_logic (
     input : boolean
   ) return std_logic is
   begin
@@ -141,12 +147,23 @@ package body functions is
     end if;
   end to_std_logic;
 
-  -- Converts std_logic to boolean
-  function to_boolean(
+  function to_boolean (
     input : std_logic
   ) return boolean is
   begin
     return input = '1';
   end to_boolean;
+
+  function divide_ceil (
+    dividend : integer;
+    divisor  : integer
+  ) return integer is
+  begin
+    if (dividend mod divisor /= 0) then
+      return dividend / divisor + 1;
+    else
+      return dividend / divisor;
+    end if;
+  end divide_ceil;
 
 end functions;

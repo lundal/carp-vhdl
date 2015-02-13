@@ -66,9 +66,9 @@ end cell_writer_reader;
 architecture rtl of cell_writer_reader is
 
   constant states_per_word     : positive := min(matrix_width, 32/cell_state_bits);
-  constant state_words_per_row : positive := matrix_width / states_per_word;
+  constant state_words_per_row : positive := divide_ceil(matrix_width, states_per_word);
   constant types_per_word      : positive := min(matrix_width, 32/cell_type_bits);
-  constant type_words_per_row  : positive := matrix_width / types_per_word;
+  constant type_words_per_row  : positive := divide_ceil(matrix_width, types_per_word);
 
   type state_type is (
     IDLE, FILL, WRITE_STATE, WRITE_TYPE, SEND_ONE, SEND_ALL_STATES, SEND_ALL_TYPES
@@ -186,6 +186,7 @@ begin
         -- Iterate through buffer
         address_y <= std_logic_vector(unsigned(address_y) + 1);
         if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
+          address_y <= (others => '0');
           address_z <= std_logic_vector(unsigned(address_z) + 1);
           if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
             state <= IDLE;
@@ -245,18 +246,18 @@ begin
           shift_amount <= address_x;
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each state and row
-          if (unsigned(address_x) = states_per_word*state_words_per_row - states_per_word) then
+          address_x <= std_logic_vector(unsigned(address_x) + states_per_word);
+          if (unsigned(address_x) + states_per_word = states_per_word * state_words_per_row) then
             address_x <= (others => '0');
             address_y <= std_logic_vector(unsigned(address_y) + 1);
-            if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
+            if (unsigned(address_y) + 1 = matrix_height or matrix_height = 1) then
+              address_y <= (others => '0');
               address_z <= std_logic_vector(unsigned(address_z) + 1);
-              if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
+              if (unsigned(address_z) + 1 = matrix_depth or matrix_depth = 1) then
                 state <= IDLE;
                 done_i <= '1';
               end if;
             end if;
-          else
-            address_x <= std_logic_vector(unsigned(address_x) + states_per_word);
           end if;
         end if;
 
@@ -267,18 +268,18 @@ begin
           shift_amount <= address_x;
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each type and row
-          if (unsigned(address_x) = types_per_word*type_words_per_row - types_per_word) then
+          address_x <= std_logic_vector(unsigned(address_x) + types_per_word);
+          if (unsigned(address_x) + types_per_word = types_per_word * type_words_per_row) then
             address_x <= (others => '0');
             address_y <= std_logic_vector(unsigned(address_y) + 1);
-            if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
+            if (unsigned(address_y) + 1 = matrix_height or matrix_height = 1) then
+              address_y <= (others => '0');
               address_z <= std_logic_vector(unsigned(address_z) + 1);
-              if (unsigned(address_z) = matrix_depth-1 or matrix_depth = 1) then
+              if (unsigned(address_z) + 1 = matrix_depth or matrix_depth = 1) then
                 state <= IDLE;
                 done_i <= '1';
               end if;
             end if;
-          else
-            address_x <= std_logic_vector(unsigned(address_x) + types_per_word);
           end if;
         end if;
 
