@@ -21,9 +21,9 @@ use ieee.std_logic_1164.all;
 package instructions is
 
   constant INSTRUCTION_NOP               : std_logic_vector(4 downto 0) := "00000";
-  constant INSTRUCTION_GET_INFORMATION   : std_logic_vector(4 downto 0) := "00001";
-  constant INSTRUCTION_GET_RULEVECTORS   : std_logic_vector(4 downto 0) := "00010";
-  constant INSTRUCTION_GET_DEVSTEP_INFO  : std_logic_vector(4 downto 0) := "00011";
+  constant INSTRUCTION_READ_INFORMATION  : std_logic_vector(4 downto 0) := "00001";
+  constant INSTRUCTION_READ_RULE_VECTOR  : std_logic_vector(4 downto 0) := "00010";
+  constant INSTRUCTION_READ_RULE_NUMBERS : std_logic_vector(4 downto 0) := "00011";
 
   constant INSTRUCTION_READ_STATE_ONE    : std_logic_vector(4 downto 0) := "00100";
   constant INSTRUCTION_READ_STATE_ALL    : std_logic_vector(4 downto 0) := "00101";

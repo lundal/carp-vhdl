@@ -62,6 +62,11 @@ entity decode is
     rule_writer_address   : out std_logic_vector(bits(rule_amount) - 1 downto 0);
     rule_writer_data      : out std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
 
+    rule_vector_reader_operation : out rule_vector_reader_operation_type;
+    rule_vector_reader_count     : out std_logic_vector(bits(rule_amount) - 1 downto 0);
+
+    rule_numbers_reader_operation : out rule_numbers_reader_operation_type;
+
     cell_buffer_swap       : out std_logic;
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
     send_buffer_mux_select : out send_buffer_mux_select_type;
@@ -96,11 +101,13 @@ begin
     development_operation <= NOP;
     lut_writer_operation <= NOP;
     rule_writer_operation <= NOP;
+    rule_vector_reader_operation <= NOP;
+    rule_numbers_reader_operation <= NOP;
     cell_buffer_swap <= '0';
 
     case instruction_opcode is
 
-      when INSTRUCTION_GET_INFORMATION =>
+      when INSTRUCTION_READ_INFORMATION =>
         information_sender_operation <= SEND;
         send_buffer_mux_select       <= INFORMATION_SENDER;
 
@@ -196,6 +203,15 @@ begin
       when INSTRUCTION_DEVSTEP =>
         development_operation  <= DEVELOP;
         cell_buffer_mux_select <= DEVELOPMENT;
+
+      when INSTRUCTION_READ_RULE_VECTOR =>
+        rule_vector_reader_operation <= READ_N;
+        rule_vector_reader_count     <= instruction(rule_vector_reader_count'high + 16 downto 16);
+        send_buffer_mux_select       <= RULE_VECTOR_READER;
+
+      when INSTRUCTION_READ_RULE_NUMBERS =>
+        rule_numbers_reader_operation <= READ_ALL;
+        send_buffer_mux_select        <= RULE_NUMBERS_READER;
 
       when others =>
         null;

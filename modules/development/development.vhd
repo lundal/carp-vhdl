@@ -65,8 +65,9 @@ entity development is
     rule_vector_reader_count : out std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
     rule_vector_reader_read  : in  std_logic;
 
-    rule_numbers_reader_address : in  std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
-    rule_numbers_reader_data    : out std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
+    rule_numbers_reader_address_z : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    rule_numbers_reader_address_y : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
+    rule_numbers_reader_data      : out std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
 
     decode_operation : in development_operation_type;
 
@@ -427,7 +428,7 @@ begin
     a_data_out => open,
     -- Port B
     b_write    => '0',
-    b_address  => rule_numbers_reader_address,
+    b_address  => rule_numbers_reader_address_z & rule_numbers_reader_address_y,
     b_data_in  => (others => '0'),
     b_data_out => rule_numbers_reader_data,
 

@@ -62,12 +62,14 @@ architecture rtl of toplevel is
   signal reset : std_logic;
 
   -- Pipeline control
-  signal run                     : std_logic;
-  signal done_fetch              : std_logic;
-  signal done_information_sender : std_logic;
-  signal done_cell_writer_reader : std_logic;
-  signal done_cellular_automata  : std_logic;
-  signal done_development        : std_logic;
+  signal run                      : std_logic;
+  signal done_fetch               : std_logic;
+  signal done_information_sender  : std_logic;
+  signal done_cell_writer_reader  : std_logic;
+  signal done_cellular_automata   : std_logic;
+  signal done_development         : std_logic;
+  signal done_rule_vector_reader  : std_logic;
+  signal done_rule_numbers_reader : std_logic;
 
   -- Communication
   signal tx_buffer_data  : std_logic_vector(31 downto 0);
@@ -104,6 +106,11 @@ architecture rtl of toplevel is
   signal decode_to_rule_writer_operation : rule_writer_operation_type;
   signal decode_to_rule_writer_address   : std_logic_vector(bits(rule_amount) - 1 downto 0);
   signal decode_to_rule_writer_data      : std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
+
+  signal decode_to_rule_vector_reader_operation : rule_vector_reader_operation_type;
+  signal decode_to_rule_vector_reader_count     : std_logic_vector(bits(rule_amount) - 1 downto 0);
+
+  signal decode_to_rule_numbers_reader_operation : rule_numbers_reader_operation_type;
 
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
@@ -191,15 +198,30 @@ architecture rtl of toplevel is
   signal rule_vector_reader_from_development_count : std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
   signal rule_vector_reader_to_development_read    : std_logic;
 
+  signal rule_vector_reader_to_send_mux_data    : std_logic_vector(31 downto 0);
+  signal rule_vector_reader_from_send_mux_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal rule_vector_reader_to_send_mux_write   : std_logic;
+
   -- Rule numbers reader
-  signal rule_numbers_reader_to_development_address : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
-  signal rule_numbers_reader_from_development_data  : std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
+  signal rule_numbers_reader_to_development_address_z : std_logic_vector(bits(matrix_depth) - 1 downto 0);
+  signal rule_numbers_reader_to_development_address_y : std_logic_vector(bits(matrix_height) - 1 downto 0);
+  signal rule_numbers_reader_from_development_data    : std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
+
+  signal rule_numbers_reader_to_send_mux_data    : std_logic_vector(31 downto 0);
+  signal rule_numbers_reader_from_send_mux_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal rule_numbers_reader_to_send_mux_write   : std_logic;
 
 begin
 
   leds <= "0101";
 
-  run <= done_fetch and done_information_sender and done_cell_writer_reader and done_cellular_automata and done_development;
+  run <= done_fetch
+     and done_information_sender
+     and done_cell_writer_reader
+     and done_cellular_automata
+     and done_development
+     --and done_rule_vector_reader
+     and done_rule_numbers_reader;
 
   -----------------------------------------------------------------------------
 
@@ -287,6 +309,11 @@ begin
     rule_writer_operation => decode_to_rule_writer_operation,
     rule_writer_address   => decode_to_rule_writer_address,
     rule_writer_data      => decode_to_rule_writer_data,
+
+    rule_vector_reader_operation => decode_to_rule_vector_reader_operation,
+    rule_vector_reader_count     => decode_to_rule_vector_reader_count,
+
+    rule_numbers_reader_operation => decode_to_rule_numbers_reader_operation,
 
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
@@ -477,6 +504,14 @@ begin
     information_sender_count => information_sender_from_send_mux_count,
     information_sender_write => information_sender_to_send_mux_write,
 
+    rule_vector_reader_data  => rule_vector_reader_to_send_mux_data,
+    rule_vector_reader_count => rule_vector_reader_from_send_mux_count,
+    rule_vector_reader_write => rule_vector_reader_to_send_mux_write,
+
+    rule_numbers_reader_data  => rule_numbers_reader_to_send_mux_data,
+    rule_numbers_reader_count => rule_numbers_reader_from_send_mux_count,
+    rule_numbers_reader_write => rule_numbers_reader_to_send_mux_write,
+
     send_buffer_data  => tx_buffer_data,
     send_buffer_count => tx_buffer_count,
     send_buffer_write => tx_buffer_write,
@@ -599,13 +634,39 @@ begin
     rule_vector_reader_count => rule_vector_reader_from_development_count,
     rule_vector_reader_read  => rule_vector_reader_to_development_read,
 
-    rule_numbers_reader_address => rule_numbers_reader_to_development_address,
-    rule_numbers_reader_data    => rule_numbers_reader_from_development_data,
+    rule_numbers_reader_address_z => rule_numbers_reader_to_development_address_z,
+    rule_numbers_reader_address_y => rule_numbers_reader_to_development_address_y,
+    rule_numbers_reader_data      => rule_numbers_reader_from_development_data,
 
     decode_operation => decode_to_development_operation,
 
     run  => run,
     done => done_development,
+
+    clock => clock
+  );
+
+  rule_numbers_reader : entity work.rule_numbers_reader
+  generic map (
+    matrix_width             => matrix_width,
+    matrix_height            => matrix_height,
+    matrix_depth             => matrix_depth,
+    rule_amount              => rule_amount,
+    send_buffer_address_bits => tx_buffer_address_bits
+  )
+  port map (
+    buffer_address_z => rule_numbers_reader_to_development_address_z,
+    buffer_address_y => rule_numbers_reader_to_development_address_y,
+    buffer_data      => rule_numbers_reader_from_development_data,
+
+    send_buffer_data  => rule_numbers_reader_to_send_mux_data,
+    send_buffer_count => rule_numbers_reader_from_send_mux_count,
+    send_buffer_write => rule_numbers_reader_to_send_mux_write,
+
+    decode_operation => decode_to_rule_numbers_reader_operation,
+
+    run  => run,
+    done => done_rule_numbers_reader,
 
     clock => clock
   );
