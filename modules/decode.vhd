@@ -52,7 +52,8 @@ entity decode is
     cellular_automata_operation  : out cellular_automata_operation_type;
     cellular_automata_step_count : out std_logic_vector(15 downto 0);
 
-    development_operation : out development_operation_type;
+    development_operation    : out development_operation_type;
+    development_rules_active : out std_logic_vector(bits(rule_amount) - 1 downto 0);
 
     lut_writer_operation : out lut_writer_operation_type;
     lut_writer_address   : out std_logic_vector(cell_type_bits - 1 downto 0);
@@ -212,6 +213,10 @@ begin
       when INSTRUCTION_READ_RULE_NUMBERS =>
         rule_numbers_reader_operation <= READ_ALL;
         send_buffer_mux_select        <= RULE_NUMBERS_READER;
+
+      when INSTRUCTION_SET_RULES_ACTIVE =>
+        development_operation    <= SET_RULES_ACTIVE;
+        development_rules_active <= instruction(development_rules_active'high + 16 downto 16);
 
       when others =>
         null;

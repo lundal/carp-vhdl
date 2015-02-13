@@ -69,7 +69,8 @@ entity development is
     rule_numbers_reader_address_y : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
     rule_numbers_reader_data      : out std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
 
-    decode_operation : in development_operation_type;
+    decode_operation    : in development_operation_type;
+    decode_rules_active : in std_logic_vector(bits(rule_amount) - 1 downto 0);
 
     run  : in  std_logic;
     done : out std_logic;
@@ -89,7 +90,7 @@ architecture rtl of development is
 
   signal state : state_type := IDLE;
 
-  -- TODO
+  -- Number of active rules (excluding rule 0 which is reserved) / last rule
   signal rules_active : std_logic_vector(bits(rule_amount) - 1 downto 0) := (others => '1');
 
   -- Cell fetcher
@@ -97,6 +98,7 @@ architecture rtl of development is
   signal cell_fetcher_states_slv : std_logic_vector(matrix_width * cell_state_bits * if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
   signal cell_fetcher_address_z  : std_logic_vector(bits(matrix_depth) - 1 downto 0) := (others => '0');
   signal cell_fetcher_address_y  : std_logic_vector(bits(matrix_height) - 1 downto 0) := (others => '0');
+
   signal cell_fetcher_run  : std_logic;
   signal cell_fetcher_done : std_logic;
 
@@ -105,6 +107,7 @@ architecture rtl of development is
   signal rule_fetcher_from_storage_data_slv  : std_logic_vector(rules_tested_in_parallel * rule_storage_data'length - 1 downto 0);
   signal rule_fetcher_to_tester_rules_slv    : std_logic_vector(rules_tested_in_parallel * rule_storage_data'length - 1 downto 0);
   signal rule_fetcher_rules_number           : std_logic_vector(bits(rule_amount) - 1 downto 0);
+
   signal rule_fetcher_run  : std_logic;
   signal rule_fetcher_done : std_logic;
 
@@ -161,16 +164,21 @@ begin
     case (state) is
 
       when IDLE =>
-        if (decode_operation = DEVELOP and run = '1') then
-          -- Next fetch address
-          cell_fetcher_address_y <= std_logic_vector(unsigned(cell_fetcher_address_y) + 1);
-          if (unsigned(cell_fetcher_address_y) = matrix_height-1 or matrix_height = 1) then
-            cell_fetcher_address_y <= (others => '0');
-            cell_fetcher_address_z <= std_logic_vector(unsigned(cell_fetcher_address_z) + 1);
+        if (run = '1') then
+          if (decode_operation = SET_RULES_ACTIVE) then
+            rules_active <= decode_rules_active;
+            done_i <= '1';
+          elsif (decode_operation = DEVELOP) then
+            -- Next fetch address
+            cell_fetcher_address_y <= std_logic_vector(unsigned(cell_fetcher_address_y) + 1);
+            if (unsigned(cell_fetcher_address_y) = matrix_height-1 or matrix_height = 1) then
+              cell_fetcher_address_y <= (others => '0');
+              cell_fetcher_address_z <= std_logic_vector(unsigned(cell_fetcher_address_z) + 1);
+            end if;
+            -- Next stage
+            state <= FETCH_FIRST;
+            done_i <= '0';
           end if;
-          -- Next stage
-          state <= FETCH_FIRST;
-          done_i <= '0';
         end if;
 
       when FETCH_FIRST =>

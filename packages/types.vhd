@@ -51,7 +51,7 @@ package types is
   );
 
   type development_operation_type is (
-    NOP, DEVELOP
+    NOP, DEVELOP, SET_RULES_ACTIVE
   );
 
   type rule_vector_reader_operation_type is (

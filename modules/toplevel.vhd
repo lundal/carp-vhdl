@@ -97,7 +97,8 @@ architecture rtl of toplevel is
   signal decode_to_cellular_automata_operation  : cellular_automata_operation_type;
   signal decode_to_cellular_automata_step_count : std_logic_vector(15 downto 0);
 
-  signal decode_to_development_operation : development_operation_type;
+  signal decode_to_development_operation    : development_operation_type;
+  signal decode_to_development_rules_active : std_logic_vector(bits(rule_amount) - 1 downto 0);
 
   signal decode_to_lut_writer_operation : lut_writer_operation_type;
   signal decode_to_lut_writer_address   : std_logic_vector(cell_type_bits - 1 downto 0);
@@ -300,7 +301,8 @@ begin
     cellular_automata_operation  => decode_to_cellular_automata_operation,
     cellular_automata_step_count => decode_to_cellular_automata_step_count,
 
-    development_operation => decode_to_development_operation,
+    development_operation    => decode_to_development_operation,
+    development_rules_active => decode_to_development_rules_active,
 
     lut_writer_operation => decode_to_lut_writer_operation,
     lut_writer_address   => decode_to_lut_writer_address,
@@ -638,7 +640,8 @@ begin
     rule_numbers_reader_address_y => rule_numbers_reader_to_development_address_y,
     rule_numbers_reader_data      => rule_numbers_reader_from_development_data,
 
-    decode_operation => decode_to_development_operation,
+    decode_operation    => decode_to_development_operation,
+    decode_rules_active => decode_to_development_rules_active,
 
     run  => run,
     done => done_development,

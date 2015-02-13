@@ -32,7 +32,7 @@ package instructions is
 
   constant INSTRUCTION_WRITE_LUT         : std_logic_vector(4 downto 0) := "01000";
   constant INSTRUCTION_WRITE_RULE        : std_logic_vector(4 downto 0) := "01001";
-  constant INSTRUCTION_SET_RULE_AMOUNT   : std_logic_vector(4 downto 0) := "01010";
+  constant INSTRUCTION_SET_RULES_ACTIVE  : std_logic_vector(4 downto 0) := "01010";
   constant INSTRUCTION_FILL_CELLS        : std_logic_vector(4 downto 0) := "01011";
 
   constant INSTRUCTION_WRITE_STATE_ONE   : std_logic_vector(4 downto 0) := "01100";
