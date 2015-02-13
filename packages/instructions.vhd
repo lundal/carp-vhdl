@@ -49,7 +49,6 @@ package instructions is
   constant INSTRUCTION_SWAP_CELL_BUFFERS : std_logic_vector(4 downto 0) := "10100";
 
   -- TODO: FITNESS
-  -- TODO: WRAP ON/OFF
   -- TODO: JUMP_EQUAL
 
   constant INSTRUCTION_STORE             : std_logic_vector(4 downto 0) := "11010";
