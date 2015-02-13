@@ -148,7 +148,7 @@ architecture rtl of development is
 begin
 
   -- Generic checks
-  assert (matrix_height > 1) report "Unsupported matrix_height Supported values are [1-N]." severity FAILURE;
+  assert (matrix_height > 1) report "Unsupported matrix_height. Supported values are [2-N]." severity FAILURE;
 
   -- State machine
   process begin
