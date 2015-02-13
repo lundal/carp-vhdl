@@ -109,7 +109,7 @@ architecture rtl of toplevel is
   signal decode_to_rule_writer_data      : std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
 
   signal decode_to_rule_vector_reader_operation : rule_vector_reader_operation_type;
-  signal decode_to_rule_vector_reader_count     : std_logic_vector(bits(rule_amount) - 1 downto 0);
+  signal decode_to_rule_vector_reader_count     : std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
 
   signal decode_to_rule_numbers_reader_operation : rule_numbers_reader_operation_type;
 
@@ -221,7 +221,7 @@ begin
      and done_cell_writer_reader
      and done_cellular_automata
      and done_development
-     --and done_rule_vector_reader
+     and done_rule_vector_reader
      and done_rule_numbers_reader;
 
   -----------------------------------------------------------------------------
@@ -275,14 +275,15 @@ begin
 
   decode : entity work.decode
   generic map (
-    matrix_width     => matrix_width,
-    matrix_height    => matrix_height,
-    matrix_depth     => matrix_depth,
-    cell_type_bits   => cell_type_bits,
-    cell_state_bits  => cell_state_bits,
-    cell_write_width => cell_write_width,
-    instruction_bits => instruction_bits,
-    rule_amount      => rule_amount
+    matrix_width       => matrix_width,
+    matrix_height      => matrix_height,
+    matrix_depth       => matrix_depth,
+    cell_type_bits     => cell_type_bits,
+    cell_state_bits    => cell_state_bits,
+    cell_write_width   => cell_write_width,
+    instruction_bits   => instruction_bits,
+    rule_amount        => rule_amount,
+    rule_vector_amount => rule_vector_amount
   )
   port map (
     instruction => decode_from_fetch_instruction,
@@ -645,6 +646,30 @@ begin
 
     run  => run,
     done => done_development,
+
+    clock => clock
+  );
+
+  rule_vector_reader : entity work.rule_vector_reader
+  generic map (
+    rule_amount              => rule_amount,
+    rule_vector_amount       => rule_vector_amount,
+    send_buffer_address_bits => tx_buffer_address_bits
+  )
+  port map (
+    vector_buffer_data  => rule_vector_reader_from_development_data,
+    vector_buffer_count => rule_vector_reader_from_development_count,
+    vector_buffer_read  => rule_vector_reader_to_development_read,
+
+    send_buffer_data  => rule_vector_reader_to_send_mux_data,
+    send_buffer_count => rule_vector_reader_from_send_mux_count,
+    send_buffer_write => rule_vector_reader_to_send_mux_write,
+
+    decode_operation => decode_to_rule_vector_reader_operation,
+    decode_count     => decode_to_rule_vector_reader_count,
+
+    run  => run,
+    done => done_rule_vector_reader,
 
     clock => clock
   );

@@ -26,14 +26,15 @@ use work.types.all;
 
 entity decode is
   generic (
-    matrix_width     : positive := 8;
-    matrix_height    : positive := 8;
-    matrix_depth     : positive := 8;
-    cell_type_bits   : positive := 8;
-    cell_state_bits  : positive := 1;
-    cell_write_width : positive := 8;
-    instruction_bits : positive := 256;
-    rule_amount      : positive := 256
+    matrix_width       : positive := 8;
+    matrix_height      : positive := 8;
+    matrix_depth       : positive := 8;
+    cell_type_bits     : positive := 8;
+    cell_state_bits    : positive := 1;
+    cell_write_width   : positive := 8;
+    instruction_bits   : positive := 256;
+    rule_amount        : positive := 256;
+    rule_vector_amount : positive := 64
   );
   port (
     instruction : in std_logic_vector(instruction_bits - 1 downto 0);
@@ -64,7 +65,7 @@ entity decode is
     rule_writer_data      : out std_logic_vector((cell_type_bits + 1 + cell_state_bits + 1) * if_else(matrix_depth = 1, 6, 8) - 1 downto 0);
 
     rule_vector_reader_operation : out rule_vector_reader_operation_type;
-    rule_vector_reader_count     : out std_logic_vector(bits(rule_amount) - 1 downto 0);
+    rule_vector_reader_count     : out std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
 
     rule_numbers_reader_operation : out rule_numbers_reader_operation_type;
 
