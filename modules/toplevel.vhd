@@ -88,9 +88,9 @@ architecture rtl of toplevel is
   signal decode_to_cell_writer_reader_address_y : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal decode_to_cell_writer_reader_address_x : std_logic_vector(bits(matrix_width) - 1 downto 0);
   signal decode_to_cell_writer_reader_state     : std_logic_vector(cell_state_bits - 1 downto 0);
-  signal decode_to_cell_writer_reader_states    : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+  signal decode_to_cell_writer_reader_states    : std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
   signal decode_to_cell_writer_reader_type      : std_logic_vector(cell_type_bits - 1 downto 0);
-  signal decode_to_cell_writer_reader_types     : std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+  signal decode_to_cell_writer_reader_types     : std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
 
   signal decode_to_cellular_automata_operation  : cellular_automata_operation_type;
   signal decode_to_cellular_automata_step_count : std_logic_vector(15 downto 0);
