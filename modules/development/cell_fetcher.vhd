@@ -309,8 +309,10 @@ begin
   end generate;
 
   -- Output tie-offs
-  buffer_types_out <= (others => '0');
-  buffer_states_out <= (others => '0');
+  buffer_types_out    <= (others => '0');
+  buffer_types_write  <= '0';
+  buffer_states_out   <= (others => '0');
+  buffer_states_write <= '0';
 
   -- Internally used out-signals
   done <= done_i;
