@@ -8,11 +8,11 @@
 -- Last update: 2015-02-13
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: Writes cell data to buffer and sends cell data to host.
+-- Description: Reads and sends hit rule numbers to host.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
--- 2015-02-13uu  1.0      lundal    Created
+-- 2015-02-13  1.0      lundal    Created
 -------------------------------------------------------------------------------
 
 library ieee;
