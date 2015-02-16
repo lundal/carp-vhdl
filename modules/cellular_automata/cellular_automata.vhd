@@ -5,7 +5,7 @@
 -- File       : cellular_automata.vhd
 -- Author     : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
--- Last update_matrix: 2015-01-30
+-- Last update: 2015-01-30
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: TODO
@@ -32,7 +32,8 @@ entity cellular_automata is
     matrix_wrap            : boolean := true;
     cell_type_bits         : positive := 8;
     cell_state_bits        : positive := 1;
-    lut_configuration_bits : positive := 8
+    lut_configuration_bits : positive := 8;
+    live_count_buffer_size : positive := 256
   );
   port (
     buffer_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
@@ -47,6 +48,10 @@ entity cellular_automata is
     lut_storage_write   : in std_logic;
     lut_storage_address : in std_logic_vector(cell_type_bits - 1 downto 0);
     lut_storage_data    : in std_logic_vector(2**if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
+
+    live_count_read  : in  std_logic;
+    live_count_data  : out std_logic_vector(bits(matrix_depth*matrix_height*matrix_width) downto 0);
+    live_count_count : out std_logic_vector(bits(live_count_buffer_size) - 1 downto 0);
 
     decode_operation  : in cellular_automata_operation_type;
     decode_step_count : in std_logic_vector(15 downto 0);
@@ -87,6 +92,11 @@ architecture rtl of cellular_automata is
   signal update_matrix : std_logic := '0';
 
   signal steps_remaining : std_logic_vector(15 downto 0);
+
+  -- Live counter signals
+  signal live_counter_run             : std_logic := '0';
+  signal live_counter_to_buffer_count : std_logic_vector(bits(matrix_depth*matrix_height*matrix_width) downto 0);
+  signal live_counter_to_buffer_write : std_logic := '0';
 
   -- Internally used out ports
   signal address_z : std_logic_vector(bits(matrix_depth) - 1 downto 0);
@@ -260,6 +270,40 @@ begin
     entries_in => states_slv,
     entry_out  => buffer_states_out,
     selected   => buffer_states_selected
+  );
+
+  -- Run livecounter after matrix is updated
+  process begin
+    wait until rising_edge(clock);
+    live_counter_run <= update_matrix;
+  end process;
+
+  live_counter : entity work.live_counter
+  generic map (
+    cell_amount => matrix_depth*matrix_height*matrix_width
+  )
+  port map (
+    run         => live_counter_run,
+    cell_states => states_slv,
+    live_count  => live_counter_to_buffer_count,
+    write_count => live_counter_to_buffer_write,
+
+    clock => clock
+  );
+
+  live_count_buffer : entity work.fifo
+  generic map (
+    address_bits => bits(live_count_buffer_size),
+    data_bits    => bits(matrix_depth*matrix_height*matrix_width) + 1
+  )
+  port map (
+    data_in    => live_counter_to_buffer_count,
+    data_out   => live_count_data,
+    data_count => live_count_count,
+    data_read  => live_count_read,
+    data_write => live_counter_to_buffer_write,
+    reset      => '0',
+    clock      => clock
   );
 
   -- Output tie-offs

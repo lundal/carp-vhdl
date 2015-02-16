@@ -41,7 +41,8 @@ entity toplevel_sim is
     lut_configuration_bits   : positive := 8; -- Should optimally be 2 for 2D and 8 for 3D
     rule_vector_amount       : positive := 64;
     rule_amount              : positive := 256;
-    rules_tested_in_parallel : positive := 4
+    rules_tested_in_parallel : positive := 4;
+    live_count_buffer_size   : positive := 256
   );
   port (
     sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
@@ -546,7 +547,8 @@ begin
     matrix_wrap            => matrix_wrap,
     cell_type_bits         => cell_type_bits,
     cell_state_bits        => cell_state_bits,
-    lut_configuration_bits => lut_configuration_bits
+    lut_configuration_bits => lut_configuration_bits,
+    live_count_buffer_size => live_count_buffer_size
   )
   port map (
     buffer_address_z    => cellular_automata_to_mux_address_z,
@@ -561,6 +563,10 @@ begin
     lut_storage_write   => lut_writer_to_cellular_automata_write,
     lut_storage_address => lut_writer_to_cellular_automata_address,
     lut_storage_data    => lut_writer_to_cellular_automata_data,
+
+    live_count_read  => '0',
+    live_count_data  => open,
+    live_count_count => open,
 
     decode_operation  => decode_to_cellular_automata_operation,
     decode_step_count => decode_to_cellular_automata_step_count,
