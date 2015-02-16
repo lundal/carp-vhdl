@@ -94,8 +94,9 @@ architecture rtl of fetch_handler is
 begin
 
   -- Generic checks
-  assert (jump_counters <= 256)    report "Unsupported jump_counters. Supported values are [1-256]."    severity FAILURE;
-  assert (jump_counter_bits <= 32) report "Unsupported jump_counter_bits. Supported values are [1-32]." severity FAILURE;
+  assert (program_counter_bits <= 16) report "Unsupported program_counter_bits. Supported values are [1-16]."    severity FAILURE;
+  assert (jump_counters <= 256)       report "Unsupported jump_counters. Supported values are [1-256]."    severity FAILURE;
+  assert (jump_counter_bits <= 32)    report "Unsupported jump_counter_bits. Supported values are [1-32]." severity FAILURE;
 
   running <= run or not done_i or nop_issued;
 
