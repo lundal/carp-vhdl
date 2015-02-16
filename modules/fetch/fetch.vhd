@@ -22,6 +22,8 @@ use ieee.numeric_std.all;
 entity fetch is
   generic (
     buffer_address_bits  : positive := 8;
+    jump_counters        : positive := 4;
+    jump_counter_bits    : positive := 16;
     program_counter_bits : positive := 8;
     instruction_bits     : positive := 256
   );
@@ -94,6 +96,8 @@ begin
 
   fetch_handler : entity work.fetch_handler
   generic map (
+    jump_counters        => jump_counters,
+    jump_counter_bits    => jump_counter_bits,
     program_counter_bits => program_counter_bits,
     instruction_bits     => instruction_bits
   )
