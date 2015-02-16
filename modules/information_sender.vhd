@@ -33,6 +33,8 @@ entity information_sender is
     matrix_wrap              : boolean  := true;
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1;
+    jump_counters            : positive := 4;
+    jump_counter_bits        : positive := 16;
     rule_amount              : positive := 256;
     send_buffer_address_bits : positive := 10
   );
@@ -53,7 +55,7 @@ end information_sender;
 architecture rtl of information_sender is
 
   type state_type is (
-    IDLE, SEND_MATRIX_SIZE, SEND_CELL_SIZE, SEND_RULE_AMOUNT
+    IDLE, SEND_MATRIX_SIZE, SEND_CELL_SIZE_AND_COUNTERS, SEND_RULE_AMOUNT
   );
 
   signal state : state_type := IDLE;
@@ -85,13 +87,15 @@ begin
           send_buffer_data(23 downto 16) <= std_logic_vector(to_unsigned(matrix_height, 8));
           send_buffer_data(31 downto 24) <= std_logic_vector(to_unsigned(matrix_depth, 8));
           send_buffer_write              <= '1';
-          state <= SEND_CELL_SIZE;
+          state <= SEND_CELL_SIZE_AND_COUNTERS;
         end if;
 
-      when SEND_CELL_SIZE =>
+      when SEND_CELL_SIZE_AND_COUNTERS =>
         if (buffer_has_space_one) then
-          send_buffer_data(7 downto 0)  <= std_logic_vector(to_unsigned(cell_state_bits, 8));
-          send_buffer_data(15 downto 8) <= std_logic_vector(to_unsigned(cell_type_bits, 8));
+          send_buffer_data(7 downto 0)   <= std_logic_vector(to_unsigned(cell_state_bits, 8));
+          send_buffer_data(15 downto 8)  <= std_logic_vector(to_unsigned(cell_type_bits, 8));
+          send_buffer_data(23 downto 16) <= std_logic_vector(to_unsigned(jump_counters, 8));
+          send_buffer_data(31 downto 24) <= std_logic_vector(to_unsigned(jump_counter_bits, 8));
           send_buffer_write             <= '1';
           state <= SEND_RULE_AMOUNT;
         end if;
@@ -102,7 +106,7 @@ begin
           send_buffer_write <= '1';
           state <= IDLE;
         end if;
-        
+
     end case;
   end process;
 
