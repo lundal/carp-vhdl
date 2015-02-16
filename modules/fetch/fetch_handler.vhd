@@ -22,9 +22,12 @@ use ieee.numeric_std.all;
 
 library work;
 use work.instructions.all;
+use work.functions.all;
 
 entity fetch_handler is
   generic (
+    jump_counters        : positive := 4;
+    jump_counter_bits    : positive := 16;
     program_counter_bits : positive := 8;
     instruction_bits     : positive := 256
   );
@@ -60,9 +63,13 @@ architecture rtl of fetch_handler is
 
   signal communication_instruction_opcode  : std_logic_vector(4 downto 0);
   signal communication_instruction_address : std_logic_vector(program_counter_bits - 1 downto 0);
+  signal communication_instruction_jump_counter : std_logic_vector(bits(jump_counters) - 1 downto 0);
+  signal communication_instruction_jump_compare : std_logic_vector(jump_counter_bits - 1 downto 0);
 
   signal bram_instruction_opcode  : std_logic_vector(4 downto 0);
   signal bram_instruction_address : std_logic_vector(program_counter_bits - 1 downto 0);
+  signal bram_instruction_jump_counter : std_logic_vector(bits(jump_counters) - 1 downto 0);
+  signal bram_instruction_jump_compare : std_logic_vector(jump_counter_bits - 1 downto 0);
 
   signal bram_address_plus_one : std_logic_vector(program_counter_bits - 1 downto 0);
 
@@ -72,6 +79,12 @@ architecture rtl of fetch_handler is
   );
   signal bram_address_passthrough : bram_address_passthrough_type := NONE;
 
+  -- Jump counters
+  type jump_counter_values_type is array (0 to jump_counters - 1) of unsigned(jump_counter_bits - 1 downto 0);
+  signal jump_counter_values              : jump_counter_values_type;
+  signal jump_counter_match_communication : std_logic_vector(jump_counters - 1 downto 0);
+  signal jump_counter_match_bram          : std_logic_vector(jump_counters - 1 downto 0);
+
   -- Internally used out ports
   signal bram_write_i   : std_logic := '0';
   signal bram_address_i : std_logic_vector(program_counter_bits - 1 downto 0) := (others => '0');
@@ -80,15 +93,23 @@ architecture rtl of fetch_handler is
 
 begin
 
+  -- Generic checks
+  assert (jump_counters <= 256)    report "Unsupported jump_counters. Supported values are [1-256]."    severity FAILURE;
+  assert (jump_counter_bits <= 32) report "Unsupported jump_counter_bits. Supported values are [1-32]." severity FAILURE;
+
   running <= run or not done_i or nop_issued;
 
   communication_run <= '1' when running = '1' and state /= FETCH_BRAM else '0';
 
   communication_instruction_opcode  <= communication_instruction(4 downto 0);
   communication_instruction_address <= communication_instruction(program_counter_bits - 1 + 16 downto 16);
+  communication_instruction_jump_counter <= communication_instruction(bits(jump_counters) - 1 + 8 downto 8);
+  communication_instruction_jump_compare <= communication_instruction(jump_counter_bits - 1 + 32 downto 32);
 
   bram_instruction_opcode  <= bram_instruction_in(4 downto 0);
   bram_instruction_address <= bram_instruction_in(program_counter_bits - 1 + 16 downto 16);
+  bram_instruction_jump_counter <= bram_instruction_in(bits(jump_counters) - 1 + 8 downto 8);
+  bram_instruction_jump_compare <= bram_instruction_in(jump_counter_bits - 1 + 32 downto 32);
 
   bram_address_plus_one <= std_logic_vector(unsigned(bram_address_i) + 1);
 
@@ -115,15 +136,27 @@ begin
             when INSTRUCTION_JUMP =>
               state <= FETCH_BRAM;
               bram_address_i <= communication_instruction_address;
---            when INSTRUCTION_JUMP_EQUAL =>
---              if (false) then -- TODO
---                state <= FETCH_BRAM;
---                bram_address_i <= communication_instruction_address;
---              end if;
---            when INSTRUCTION_COUNTER_INCREMENT =>
---              null; -- TODO
---            when INSTRUCTION_COUNTER_RESET =>
---              null; -- TODO
+            when INSTRUCTION_JUMP_EQUAL =>
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(communication_instruction_jump_counter) = i) then
+                  if (jump_counter_match_communication(i) = '1') then
+                    state <= FETCH_BRAM;
+                    bram_address_i <= communication_instruction_address;
+                  end if;
+                end if;
+              end loop;
+            when INSTRUCTION_COUNTER_INCREMENT =>
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(communication_instruction_jump_counter) = i) then
+                  jump_counter_values(i) <= jump_counter_values(i) + 1;
+                end if;
+              end loop;
+            when INSTRUCTION_COUNTER_RESET =>
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(communication_instruction_jump_counter) = i) then
+                  jump_counter_values(i) <= (others => '0');
+                end if;
+              end loop;
             when others =>
               instruction_i <= communication_instruction;
               done_i <= '1';
@@ -143,14 +176,26 @@ begin
               state <= FETCH_COMMUNICATION;
             when INSTRUCTION_JUMP =>
               bram_address_i <= bram_instruction_address;
---            when INSTRUCTION_JUMP_EQUAL =>
---              if (false) then -- TODO
---                bram_address_i <= bram_instruction_address;
---              end if;
---            when INSTRUCTION_COUNTER_INCREMENT =>
---              null; -- TODO
---            when INSTRUCTION_COUNTER_RESET =>
---              null; -- TODO
+            when INSTRUCTION_JUMP_EQUAL =>
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(bram_instruction_jump_counter) = i) then
+                  if (jump_counter_match_bram(i) = '1') then
+                    bram_address_i <= bram_instruction_address;
+                  end if;
+                end if;
+              end loop;
+            when INSTRUCTION_COUNTER_INCREMENT =>
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(bram_instruction_jump_counter) = i) then
+                  jump_counter_values(i) <= jump_counter_values(i) + 1;
+                end if;
+              end loop;
+            when INSTRUCTION_COUNTER_RESET =>
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(bram_instruction_jump_counter) = i) then
+                  jump_counter_values(i) <= (others => '0');
+                end if;
+              end loop;
             when others =>
               bram_address_i <= bram_address_plus_one;
               instruction_i <= bram_instruction_in;
@@ -209,6 +254,13 @@ begin
 
     end case;
   end process;
+
+  counter_compare : for i in 0 to jump_counters - 1 generate
+    jump_counter_match_communication(i)
+      <= to_std_logic(jump_counter_values(i) = unsigned(communication_instruction_jump_compare));
+    jump_counter_match_bram(i)
+      <= to_std_logic(jump_counter_values(i) = unsigned(bram_instruction_jump_compare));
+  end generate;
 
   -- Internally used out ports
   bram_write <= bram_write_i;

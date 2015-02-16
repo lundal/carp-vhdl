@@ -49,13 +49,13 @@ package instructions is
   constant INSTRUCTION_SWAP_CELL_BUFFERS : std_logic_vector(4 downto 0) := "10100";
 
   -- TODO: FITNESS
-  -- TODO: JUMP_EQUAL
 
+  constant INSTRUCTION_BREAK             : std_logic_vector(4 downto 0) := "11000";
   constant INSTRUCTION_STORE             : std_logic_vector(4 downto 0) := "11010";
   constant INSTRUCTION_END               : std_logic_vector(4 downto 0) := "11011";
 
   constant INSTRUCTION_JUMP              : std_logic_vector(4 downto 0) := "11100";
-  constant INSTRUCTION_BREAK             : std_logic_vector(4 downto 0) := "11101";
+  constant INSTRUCTION_JUMP_EQUAL        : std_logic_vector(4 downto 0) := "11101";
   constant INSTRUCTION_COUNTER_INCREMENT : std_logic_vector(4 downto 0) := "11110";
   constant INSTRUCTION_COUNTER_RESET     : std_logic_vector(4 downto 0) := "11111";
 

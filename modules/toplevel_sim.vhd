@@ -35,6 +35,8 @@ entity toplevel_sim is
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1; -- Must be 1 due to implementation of CA
     cell_write_width         : positive := 8; -- TODO: Calculate this automaticly or add to information sender
+    jump_counters            : positive := 4;
+    jump_counter_bits        : positive := 16;
     instruction_bits         : positive := 256; -- Must be 256 due to implementation of fetch_communication
     lut_configuration_bits   : positive := 8; -- Should optimally be 2 for 2D and 8 for 3D
     rule_vector_amount       : positive := 64;
@@ -263,6 +265,8 @@ begin
   fetch : entity work.fetch
   generic map (
     buffer_address_bits  => rx_buffer_address_bits,
+    jump_counters        => jump_counters,
+    jump_counter_bits    => jump_counter_bits,
     program_counter_bits => program_counter_bits,
     instruction_bits     => instruction_bits
   )
@@ -341,6 +345,8 @@ begin
     matrix_wrap              => matrix_wrap,
     cell_type_bits           => cell_type_bits,
     cell_state_bits          => cell_state_bits,
+    jump_counters            => jump_counters,
+    jump_counter_bits        => jump_counter_bits,
     rule_amount              => rule_amount,
     send_buffer_address_bits => tx_buffer_address_bits
   )
