@@ -10,6 +10,7 @@
 -------------------------------------------------------------------------------
 -- Description: Selects between instructions from communication or bram.
 --            : Also handles instruction storage and control flow.
+--            : Note: The BRAM address is modified in the combinatorial part.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -81,7 +82,7 @@ architecture rtl of fetch_handler is
 
   -- Jump counters
   type jump_counter_values_type is array (0 to jump_counters - 1) of unsigned(jump_counter_bits - 1 downto 0);
-  signal jump_counter_values              : jump_counter_values_type;
+  signal jump_counter_values              : jump_counter_values_type := (others => (others => '0'));
   signal jump_counter_match_communication : std_logic_vector(jump_counters - 1 downto 0);
   signal jump_counter_match_bram          : std_logic_vector(jump_counters - 1 downto 0);
 
@@ -131,12 +132,15 @@ begin
       when FETCH_COMMUNICATION =>
         if (communication_done = '1' and running = '1') then
           case communication_instruction_opcode is
+
             when INSTRUCTION_STORE =>
               state <= STORE_BRAM;
               bram_address_i <= std_logic_vector(unsigned(communication_instruction_address) - 1); -- STORE_BRAM begins at next address
+
             when INSTRUCTION_JUMP =>
               state <= FETCH_BRAM;
               bram_address_i <= communication_instruction_address;
+
             when INSTRUCTION_JUMP_EQUAL =>
               for i in 0 to jump_counters - 1 loop
                 if (unsigned(communication_instruction_jump_counter) = i) then
@@ -146,18 +150,21 @@ begin
                   end if;
                 end if;
               end loop;
+
             when INSTRUCTION_COUNTER_INCREMENT =>
               for i in 0 to jump_counters - 1 loop
                 if (unsigned(communication_instruction_jump_counter) = i) then
                   jump_counter_values(i) <= jump_counter_values(i) + 1;
                 end if;
               end loop;
+
             when INSTRUCTION_COUNTER_RESET =>
               for i in 0 to jump_counters - 1 loop
                 if (unsigned(communication_instruction_jump_counter) = i) then
                   jump_counter_values(i) <= (others => '0');
                 end if;
               end loop;
+
             when others =>
               instruction_i <= communication_instruction;
               done_i <= '1';
@@ -173,11 +180,16 @@ begin
       when FETCH_BRAM =>
         if (running = '1') then -- TODO: bram_done?
           case bram_instruction_opcode is
+
             when INSTRUCTION_BREAK =>
               state <= FETCH_COMMUNICATION;
+
             when INSTRUCTION_JUMP =>
               bram_address_i <= bram_instruction_address;
+
             when INSTRUCTION_JUMP_EQUAL =>
+              bram_address_i <= bram_address_plus_one;
+
               for i in 0 to jump_counters - 1 loop
                 if (unsigned(bram_instruction_jump_counter) = i) then
                   if (jump_counter_match_bram(i) = '1') then
@@ -185,18 +197,25 @@ begin
                   end if;
                 end if;
               end loop;
+
             when INSTRUCTION_COUNTER_INCREMENT =>
+              bram_address_i <= bram_address_plus_one;
+
               for i in 0 to jump_counters - 1 loop
                 if (unsigned(bram_instruction_jump_counter) = i) then
                   jump_counter_values(i) <= jump_counter_values(i) + 1;
                 end if;
               end loop;
+
             when INSTRUCTION_COUNTER_RESET =>
+              bram_address_i <= bram_address_plus_one;
+
               for i in 0 to jump_counters - 1 loop
                 if (unsigned(bram_instruction_jump_counter) = i) then
                   jump_counter_values(i) <= (others => '0');
                 end if;
               end loop;
+
             when others =>
               bram_address_i <= bram_address_plus_one;
               instruction_i <= bram_instruction_in;
@@ -211,12 +230,15 @@ begin
       when STORE_BRAM =>
         if (communication_done = '1' and running = '1') then
           case communication_instruction_opcode is
+
             when INSTRUCTION_END =>
               state <= FETCH_COMMUNICATION;
+
             when others =>
               bram_write_i <= '1';
               bram_address_i <= bram_address_plus_one;
               bram_instruction_out <= communication_instruction;
+
           end case;
         end if;
 
@@ -225,7 +247,11 @@ begin
 
   -- When preparing to fetch from BRAM, send address one cycle earlier.
   -- This is needed since the BRAM takes an extra cycle to update its outputs.
-  process (state, running, communication_done, communication_instruction_opcode, bram_instruction_opcode) begin
+  -- Note: bram_address_i has to be set in clocked part
+  process (state, running, communication_done,
+           communication_instruction_opcode, bram_instruction_opcode,
+           bram_instruction_jump_counter, jump_counter_match_bram) begin
+    -- Defaults
     bram_address_passthrough <= NONE;
 
     case state is
@@ -233,20 +259,40 @@ begin
       when FETCH_COMMUNICATION =>
         if (communication_done = '1' and running = '1') then
           case communication_instruction_opcode is
+
             when INSTRUCTION_JUMP =>
               bram_address_passthrough <= COMMUNICATION_INSTRUCT;
+
+            when INSTRUCTION_JUMP_EQUAL =>
+              bram_address_passthrough <= COMMUNICATION_INSTRUCT;
+
             when others =>
               null;
+
           end case;
         end if;
 
       when FETCH_BRAM =>
         if (running = '1') then -- TODO: bram_done?
           case bram_instruction_opcode is
+
             when INSTRUCTION_JUMP =>
               bram_address_passthrough <= BRAM_INSTRUCT;
+
+            when INSTRUCTION_JUMP_EQUAL =>
+              bram_address_passthrough <= BRAM_PLUS_ONE;
+
+              for i in 0 to jump_counters - 1 loop
+                if (unsigned(bram_instruction_jump_counter) = i) then
+                  if (jump_counter_match_bram(i) = '1') then
+                    bram_address_passthrough <= BRAM_INSTRUCT;
+                  end if;
+                end if;
+              end loop;
+
             when others =>
               bram_address_passthrough <= BRAM_PLUS_ONE;
+
           end case;
         end if;
 
