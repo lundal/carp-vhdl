@@ -115,7 +115,7 @@ begin
           rule_vector_shift_register <= std_logic_vector(shift_right(unsigned(rule_vector_shift_register), 32));
           rule_vector_words_sent <= rule_vector_words_sent + 1;
           -- Check if done
-          if (rule_vector_words_sent + 1 = words_per_rule_vector) then
+          if (rule_vector_words_sent = words_per_rule_vector - 1) then
             state <= GET_RULE_VECTOR;
           end if;
         end if;

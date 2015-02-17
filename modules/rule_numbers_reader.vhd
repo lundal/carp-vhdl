@@ -104,13 +104,13 @@ begin
           -- Iterate in raster order (x, then y, then z)
           -- Fit as many as possible in each word, but align between each rule number and row
           address_x <= std_logic_vector(unsigned(address_x) + rule_numbers_per_word);
-          if (unsigned(address_x) + rule_numbers_per_word = rule_numbers_per_word*rule_numbers_words_per_row) then -- TODO: Verify this
+          if (unsigned(address_x) = rule_numbers_per_word*rule_numbers_words_per_row - rule_numbers_per_word) then -- TODO: Verify this
             address_x <= (others => '0');
             address_y <= std_logic_vector(unsigned(address_y) + 1);
-            if (unsigned(address_y) + 1 = matrix_height or matrix_height = 1) then
+            if (unsigned(address_y) = matrix_height - 1 or matrix_height = 1) then
               address_y <= (others => '0');
               address_z <= std_logic_vector(unsigned(address_z) + 1);
-              if (unsigned(address_z) + 1 = matrix_depth or matrix_depth = 1) then
+              if (unsigned(address_z) = matrix_depth - 1 or matrix_depth = 1) then
                 state <= IDLE;
                 done_i <= '1';
               end if;
