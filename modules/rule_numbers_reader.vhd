@@ -62,7 +62,7 @@ architecture rtl of rule_numbers_reader is
   signal state : state_type := IDLE;
 
   -- Buffer checks
-  signal buffer_has_space_one : boolean;
+  signal buffer_has_space : boolean;
 
   -- Shifted signals
   signal shifted_rule_numbers : std_logic_vector(matrix_width * rule_number_bits - 1 downto 0);
@@ -76,7 +76,9 @@ architecture rtl of rule_numbers_reader is
 
 begin
 
-  buffer_has_space_one <= signed(send_buffer_count) /= -1;
+  -- Buffer must have at least as many available words as the number of cycles
+  -- between the condition is checked and the data is written. 4 should be plenty.
+  buffer_has_space <= send_buffer_count(send_buffer_count'high downto 2) /= (send_buffer_count'high downto 2 => '1');
 
   process begin
     wait until rising_edge(clock);
@@ -98,7 +100,7 @@ begin
         end if;
 
       when SEND_ALL_NUMBERS =>
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_write <= '1';
           shift_amount <= address_x;
           -- Iterate in raster order (x, then y, then z)

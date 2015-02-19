@@ -81,7 +81,7 @@ architecture rtl of cell_writer_reader is
   signal send_buffer_source : send_buffer_source_type;
 
   -- Buffer checks
-  signal buffer_has_space_one : boolean;
+  signal buffer_has_space : boolean;
 
   -- Fill signals
   signal state_repeated : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
@@ -120,7 +120,9 @@ begin
   -- Generic checks
   assert (cell_type_bits <= 32) report "Unsupported cell_type_bits. Supported values are [1-32]." severity FAILURE;
 
-  buffer_has_space_one <= signed(send_buffer_count) /= -1;
+  -- Buffer must have at least as many available words as the number of cycles
+  -- between the condition is checked and the data is written. 4 should be plenty.
+  buffer_has_space <= send_buffer_count(send_buffer_count'high downto 2) /= (send_buffer_count'high downto 2 => '1');
 
   repeated_states_and_types : for i in 0 to matrix_width - 1 generate
     state_repeated((i+1)*cell_state_bits - 1 downto i*cell_state_bits) <= decode_state;
@@ -232,7 +234,7 @@ begin
             null;
         end case;
 
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_write <= '1';
           shift_amount <= address_x;
           state <= IDLE;
@@ -240,7 +242,7 @@ begin
         end if;
 
       when SEND_ALL_STATES =>
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_source <= STATE_ROW;
           send_buffer_write <= '1';
           shift_amount <= address_x;
@@ -262,7 +264,7 @@ begin
         end if;
 
       when SEND_ALL_TYPES =>
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_source <= TYPE_ROW;
           send_buffer_write <= '1';
           shift_amount <= address_x;

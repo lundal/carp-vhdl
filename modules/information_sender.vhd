@@ -61,11 +61,13 @@ architecture rtl of information_sender is
   signal state : state_type := IDLE;
 
   -- Buffer checks
-  signal buffer_has_space_one : boolean;
+  signal buffer_has_space : boolean;
 
 begin
 
-  buffer_has_space_one <= send_buffer_count /= (send_buffer_count'range => '1');
+  -- Buffer must have at least as many available words as the number of cycles
+  -- between the condition is checked and the data is written. 4 should be plenty.
+  buffer_has_space <= send_buffer_count(send_buffer_count'high downto 2) /= (send_buffer_count'high downto 2 => '1');
 
   process begin
     wait until rising_edge(clock);
@@ -81,7 +83,7 @@ begin
         end if;
 
       when SEND_MATRIX_SIZE =>
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_data(0)            <= to_std_logic(matrix_wrap);
           send_buffer_data(15 downto 8)  <= std_logic_vector(to_unsigned(matrix_width, 8));
           send_buffer_data(23 downto 16) <= std_logic_vector(to_unsigned(matrix_height, 8));
@@ -91,7 +93,7 @@ begin
         end if;
 
       when SEND_CELL_SIZE_AND_COUNTERS =>
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_data(7 downto 0)   <= std_logic_vector(to_unsigned(cell_state_bits, 8));
           send_buffer_data(15 downto 8)  <= std_logic_vector(to_unsigned(cell_type_bits, 8));
           send_buffer_data(23 downto 16) <= std_logic_vector(to_unsigned(jump_counters, 8));
@@ -101,7 +103,7 @@ begin
         end if;
 
       when SEND_RULE_AMOUNT =>
-        if (buffer_has_space_one) then
+        if (buffer_has_space) then
           send_buffer_data  <= std_logic_vector(to_unsigned(rule_amount, 32));
           send_buffer_write <= '1';
           state <= IDLE;

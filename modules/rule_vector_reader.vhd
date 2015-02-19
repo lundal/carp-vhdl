@@ -65,7 +65,7 @@ architecture rtl of rule_vector_reader is
 
   -- Buffer checks
   signal vector_buffer_has_data_one : boolean;
-  signal send_buffer_has_space_one  : boolean;
+  signal send_buffer_has_space  : boolean;
 
   -- Internally used out ports
   signal done_i : std_logic := '1';
@@ -75,8 +75,11 @@ begin
   -- Generic checks
   assert (rule_amount >= 32) report "Unsupported rule_amount. Supported values are [32-N]." severity FAILURE;
 
-  vector_buffer_has_data_one <= unsigned(vector_buffer_count) /= 0;
-  send_buffer_has_space_one  <= signed(send_buffer_count) /= -1;
+
+  -- Buffer must have at least as many available words as the number of cycles
+  -- between the condition is checked and the data is written. 4 should be plenty.
+  send_buffer_has_space <= send_buffer_count(send_buffer_count'high downto 2) /= (send_buffer_count'high downto 2 => '1');
+  vector_buffer_has_data_one <= vector_buffer_count /= (vector_buffer_count'range => '0');
 
   process begin
     wait until rising_edge(clock);
@@ -107,7 +110,7 @@ begin
         end if;
 
       when SEND_RULE_VECTOR =>
-        if (send_buffer_has_space_one) then
+        if (send_buffer_has_space) then
           -- Send vector part
           send_buffer_write <= '1';
           send_buffer_data <= rule_vector_shift_register(31 downto 0);
