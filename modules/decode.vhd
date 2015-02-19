@@ -26,15 +26,16 @@ use work.types.all;
 
 entity decode is
   generic (
-    matrix_width       : positive := 8;
-    matrix_height      : positive := 8;
-    matrix_depth       : positive := 8;
-    cell_type_bits     : positive := 8;
-    cell_state_bits    : positive := 1;
-    cell_write_width   : positive := 8;
-    instruction_bits   : positive := 256;
-    rule_amount        : positive := 256;
-    rule_vector_amount : positive := 64
+    matrix_width           : positive := 8;
+    matrix_height          : positive := 8;
+    matrix_depth           : positive := 8;
+    cell_type_bits         : positive := 8;
+    cell_state_bits        : positive := 1;
+    cell_type_write_width  : positive := 8;
+    cell_state_write_width : positive := 8;
+    instruction_bits       : positive := 256;
+    rule_amount            : positive := 256;
+    rule_vector_amount     : positive := 64
   );
   port (
     instruction : in std_logic_vector(instruction_bits - 1 downto 0);
@@ -46,9 +47,9 @@ entity decode is
     cell_writer_reader_address_y : out std_logic_vector(bits(matrix_height) - 1 downto 0);
     cell_writer_reader_address_x : out std_logic_vector(bits(matrix_width) - 1 downto 0);
     cell_writer_reader_state     : out std_logic_vector(cell_state_bits - 1 downto 0);
-    cell_writer_reader_states    : out std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
+    cell_writer_reader_states    : out std_logic_vector(cell_state_write_width*cell_state_bits - 1 downto 0);
     cell_writer_reader_type      : out std_logic_vector(cell_type_bits - 1 downto 0);
-    cell_writer_reader_types     : out std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
+    cell_writer_reader_types     : out std_logic_vector(cell_type_write_width*cell_type_bits - 1 downto 0);
 
     cellular_automata_operation  : out cellular_automata_operation_type;
     cellular_automata_step_count : out std_logic_vector(15 downto 0);

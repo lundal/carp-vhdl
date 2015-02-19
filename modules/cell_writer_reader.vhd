@@ -25,12 +25,13 @@ use work.types.all;
 
 entity cell_writer_reader is
   generic (
-    matrix_width     : positive := 8;
-    matrix_height    : positive := 8;
-    matrix_depth     : positive := 8;
-    cell_type_bits   : positive := 8;
-    cell_state_bits  : positive := 1;
-    cell_write_width : positive := 4;
+    matrix_width             : positive := 8;
+    matrix_height            : positive := 8;
+    matrix_depth             : positive := 8;
+    cell_type_bits           : positive := 8;
+    cell_state_bits          : positive := 1;
+    cell_type_write_width    : positive := 8;
+    cell_state_write_width   : positive := 8;
     send_buffer_address_bits : positive := 10
   );
   port (
@@ -52,9 +53,9 @@ entity cell_writer_reader is
     decode_address_y : in std_logic_vector(bits(matrix_height) - 1 downto 0);
     decode_address_x : in std_logic_vector(bits(matrix_width) - 1 downto 0);
     decode_state     : in std_logic_vector(cell_state_bits - 1 downto 0);
-    decode_states    : in std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
+    decode_states    : in std_logic_vector(cell_state_write_width*cell_state_bits - 1 downto 0);
     decode_type      : in std_logic_vector(cell_type_bits - 1 downto 0);
-    decode_types     : in std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
+    decode_types     : in std_logic_vector(cell_type_write_width*cell_type_bits - 1 downto 0);
 
     run  : in  std_logic;
     done : out std_logic;
@@ -104,9 +105,9 @@ architecture rtl of cell_writer_reader is
   signal address_y  : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal address_x  : std_logic_vector(bits(matrix_width) - 1 downto 0);
   signal state_new  : std_logic_vector(cell_state_bits - 1 downto 0);
-  signal states_new : std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
+  signal states_new : std_logic_vector(cell_state_write_width*cell_state_bits - 1 downto 0);
   signal type_new   : std_logic_vector(cell_type_bits - 1 downto 0);
-  signal types_new  : std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
+  signal types_new  : std_logic_vector(cell_type_write_width*cell_type_bits - 1 downto 0);
 
   -- Cell buffer source
   type buffer_source_type is (ONE, ROW, REPEATED);
@@ -337,7 +338,7 @@ begin
   combine_with_states : entity work.combiner
   generic map (
     data_width     => matrix_width*cell_state_bits,
-    data_new_width => cell_write_width*cell_state_bits,
+    data_new_width => cell_state_write_width*cell_state_bits,
     offset_width   => bits(matrix_width),
     offset_unit    => cell_state_bits,
     offset_to_left => true
@@ -367,7 +368,7 @@ begin
   combine_with_types : entity work.combiner
   generic map (
     data_width     => matrix_width*cell_type_bits,
-    data_new_width => cell_write_width*cell_type_bits,
+    data_new_width => cell_type_write_width*cell_type_bits,
     offset_width   => bits(matrix_width),
     offset_unit    => cell_type_bits,
     offset_to_left => true

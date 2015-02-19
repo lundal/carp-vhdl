@@ -34,7 +34,6 @@ entity toplevel is
     matrix_wrap              : boolean  := true;
     cell_type_bits           : positive := 8;
     cell_state_bits          : positive := 1; -- Must be 1 due to implementation of CA
-    cell_write_width         : positive := 8; -- TODO: Calculate this automaticly or add to information sender
     jump_counters            : positive := 4;
     jump_counter_bits        : positive := 16;
     instruction_bits         : positive := 256; -- Must be 256 due to implementation of fetch_communication
@@ -59,6 +58,10 @@ entity toplevel is
 end toplevel;
 
 architecture rtl of toplevel is
+
+  -- Calculate amount of cells that fits in one write instruction
+  constant cell_type_write_width  : positive := min(matrix_width, (instruction_bits-32)/cell_type_bits);
+  constant cell_state_write_width : positive := min(matrix_width, (instruction_bits-32)/cell_state_bits);
 
   -- General
   signal clock : std_logic;
@@ -93,9 +96,9 @@ architecture rtl of toplevel is
   signal decode_to_cell_writer_reader_address_y : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal decode_to_cell_writer_reader_address_x : std_logic_vector(bits(matrix_width) - 1 downto 0);
   signal decode_to_cell_writer_reader_state     : std_logic_vector(cell_state_bits - 1 downto 0);
-  signal decode_to_cell_writer_reader_states    : std_logic_vector(cell_write_width*cell_state_bits - 1 downto 0);
+  signal decode_to_cell_writer_reader_states    : std_logic_vector(cell_state_write_width*cell_state_bits - 1 downto 0);
   signal decode_to_cell_writer_reader_type      : std_logic_vector(cell_type_bits - 1 downto 0);
-  signal decode_to_cell_writer_reader_types     : std_logic_vector(cell_write_width*cell_type_bits - 1 downto 0);
+  signal decode_to_cell_writer_reader_types     : std_logic_vector(cell_type_write_width*cell_type_bits - 1 downto 0);
 
   signal decode_to_cellular_automata_operation  : cellular_automata_operation_type;
   signal decode_to_cellular_automata_step_count : std_logic_vector(15 downto 0);
@@ -280,15 +283,16 @@ begin
 
   decode : entity work.decode
   generic map (
-    matrix_width       => matrix_width,
-    matrix_height      => matrix_height,
-    matrix_depth       => matrix_depth,
-    cell_type_bits     => cell_type_bits,
-    cell_state_bits    => cell_state_bits,
-    cell_write_width   => cell_write_width,
-    instruction_bits   => instruction_bits,
-    rule_amount        => rule_amount,
-    rule_vector_amount => rule_vector_amount
+    matrix_width           => matrix_width,
+    matrix_height          => matrix_height,
+    matrix_depth           => matrix_depth,
+    cell_type_bits         => cell_type_bits,
+    cell_state_bits        => cell_state_bits,
+    cell_type_write_width  => cell_type_write_width,
+    cell_state_write_width => cell_state_write_width,
+    instruction_bits       => instruction_bits,
+    rule_amount            => rule_amount,
+    rule_vector_amount     => rule_vector_amount
   )
   port map (
     instruction => decode_from_fetch_instruction,
@@ -360,12 +364,13 @@ begin
 
   cell_writer_reader : entity work.cell_writer_reader
   generic map (
-    matrix_width     => matrix_width,
-    matrix_height    => matrix_height,
-    matrix_depth     => matrix_depth,
-    cell_type_bits   => cell_type_bits,
-    cell_state_bits  => cell_state_bits,
-    cell_write_width => cell_write_width,
+    matrix_width             => matrix_width,
+    matrix_height            => matrix_height,
+    matrix_depth             => matrix_depth,
+    cell_type_bits           => cell_type_bits,
+    cell_state_bits          => cell_state_bits,
+    cell_type_write_width    => cell_type_write_width,
+    cell_state_write_width   => cell_state_write_width,
     send_buffer_address_bits => tx_buffer_address_bits
   )
   port map (
