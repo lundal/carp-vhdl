@@ -43,17 +43,6 @@ architecture dft_arch of dft is
 
   -- constants
   constant PERRUN : integer := DFT_DSPS/2;
-  type carray is array(0 to 7) of integer;
-  constant STARTS	: carray := (
-	  0*PERRUN,
-	  1*PERRUN,
-	  2*PERRUN,
-	  3*PERRUN,
-	  4*PERRUN,
-	  5*PERRUN,
-	  6*PERRUN,
-	  7*PERRUN
-  );
 
   constant zero : std_logic_vector(63 downto 0) := (others => '0');
   constant one : std_logic_vector(6 downto 0) := (others => '1');
@@ -219,7 +208,7 @@ begin
 
         when set_output =>
           for i in 0 to PERRUN - 1 loop
-            output(i+STARTS(cnt2-1)) <= P(i*2)(17 downto 0);
+            output(i+PERRUN*(cnt2-1)) <= P(i*2)(17 downto 0);
           end loop;
           feed_dsp <= "00";
           
