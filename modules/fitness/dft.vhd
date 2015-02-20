@@ -215,7 +215,7 @@ begin
 
         -- If both parts are negative
         -- P = (D+B)*(-1)
-        if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION*2) = '1') then
+        if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
           d_sub_b  <= false;
           a_mult_b <= false;
           A(i*2) <= "111111111111111111";
