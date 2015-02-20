@@ -222,7 +222,7 @@ begin
     end if;
   end process;
 
-  process(feed_dsp, data_in, twiddle_out, P)
+  process(feed_dsp, counter_runs, data_in, twiddle_out, P)
   begin
     for i in 0 to DFT_DSPS-1 loop
       OPMODE(i) <= (others => '0');
@@ -236,15 +236,15 @@ begin
         B(i*2+1)(DFT_INW-1 downto 0) <= data_in;
         OPMODE(i*2) <= "00001001";
         OPMODE(i*2+1) <= "00001001";
-        if(twiddle_out(i)(TWLEN-1)='1') then
-          A(i*2) <= "1111111111" & twiddle_out(i)(TWLEN-1 downto TWLEN/2);
+        if(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1)='1') then
+          A(i*2) <= "1111111111" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2);
         else
-          A(i*2) <= "0000000000" & twiddle_out(i)(TWLEN-1 downto TWLEN/2);
+          A(i*2) <= "0000000000" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2);
         end if;
-        if(twiddle_out(i)(TWLEN/2-1)='1') then
-          A(i*2+1) <= "1111111111" & twiddle_out(i)(TWLEN/2-1 downto 0);
+        if(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1)='1') then
+          A(i*2+1) <= "1111111111" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1 downto 0);
         else
-          A(i*2+1) <= "0000000000" & twiddle_out(i)(TWLEN/2-1 downto 0);
+          A(i*2+1) <= "0000000000" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1 downto 0);
         end if;
       end loop;
     elsif feed_dsp = "10" then
