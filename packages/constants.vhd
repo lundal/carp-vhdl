@@ -183,7 +183,7 @@ package constants is
   -- Must be numbers and not expressions for twiddle_generator.py to work
 
   -- Twiddle factor precision
-  constant TW_PRES      : integer := 6;
+  constant TWIDDLE_PRECISION      : integer := 6;
   -- Number of values in DFT input
   constant DFT_SIZE	    : integer := 128;
   -- The logarithm of how many DSPS are used
@@ -191,9 +191,9 @@ package constants is
 
     --------------------------------------------------------------
 
-  constant TWIDDLE_SIZE : integer := (TW_PRES+2)*2;
+  constant TWIDDLE_SIZE : integer := (TWIDDLE_PRECISION+2)*2;
   constant DFT_DSPS     : integer := 2**DFT_LG_DSPS;
-  constant PERDSP	      : integer := DFT_SIZE/DFT_DSPS;
+  constant RUNS_PER_DSP	      : integer := DFT_SIZE/DFT_DSPS;
   constant VALSIZE	    : integer := 18;
   constant TWLEN        : integer := 16;
   constant DFT_INW      : integer := RUN_STEP_DATA_BUS_SIZE;

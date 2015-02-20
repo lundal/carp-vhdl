@@ -27,7 +27,7 @@ def read_attributes():
         if (":=" in line and ";" in line):
             [declaration, assignment] = line.split(":=")
             value = assignment.split(";")[0]
-            if ("TW_PRES" in declaration): twiddle_precision = int(value)
+            if ("TWIDDLE_PRESCISION" in declaration): twiddle_precision = int(value)
             if ("DFT_LG_DSPS" in declaration): dsp_amount = 2**int(value)
             if ("DFT_SIZE" in declaration): transform_size = int(value)
     return (twiddle_precision, dsp_amount, transform_size)
@@ -90,8 +90,8 @@ use work.constants.all;
 
 package twiddles is
 
-  type twat is array(0 to PERDSP*DFT_SIZE-1) of STD_LOGIC_VECTOR(TWLEN-1 downto 0);
-  type twa is array(0 to DFT_SIZE/(PERDSP*2)-1) of twat;
+  type twat is array(0 to RUNS_PER_DSP*DFT_SIZE-1) of STD_LOGIC_VECTOR(TWLEN-1 downto 0);
+  type twa is array(0 to DFT_SIZE/(RUNS_PER_DSP*2)-1) of twat;
   constant TWIDDLES : twa := (
 """
 for c in range(int(dsp_amount/2)):

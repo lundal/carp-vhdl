@@ -53,8 +53,8 @@ architecture dft_arch of dft is
   signal dft_state : dft_state_type;
 
   
-  signal cnt : unsigned(6 downto 0);
-  signal cnt2 : integer := 0;
+  signal counter_input : unsigned(6 downto 0);
+  signal counter_runs : integer := 0;
   signal first_addr_i : unsigned(RUN_STEP_ADDR_BUS_SIZE - 1 downto 0);
   
   signal twiddle_index : unsigned(13 - DFT_LG_DSPS downto 0) := (others => '0');
@@ -158,8 +158,8 @@ begin
   begin
     if (reset='0') then
       dft_state <= idle;
-      cnt <= (others => '0');
-      cnt2 <= 0;
+      counter_input <= (others => '0');
+      counter_runs <= 0;
       twiddle_index <= (others => '0');
       feed_dsp <= "00";
     elsif(rising_edge(clock)) then
@@ -172,21 +172,21 @@ begin
             dft_state <= idle;
           end if;
           feed_dsp <= "00";
-          cnt2 <= 0;
+          counter_runs <= 0;
         when prepare_pipe =>
           dft_state <= run;
           twiddle_index <= twiddle_index + 1;
-          cnt <= cnt + 1;
+          counter_input <= counter_input + 1;
           feed_dsp <= "01";
 
         when run =>
           twiddle_index <= twiddle_index + 1;
-          if cnt = unsigned(one(cnt'length - 1 downto 0)) then
+          if counter_input = unsigned(one(counter_input'length - 1 downto 0)) then
             dft_state <= stop_acc;
           else
             dft_state <= run;
           end if;
-          cnt <= cnt + 1;
+          counter_input <= counter_input + 1;
           feed_dsp <= "01";
 
         when stop_acc =>
@@ -195,7 +195,7 @@ begin
 
         when reset_count =>
           dft_state <= output_wait1;
-          cnt <= (others => '0');
+          counter_input <= (others => '0');
           feed_dsp <= "10";
 
 
@@ -204,16 +204,16 @@ begin
 
         when output_wait2 =>
           dft_state <= set_output;
-          cnt2 <= cnt2 + 1;
+          counter_runs <= counter_runs + 1;
 
         when set_output =>
           for i in 0 to PERRUN - 1 loop
-            output(i+PERRUN*(cnt2-1)) <= P(i*2)(17 downto 0);
+            output((counter_runs-1)*PERRUN+i) <= P(i*2)(17 downto 0);
           end loop;
           feed_dsp <= "00";
           
           -- Check if finished
-          if cnt2 = PERDSP then
+          if counter_runs = RUNS_PER_DSP then
             dft_state <= idle;
           else
             dft_state <= run;
@@ -249,15 +249,15 @@ begin
       end loop;
     elsif feed_dsp = "10" then
       for i in 0 to PERRUN-1 loop
-        D(i*2) <= P(i*2)(VALSIZE-1+TW_PRES downto TW_PRES);
-        B(i*2) <= P(i*2+1)(VALSIZE-1+TW_PRES downto TW_PRES);
-        if (P(i*2+1)(VALSIZE-1+TW_PRES) = '1' and P(i*2)(VALSIZE-1+TW_PRES*2) = '1') then
+        D(i*2) <= P(i*2)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION);
+        B(i*2) <= P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION);
+        if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION*2) = '1') then
           OPMODE(i*2) <= "00010001";
           A(i*2) <= "111111111111111111";
-        elsif (P(i*2+1)(VALSIZE-1+TW_PRES) = '1' and P(i*2)(VALSIZE-1+TW_PRES) = '0') then
+        elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '0') then
           OPMODE(i*2) <= "01010001";
           A(i*2) <= "000000000000000001";
-        elsif (P(i*2+1)(VALSIZE-1+TW_PRES) = '0' and P(i*2)(VALSIZE-1+TW_PRES) = '1') then
+        elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '0' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
           OPMODE(i*2) <= "01010001";
           A(i*2) <= "111111111111111111";
         else
@@ -277,9 +277,9 @@ begin
   -----------------------------------------------------------------------------
   -- comb. part of FSM
 
-  process (dft_state, first_addr_i,cnt)
+  process (dft_state, first_addr_i,counter_input)
   begin
-    data_addr <= std_logic_vector(first_addr_i + cnt);
+    data_addr <= std_logic_vector(first_addr_i + counter_input);
     dft_idle <= '0';
     case dft_state is
       when idle =>

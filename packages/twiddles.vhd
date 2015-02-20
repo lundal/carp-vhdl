@@ -23,8 +23,8 @@ use work.constants.all;
 
 package twiddles is
 
-  type twat is array(0 to PERDSP*DFT_SIZE-1) of STD_LOGIC_VECTOR(TWLEN-1 downto 0);
-  type twa is array(0 to DFT_SIZE/(PERDSP*2)-1) of twat;
+  type twat is array(0 to RUNS_PER_DSP*DFT_SIZE-1) of STD_LOGIC_VECTOR(TWLEN-1 downto 0);
+  type twa is array(0 to DFT_SIZE/(RUNS_PER_DSP*2)-1) of twat;
   constant TWIDDLES : twa := (
 ("0100000000000000","0100000000000000","0100000000000000","0100000000000000",
 "0100000000000000","0100000000000000","0100000000000000","0100000000000000",
