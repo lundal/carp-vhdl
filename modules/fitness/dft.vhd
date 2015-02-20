@@ -222,12 +222,14 @@ begin
 
   process(feed_dsp, counter_runs, data_in, twiddle_out, P)
   begin
+    -- Defaults
     for i in 0 to DFT_DSPS-1 loop
       OPMODE(i) <= (others => '0');
       A(i) <= (others => '0');
       B(i) <= (others => '0');
       D(i) <= (others => '0');
     end loop;
+
     if feed_dsp = "01" then
       -- Multiply input with twiddles
       for i in 0 to PERRUN-1 loop
@@ -277,13 +279,6 @@ begin
           A(i*2) <= "000000000000000001";
 
         end if;
-      end loop;
-    else
-      for i in 0 to DFT_DSPS-1 loop
-        OPMODE(i) <= (others => '0');
-        A(i) <= (others => '0');
-        B(i) <= (others => '0');
-        D(i) <= (others => '0');
       end loop;
     end if;
   end process;
