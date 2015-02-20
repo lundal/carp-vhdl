@@ -178,7 +178,7 @@ begin
     end if;
   end process;
 
-  process(feed_dsp, counter_runs, data_in, twiddle_out, P)
+  process(feed_dsp, data_in, twiddle_out, P)
   begin
     -- Defaults
     for i in 0 to DFT_DSPS-1 loop
@@ -198,8 +198,8 @@ begin
         a_mult_b <= true;
 
         -- Twiddles (sign extended)
-        A(i*2) <= std_logic_vector(resize(signed(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2)), A(i*2)'length)); -- Real part
-        A(i*2+1) <= std_logic_vector(resize(signed(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1 downto 0)), A(i*2+1)'length)); -- Imaginary part
+        A(i*2) <= std_logic_vector(resize(signed(twiddle_out(i)(TWLEN-1 downto TWLEN/2)), A(i*2)'length)); -- Real part
+        A(i*2+1) <= std_logic_vector(resize(signed(twiddle_out(i)(TWLEN/2-1 downto 0)), A(i*2+1)'length)); -- Imaginary part
 
         -- Input (zero extended)
         B(i*2) <= std_logic_vector(resize(unsigned(data_in), B(i*2)'length));
