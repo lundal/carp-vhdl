@@ -2,7 +2,7 @@
 -- Title      : DSP Wrapper
 -- Project    : Cellular Automata Research Project
 -------------------------------------------------------------------------------
--- File       : twiddles.vhd
+-- File       : dsp_wrapper.vhd
 -- Author     : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
 -- Last update: 2015-02-20
