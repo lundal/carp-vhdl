@@ -47,22 +47,19 @@ architecture dft_arch of dft is
   constant zero : std_logic_vector(63 downto 0) := (others => '0');
   constant one : std_logic_vector(6 downto 0) := (others => '1');
 
-
   type dft_state_type is (idle, prepare_pipe, run, stop_acc, reset_count,
                           output_wait1, output_wait2, set_output);
   signal dft_state : dft_state_type;
 
-  
   signal counter_input : unsigned(6 downto 0);
   signal counter_runs : integer := 0;
   signal first_addr_i : unsigned(RUN_STEP_ADDR_BUS_SIZE - 1 downto 0);
-  
+
   signal twiddle_index : unsigned(13 - DFT_LG_DSPS downto 0) := (others => '0');
   type twiddle_out_t is array(PERRUN - 1 downto 0)
     of std_logic_vector(TWIDDLE_SIZE - 1 downto 0);
   signal twiddle_out : twiddle_out_t := (others => (others => '0'));
   signal feed_dsp : std_logic_vector(1 downto 0);
-
 
   -- DSP SIGNALS
   type a18 is array(0 to DFT_DSPS-1) of std_logic_vector (18-1 downto 0);
@@ -75,11 +72,11 @@ architecture dft_arch of dft is
   signal D        : a18 := (others => (others => '0'));
   signal do_acc   : std_logic := '0';
   signal dont_acc : std_logic;
-  
 
 begin
+
   dont_acc <= not do_acc;
-  
+
   twiddlemem: for i in 0 to PERRUN - 1 generate
     twmem_i : entity work.twiddle_memory
       generic map (
@@ -107,7 +104,8 @@ begin
         MREG => 0,            -- M pipeline register (0/1)
         OPMODEREG => 1,       -- Enable=1/disable=0 OPMODE input pipeline registers
         PREG => 1,            -- P output pipeline register (0/1)
-        RSTTYPE => "SYNC")    -- Specify reset type, "SYNC" or "ASYNC"
+        RSTTYPE => "SYNC"     -- Specify reset type, "SYNC" or "ASYNC"
+      )
       port map (
         -- Cascade Ports: 18-bit (each) output Ports to cascade from one DSP48 to another
         BCOUT => open,        -- 18-bit output B port cascade output
@@ -173,6 +171,7 @@ begin
           end if;
           feed_dsp <= "00";
           counter_runs <= 0;
+
         when prepare_pipe =>
           dft_state <= run;
           twiddle_index <= twiddle_index + 1;
@@ -198,7 +197,6 @@ begin
           counter_input <= (others => '0');
           feed_dsp <= "10";
 
-
         when output_wait1 =>
           dft_state <= output_wait2;
 
@@ -211,7 +209,7 @@ begin
             output((counter_runs-1)*PERRUN+i) <= P(i*2)(17 downto 0);
           end loop;
           feed_dsp <= "00";
-          
+
           -- Check if finished
           if counter_runs = RUNS_PER_DSP then
             dft_state <= idle;
@@ -289,6 +287,7 @@ begin
       end loop;
     end if;
   end process;
+
   -----------------------------------------------------------------------------
   -- comb. part of FSM
 
@@ -300,10 +299,10 @@ begin
       when idle =>
         do_acc <= '0';
         dft_idle <= '1';
-      
+
       when prepare_pipe =>
         null;
-      
+
       when run =>
         do_acc <= '1';
 
@@ -315,7 +314,7 @@ begin
 
       when output_wait1 =>
         null;
-      
+
       when output_wait2 =>
         null;
 
@@ -324,9 +323,10 @@ begin
 
     end case;
   end process;
-  
+
   ----------------------------------------------------------------------------
   -- Logic to set first address to read from.
+
   process (reset, clock)
   begin
     if reset = '0' then
@@ -337,4 +337,5 @@ begin
       end if;
     end if;
   end process;
+
 end dft_arch;
