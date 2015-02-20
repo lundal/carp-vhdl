@@ -231,38 +231,53 @@ begin
       D(i) <= (others => '0');
     end loop;
     if feed_dsp = "01" then
+      -- Multiply input with twiddles
       for i in 0 to PERRUN-1 loop
-        B(i*2)(DFT_INW-1 downto 0) <= data_in;
-        B(i*2+1)(DFT_INW-1 downto 0) <= data_in;
+
+        -- Multiply mode: P = A*B
         OPMODE(i*2) <= "00001001";
         OPMODE(i*2+1) <= "00001001";
-        if(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1)='1') then
-          A(i*2) <= "1111111111" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2);
-        else
-          A(i*2) <= "0000000000" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2);
-        end if;
-        if(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1)='1') then
-          A(i*2+1) <= "1111111111" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1 downto 0);
-        else
-          A(i*2+1) <= "0000000000" & twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1 downto 0);
-        end if;
+
+        -- Twiddles (sign extended)
+        A(i*2) <= std_logic_vector(resize(signed(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2)), A(i*2)'length)); -- Real part
+        A(i*2+1) <= std_logic_vector(resize(signed(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN/2-1 downto 0)), A(i*2+1)'length)); -- Imaginary part
+
+        -- Input (zero extended)
+        B(i*2) <= std_logic_vector(resize(unsigned(data_in), B(i*2)'length));
+        B(i*2+1) <= std_logic_vector(resize(unsigned(data_in), B(i*2+1)'length));
+
       end loop;
     elsif feed_dsp = "10" then
       for i in 0 to PERRUN-1 loop
-        D(i*2) <= P(i*2)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION);
-        B(i*2) <= P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION);
+
+        -- Combine real and imaginary parts
+        D(i*2) <= P(i*2)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION); -- Real part
+        B(i*2) <= P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION); -- Imaginary part
+
+        -- If both parts are negative
+        -- P = (D+B)*(-1)
         if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION*2) = '1') then
           OPMODE(i*2) <= "00010001";
           A(i*2) <= "111111111111111111";
+
+        -- If imaginary part is negative
+        -- P = (D-B)*1
         elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '0') then
           OPMODE(i*2) <= "01010001";
           A(i*2) <= "000000000000000001";
+
+        -- If real part is negative
+        -- P = (D-B)*(-1)
         elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '0' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
           OPMODE(i*2) <= "01010001";
           A(i*2) <= "111111111111111111";
+
+        -- If no parts are negative
+        -- P = (D+B)*1
         else
           OPMODE(i*2) <= "00010001";
           A(i*2) <= "000000000000000001";
+
         end if;
       end loop;
     else
