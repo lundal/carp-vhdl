@@ -66,16 +66,15 @@ architecture dft_arch of dft is
   type a8 is array(0 to DFT_DSPS-1) of std_logic_vector (8-1 downto 0);
   type a48 is array(0 to DFT_DSPS-1) of std_logic_vector (48-1 downto 0);
   signal P        : a48;
-  signal OPMODE    : a8 := (others => (others => '0'));
   signal A        : a18 := (others => (others => '0'));
   signal B        : a18 := (others => (others => '0'));
   signal D        : a18 := (others => (others => '0'));
-  signal do_acc   : std_logic := '0';
-  signal dont_acc : std_logic;
+
+  signal d_sub_b    : boolean := false;
+  signal a_mult_b   : boolean := false;
+  signal accumulate : boolean := false;
 
 begin
-
-  dont_acc <= not do_acc;
 
   twiddlemem: for i in 0 to PERRUN - 1 generate
     twmem_i : entity work.twiddle_memory
@@ -90,63 +89,22 @@ begin
   end generate;
 
   dsps: for i in 0 to DFT_DSPS - 1 generate
-    dsp_i: DSP48A1
-      generic map (
-        A0REG => 1,           -- first stage A input pipeline register (0/1)
-        A1REG => 0,           -- Second stage A input pipeline register (0/1)
-        B0REG => 1,           -- first stage B input pipeline register (0/1)
-        B1REG => 0,           -- Second stage B input pipeline register (0/1)
-        CARRYINREG => 0,      -- CARRYIN input pipeline register (0/1)
-        CARRYINSEL => "OPMODE5", -- Specify carry-in source, "CARRYIN" or "OPMODE5" 
-        CARRYOUTREG => 0,     -- CARRYOUT output pipeline register (0/1)
-        CREG => 0,            -- C input pipeline register (0/1)
-        DREG => 1,            -- D pre-adder input pipeline register (0/1)
-        MREG => 0,            -- M pipeline register (0/1)
-        OPMODEREG => 1,       -- Enable=1/disable=0 OPMODE input pipeline registers
-        PREG => 1,            -- P output pipeline register (0/1)
-        RSTTYPE => "SYNC"     -- Specify reset type, "SYNC" or "ASYNC"
-      )
-      port map (
-        -- Cascade Ports: 18-bit (each) output Ports to cascade from one DSP48 to another
-        BCOUT => open,        -- 18-bit output B port cascade output
-        PCOUT => open,        -- 48-bit output P cascade output (if used, connect to PCIN of another DSP48A1)
-        -- Data Ports: 1-bit (each) output Data input and output ports
-        CARRYOUT => open,     -- 1-bit output carry output (if used, connect to CARRYIN pin of another
-                              -- DSP48A1)
-        CARRYOUTF => open,    -- 1-bit output fabric carry output
-        M => open,            -- 36-bit output fabric multiplier data output
-        P => P(i),            -- 48-bit output data output
-        -- Cascade Ports: 48-bit (each) input Ports to cascade from one DSP48 to another
-        PCIN => open,         -- 48-bit input P cascade input (if used, connect to PCOUT of another DSP48A1)
-        -- Control Input Ports: 1-bit (each) input Clocking and operation mode
-        CLK => clock,           -- 1-bit input clock input
-        OPMODE => OPMODE(i),  -- 8-bit input operation mode input
-        -- Data Ports: 18-bit (each) input Data input and output ports
-        A => A(i),            -- 18-bit input A data input
-        B => B(i),            -- 18-bit input B data input (connected to fabric or BCOUT of adjacent DSP48A1)
-        C => (others => '0'),                   -- 48-bit input C data input
-        CARRYIN => '0',       -- 1-bit input carry input signal (if used, connect to CARRYOUT pin of another
-                                  -- DSP48A1)
+    dsp : entity work.dsp_wrapper
+    generic map (
+      dsp48a1_implementation => true
+    )
+    port map (
+      A => A(i),
+      B => B(i),
+      D => D(i),
+      P => P(i),
 
-        D => D(i),                   -- 18-bit input B pre-adder data input
-        -- Reset/Clock Enable Input Ports: 1-bit (each) input Reset and enable input ports
-        CEA => '1',               -- 1-bit input active high clock enable input for A registers
-        CEB => '1',               -- 1-bit input active high clock enable input for B registers
-        CEC => '0',               -- 1-bit input active high clock enable input for C registers
-        CECARRYIN => '0',   -- 1-bit input active high clock enable input for CARRYIN registers
-        CED => '1',               -- 1-bit input active high clock enable input for D registers
-        CEM => '0',               -- 1-bit input active high clock enable input for multiplier registers
-        CEOPMODE => '1',     -- 1-bit input active high clock enable input for OPMODE registers
-        CEP => do_acc,               -- 1-bit input active high clock enable input for P registers
-        RSTA => '0',             -- 1-bit input reset input for A pipeline registers
-        RSTB => '0',             -- 1-bit input reset input for B pipeline registers
-        RSTC => '0',             -- 1-bit input reset input for C pipeline registers
-        RSTCARRYIN => '0', -- 1-bit input reset input for CARRYIN pipeline registers
-        RSTD => '0',             -- 1-bit input reset input for D pipeline registers
-        RSTM => '0',             -- 1-bit input reset input for M pipeline registers
-        RSTOPMODE => '0',   -- 1-bit input reset input for OPMODE pipeline registers
-        RSTP => dont_acc              -- 1-bit input reset input for P pipeline registers
-      );
+      d_sub_b    => d_sub_b,
+      a_mult_b   => a_mult_b,
+      accumulate => accumulate,
+
+      clock => clock
+    );
   end generate;
 
   -----------------------------------------------------------------------------
@@ -224,10 +182,11 @@ begin
   begin
     -- Defaults
     for i in 0 to DFT_DSPS-1 loop
-      OPMODE(i) <= (others => '0');
       A(i) <= (others => '0');
       B(i) <= (others => '0');
       D(i) <= (others => '0');
+      d_sub_b  <= false;
+      a_mult_b <= false;
     end loop;
 
     if feed_dsp = "01" then
@@ -235,8 +194,8 @@ begin
       for i in 0 to PERRUN-1 loop
 
         -- Multiply mode: P = A*B
-        OPMODE(i*2) <= "00001001";
-        OPMODE(i*2+1) <= "00001001";
+        d_sub_b  <= false;
+        a_mult_b <= true;
 
         -- Twiddles (sign extended)
         A(i*2) <= std_logic_vector(resize(signed(twiddle_out((counter_runs-1)*PERRUN+i)(TWLEN-1 downto TWLEN/2)), A(i*2)'length)); -- Real part
@@ -257,25 +216,29 @@ begin
         -- If both parts are negative
         -- P = (D+B)*(-1)
         if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION*2) = '1') then
-          OPMODE(i*2) <= "00010001";
+          d_sub_b  <= false;
+          a_mult_b <= false;
           A(i*2) <= "111111111111111111";
 
         -- If imaginary part is negative
         -- P = (D-B)*1
         elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '0') then
-          OPMODE(i*2) <= "01010001";
+          d_sub_b  <= true;
+          a_mult_b <= false;
           A(i*2) <= "000000000000000001";
 
         -- If real part is negative
         -- P = (D-B)*(-1)
         elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '0' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
-          OPMODE(i*2) <= "01010001";
+          d_sub_b  <= true;
+          a_mult_b <= false;
           A(i*2) <= "111111111111111111";
 
         -- If no parts are negative
         -- P = (D+B)*1
         else
-          OPMODE(i*2) <= "00010001";
+          d_sub_b  <= false;
+          a_mult_b <= false;
           A(i*2) <= "000000000000000001";
 
         end if;
@@ -292,14 +255,14 @@ begin
     dft_idle <= '0';
     case dft_state is
       when idle =>
-        do_acc <= '0';
+        accumulate <= false;
         dft_idle <= '1';
 
       when prepare_pipe =>
         null;
 
       when run =>
-        do_acc <= '1';
+        accumulate <= true;
 
       when stop_acc =>
         null;
