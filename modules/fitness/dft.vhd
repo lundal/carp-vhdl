@@ -209,39 +209,22 @@ begin
     elsif feed_dsp = "10" then
       for i in 0 to PERRUN-1 loop
 
-        -- Combine real and imaginary parts
-        D(i*2) <= P(i*2)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION); -- Real part
-        B(i*2) <= P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION); -- Imaginary part
+        -- Combine real and imaginary parts into positive integers: Abs(Round(Real)) + Abs(Round(Imag))
+        D(i*2) <= P(i*2)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION); -- Real part (rounded)
+        B(i*2) <= P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION downto TWIDDLE_PRECISION); -- Imaginary part (rounded)
 
-        -- If both parts are negative
-        -- P = (D+B)*(-1)
-        if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
-          d_sub_b  <= false;
-          a_mult_b <= false;
-          A(i*2) <= "111111111111111111";
-
-        -- If imaginary part is negative
-        -- P = (D-B)*1
-        elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '1' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '0') then
+        -- If real and imaginary have different signs, negate imaginary part
+        if (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) /= P(i*2)(VALSIZE-1+TWIDDLE_PRECISION)) then
           d_sub_b  <= true;
-          a_mult_b <= false;
-          A(i*2) <= "000000000000000001";
-
-        -- If real part is negative
-        -- P = (D-B)*(-1)
-        elsif (P(i*2+1)(VALSIZE-1+TWIDDLE_PRECISION) = '0' and P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
-          d_sub_b  <= true;
-          a_mult_b <= false;
-          A(i*2) <= "111111111111111111";
-
-        -- If no parts are negative
-        -- P = (D+B)*1
-        else
-          d_sub_b  <= false;
-          a_mult_b <= false;
-          A(i*2) <= "000000000000000001";
-
         end if;
+
+        -- If real is negative (and also imaginary after negation), multiply result by -1
+        if (P(i*2)(VALSIZE-1+TWIDDLE_PRECISION) = '1') then
+          A(i*2) <= "111111111111111111";
+        else
+          A(i*2) <= "000000000000000001";
+        end if;
+
       end loop;
     end if;
   end process;
