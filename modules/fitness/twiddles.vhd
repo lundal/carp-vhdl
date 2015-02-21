@@ -26,13 +26,14 @@ use work.functions.all;
 
 entity twiddles is
   generic (
-    result_index      : natural  := 0;
-    transform_size    : positive := 128;
-    twiddle_bits      : positive := 8;
-    twiddle_precision : positive := 6
+    result_index_first  : natural  := 0;
+    result_index_amount : positive := 2;
+    transform_size      : positive := 128;
+    twiddle_bits        : positive := 8;
+    twiddle_precision   : positive := 6
   );
   port (
-    input_index : in std_logic_vector(bits(transform_size) - 1 downto 0);
+    index : in unsigned(bits(result_index_amount*transform_size) - 1 downto 0);
 
     twiddle_real : out signed(twiddle_bits - 1 downto 0);
     twiddle_imag : out signed(twiddle_bits - 1 downto 0);
@@ -43,7 +44,7 @@ end entity;
 
 architecture rtl of twiddles is
 
-  type twiddles_type is array (0 to transform_size - 1)
+  type twiddles_type is array (0 to result_index_amount*transform_size - 1)
     of signed(2*twiddle_bits - 1 downto 0);
 
   -- Calculates T(k,n,N)
@@ -71,34 +72,40 @@ architecture rtl of twiddles is
     return to_signed(integer(number * real(2**precision)), size);
   end function;
 
-  -- Generates an array of twiddles for a given k and N
+  -- Generates an array of twiddles for a range of k's
   -- The real and imaginary parts of each twiddle is stored sequentially in each entry
   function generate_twiddles (
-    result_index       : natural;
-    transform_size     : positive;
-    twiddle_bits       : positive;
-    twiddle_precision  : positive
+    result_index_first  : natural;
+    result_index_amount : positive;
+    transform_size      : positive;
+    twiddle_bits        : positive;
+    twiddle_precision   : positive
   ) return twiddles_type is
     variable twiddle  : complex;
     variable twiddles : twiddles_type;
     variable index    : natural := 0;
   begin
-    for input_index in 0 to transform_size - 1 loop
-      twiddle := calculate_twiddle(result_index, input_index, transform_size);
-      twiddles(input_index) := to_signed(twiddle.re, twiddle_bits, twiddle_precision)
-                             & to_signed(twiddle.im, twiddle_bits, twiddle_precision);
+    for result_index in result_index_first to result_index_first + result_index_amount - 1 loop
+      for input_index in 0 to transform_size - 1 loop
+        index := (result_index - result_index_first)*transform_size + input_index;
+        twiddle := calculate_twiddle(result_index, input_index, transform_size);
+        twiddles(index) := to_signed(twiddle.re, twiddle_bits, twiddle_precision)
+                         & to_signed(twiddle.im, twiddle_bits, twiddle_precision);
+      end loop;
     end loop;
     return twiddles;
   end function;
 
-  signal twiddles : twiddles_type := generate_twiddles(result_index, transform_size, twiddle_bits, twiddle_precision);
+  signal twiddles : twiddles_type := generate_twiddles(
+    result_index_first, result_index_amount, transform_size, twiddle_bits, twiddle_precision
+  );
 
 begin
 
   process begin
     wait until rising_edge(clock);
-    twiddle_real <= twiddles(to_integer(unsigned(input_index)))(2*twiddle_bits - 1 downto 1*twiddle_bits);
-    twiddle_imag <= twiddles(to_integer(unsigned(input_index)))(1*twiddle_bits - 1 downto 0*twiddle_bits);
+    twiddle_real <= twiddles(to_integer(index))(2*twiddle_bits - 1 downto 1*twiddle_bits);
+    twiddle_imag <= twiddles(to_integer(index))(1*twiddle_bits - 1 downto 0*twiddle_bits);
   end process;
 
 end architecture;
