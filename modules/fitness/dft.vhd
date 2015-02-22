@@ -247,7 +247,7 @@ begin
         for r in 0 to runs_required - 1 loop
           if (r = run_index) then
             for i in 0 to dsp_amount/2 - 1 loop
-              result(dsp_amount/2 * r + i) <= dsp_P(2*i)(result_bits - 1 downto 0);
+              result(runs_required * i + r) <= dsp_P(2*i)(result_bits - 1 downto 0);
             end loop;
           end if;
         end loop;
