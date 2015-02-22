@@ -111,6 +111,9 @@ architecture rtl of dft is
 
   signal result : result_type;
 
+  -- Internally used out ports
+  signal done_i : std_logic := '1';
+
 begin
 
   -- Generic checks
@@ -184,7 +187,7 @@ begin
           twiddles_index <= (others => '0');
           -- Next state
           state <= WAIT_FOR_INPUT;
-          done <= '0';
+          done_i <= '0';
         end if;
 
       when WAIT_FOR_INPUT =>
@@ -233,7 +236,7 @@ begin
       when COMBINED_READY =>
         if (run_index = runs_required - 1) then
           state <= IDLE;
-          done <= '1';
+          done_i <= '1';
         else
           -- Increment indexes
           run_index <= run_index + 1;
@@ -351,5 +354,8 @@ begin
       result_slv((i+1)*result_bits - 1 downto i*result_bits) <= result(i);
     end loop;
   end process;
+
+  -- Internally used out ports
+  done <= done_i;
 
 end architecture;
