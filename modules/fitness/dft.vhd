@@ -202,18 +202,19 @@ begin
         end if;
 
       when RUNN =>
-        -- Increment indexes
-        input_index    <= input_index + 1;
-        twiddles_index <= twiddles_index + 1;
-        -- Wrap input index
-        if (input_index = transform_size - 1) then
-          input_index <= (others => '0');
-        end if;
-        -- Next state when last twiddle
         if (input_index = 0) then
+          -- Next state when last twiddle
           state <= WAIT_FOR_SUM;
           repeat_buffer_mode <= NOP;
           dsp_mode <= FLUSH;
+        else
+          -- Increment indexes
+          input_index    <= input_index + 1;
+          twiddles_index <= twiddles_index + 1;
+          -- Wrap input index
+          if (input_index = transform_size - 1) then
+            input_index <= (others => '0');
+          end if;
         end if;
 
       when WAIT_FOR_SUM =>
