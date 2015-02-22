@@ -44,7 +44,7 @@ end entity;
 
 architecture rtl of twiddles is
 
-  type twiddles_type is array (0 to result_index_amount*transform_size - 1)
+  type twiddles_type is array (0 to 2**index'length - 1)
     of signed(2*twiddle_bits - 1 downto 0);
 
   -- Calculates T(k,n,N)
@@ -82,7 +82,7 @@ architecture rtl of twiddles is
     twiddle_precision   : positive
   ) return twiddles_type is
     variable twiddle  : complex;
-    variable twiddles : twiddles_type;
+    variable twiddles : twiddles_type := (others => (others => '0'));
     variable index    : natural := 0;
   begin
     for result_index in result_index_first to result_index_first + result_index_amount - 1 loop
