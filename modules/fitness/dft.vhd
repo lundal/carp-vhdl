@@ -107,7 +107,7 @@ architecture rtl of dft is
   -- Others
   signal input : std_logic_vector(input_buffer_bits - 1 downto 0);
 
-  type result_type is array(0 to transform_size/2 - 1) of std_logic_vector(result_bits - 1 downto 0);
+  type result_type is array(0 to runs_required*dsp_amount/2 - 1) of std_logic_vector(result_bits - 1 downto 0);
 
   signal result : result_type;
 
@@ -217,6 +217,10 @@ begin
           -- Wrap input index
           if (input_index = transform_size - 1) then
             input_index <= (others => '0');
+          end if;
+          -- Wrap twiddles index
+          if (twiddles_index = runs_required*transform_size - 1) then
+            twiddles_index <= (others => '0');
           end if;
         end if;
 
