@@ -9,6 +9,7 @@
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: A circular first-in first-out buffer
+--            : Note: Count becomes 0 when completely filled
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -80,7 +81,7 @@ begin
     a_data_in  => (others => '0'),
     a_data_out => data_out,
 
-    b_write    => '1',
+    b_write    => data_write,
     b_address  => write_address,
     b_data_in  => data_in,
     b_data_out => open,

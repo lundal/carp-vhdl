@@ -4,14 +4,16 @@
 -------------------------------------------------------------------------------
 -- File       : dft.vhd
 -- Author     : Ola Martin Tiseth Stoevneng  <ola.martin.st@gmail.com>
+--            : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
--- Last update: 2014-04-08
+-- Last update: 2015-02-21
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: Discrete Fourier Transform of data found in separate BRAM.
+-- Description: Discrete Fourier Transform of data found in separate FIFO.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author   Description
+-- 2015-02-21  2.0      lundal   Rewrote
 -- 2014-04-08  1.0      stovneng Created
 -------------------------------------------------------------------------------
 
@@ -19,318 +21,345 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library work;
-use work.constants.all;
+use work.functions.all;
 
 entity dft is
+  generic (
+    input_buffer_size : positive := 256;
+    input_buffer_bits : positive := 10;
+    result_bits       : positive := 18;
+    dsp_amount        : positive := 32;
+    transform_size    : positive := 128;
+    twiddle_precision : positive := 6
+  );
   port (
-    start_dft  : in  std_logic;
-    data_in    : in  std_logic_vector(RUN_STEP_DATA_BUS_SIZE - 1 downto 0);
-    data_addr  : out std_logic_vector(RUN_STEP_ADDR_BUS_SIZE - 1 downto 0);
-    first_addr : in  std_logic_vector(RUN_STEP_ADDR_BUS_SIZE - 1 downto 0);
-    set_first_addr : in std_logic;
-    dft_idle       : out std_logic;
-    output     : out dft_res_t;
-    reset : in std_logic;
+    input_buffer_read  : out std_logic;
+    input_buffer_data  : in  std_logic_vector(input_buffer_bits - 1 downto 0);
+    input_buffer_count : in  std_logic_vector(bits(input_buffer_size) - 1 downto 0);
+
+    result_slv : out std_logic_vector((transform_size/2)*result_bits -1 downto 0);
+
+    run  : in std_logic;
+    done : out std_logic;
+
     clock : in std_logic
   );
 end dft;
 
-architecture dft_arch of dft is
+architecture rtl of dft is
 
-  -- constants
-  constant PERRUN : integer := DFT_DSPS/2;
-  type carray is array(0 to 7) of integer;
-  constant STARTS	: carray := (
-	  0*PERRUN,
-	  1*PERRUN,
-	  2*PERRUN,
-	  3*PERRUN,
-	  4*PERRUN,
-	  5*PERRUN,
-	  6*PERRUN,
-	  7*PERRUN
+  -- State machine
+  type state_type is (
+    IDLE, WAIT_FOR_INPUT, RUNN,
+    WAIT_FOR_SUM, SUM_READY,
+    WAIT_FOR_COMBINED, COMBINED_READY
   );
+  signal state : state_type;
 
-  constant zero : std_logic_vector(63 downto 0) := (others => '0');
-  constant one : std_logic_vector(6 downto 0) := (others => '1');
+  -- Counters
+  constant runs_required : natural := divide_ceil(transform_size/2, dsp_amount/2);
 
+  signal run_index     : unsigned(bits(runs_required) - 1 downto 0) := (others => '0');
+  signal input_index    : unsigned(bits(transform_size) - 1 downto 0) := (others => '0');
+  signal twiddles_index : unsigned(bits(runs_required*transform_size) - 1 downto 0) := (others => '0');
 
-  type dft_state_type is (idle, prepare_pipe, run, stop_acc, reset_count,
-                          output_wait1, output_wait2, set_output);
-  signal dft_state : dft_state_type;
+  -- Repeat buffer (Required when more than one run phase)
+  type repeat_buffer_mode_type is (
+    FLUSH, FILL, REPEAT, NOP
+  );
+  signal repeat_buffer_mode : repeat_buffer_mode_type := FLUSH;
 
-  
-  signal cnt : unsigned(6 downto 0);
-  signal cnt2 : integer := 0;
-  signal first_addr_i : unsigned(RUN_STEP_ADDR_BUS_SIZE - 1 downto 0);
-  
-  signal twiddle_index : unsigned(13 - DFT_LG_DSPS downto 0) := (others => '0');
-  type twiddle_out_t is array(PERRUN - 1 downto 0)
-    of std_logic_vector(TWIDDLE_SIZE - 1 downto 0);
-  signal twiddle_out : twiddle_out_t := (others => (others => '0'));
-  signal feed_dsp : std_logic_vector(1 downto 0);
+  signal repeat_buffer_data_in  : std_logic_vector(input_buffer_bits - 1 downto 0);
+  signal repeat_buffer_data_out : std_logic_vector(input_buffer_bits - 1 downto 0);
+  signal repeat_buffer_read     : std_logic;
+  signal repeat_buffer_write    : std_logic;
+  signal repeat_buffer_reset    : std_logic;
 
+  -- Twiddles
+  constant twiddle_bits : positive := twiddle_precision + 2; -- One bit before point and one for sign
 
-  -- DSP SIGNALS
-  type a18 is array(0 to DFT_DSPS-1) of std_logic_vector (18-1 downto 0);
-  type a8 is array(0 to DFT_DSPS-1) of std_logic_vector (8-1 downto 0);
-  type a48 is array(0 to DFT_DSPS-1) of std_logic_vector (48-1 downto 0);
-  signal P        : a48;
-  signal OPMODE    : a8 := (others => (others => '0'));
-  signal A        : a18 := (others => (others => '0'));
-  signal B        : a18 := (others => (others => '0'));
-  signal D        : a18 := (others => (others => '0'));
-  signal do_acc   : std_logic := '0';
-  signal dont_acc : std_logic;
-  
+  type twiddles_type is array(0 to dsp_amount/2 - 1) of signed(twiddle_bits - 1 downto 0);
+
+  signal twiddles_real : twiddles_type := (others => (others => '0'));
+  signal twiddles_imag : twiddles_type := (others => (others => '0'));
+
+  -- DSP
+  type dsp_mode_type is (
+    FLUSH, MULTIPLY_ACCUMULATE, COMBINE
+  );
+  signal dsp_mode : dsp_mode_type := FLUSH;
+
+  type dsp_input_type  is array(0 to dsp_amount - 1) of std_logic_vector(18-1 downto 0);
+  type dsp_result_type is array(0 to dsp_amount - 1) of std_logic_vector(48-1 downto 0);
+
+  signal dsp_A : dsp_input_type;
+  signal dsp_B : dsp_input_type;
+  signal dsp_D : dsp_input_type;
+  signal dsp_P : dsp_result_type;
+
+  type dsp_configuration_type is array(0 to dsp_amount - 1) of boolean;
+
+  signal dsp_d_sub_b    : dsp_configuration_type;
+  signal dsp_a_mult_b   : dsp_configuration_type;
+  signal dsp_accumulate : dsp_configuration_type;
+
+  -- Others
+  signal input : std_logic_vector(input_buffer_bits - 1 downto 0);
+
+  type result_type is array(0 to runs_required*dsp_amount/2 - 1) of std_logic_vector(result_bits - 1 downto 0);
+
+  signal result : result_type;
+
+  -- Internally used out ports
+  signal done_i : std_logic := '1';
 
 begin
-  dont_acc <= not do_acc;
-  
-  twiddlemem: for i in 0 to PERRUN - 1 generate
-    twmem_i : entity work.twiddle_memory
-      generic map (
-        index => i
-      )
-      port map (
-        clock    => clock,
-        address  => to_integer(twiddle_index),
-        data_out => twiddle_out(i)
-      );
+
+  -- Generic checks
+  assert (input_buffer_size > transform_size) report "Unsupported input_buffer_size. Supported values are [(transform_size+1)-N]." severity FAILURE;
+  assert (result_bits <= 18) report "Unsupported result_bits. Supported values are [1-18]." severity FAILURE;
+  assert (dsp_amount mod 2 = 0) report "Unsupported dsp_amount. Supported values are [2N]." severity FAILURE;
+  assert (transform_size mod 2 = 0) report "Unsupported transform_size. Supported values are [2N]." severity FAILURE;
+
+  input_repeat_buffer : entity work.fifo
+  generic map (
+    address_bits => bits(transform_size + 1), -- +1 to prevent read/write collisions
+    data_bits    => input_buffer_bits
+  )
+  port map (
+    data_in    => repeat_buffer_data_in,
+    data_out   => repeat_buffer_data_out,
+    data_count => open,
+    data_read  => repeat_buffer_read,
+    data_write => repeat_buffer_write,
+    reset      => repeat_buffer_reset,
+    clock      => clock
+  );
+
+  twiddles : for i in 0 to dsp_amount/2 - 1 generate
+    twiddles : entity work.twiddles
+    generic map (
+      result_index_first  => runs_required*i,
+      result_index_amount => runs_required,
+      transform_size      => transform_size,
+      twiddle_bits        => twiddle_bits,
+      twiddle_precision   => twiddle_precision
+    )
+    port map (
+      index => twiddles_index,
+
+      twiddle_real => twiddles_real(i),
+      twiddle_imag => twiddles_imag(i),
+
+      clock => clock
+    );
   end generate;
 
-  dsps: for i in 0 to DFT_DSPS - 1 generate
-    dsp_i: DSP48A1
-      generic map (
-        A0REG => 1,           -- first stage A input pipeline register (0/1)
-        A1REG => 0,           -- Second stage A input pipeline register (0/1)
-        B0REG => 1,           -- first stage B input pipeline register (0/1)
-        B1REG => 0,           -- Second stage B input pipeline register (0/1)
-        CARRYINREG => 0,      -- CARRYIN input pipeline register (0/1)
-        CARRYINSEL => "OPMODE5", -- Specify carry-in source, "CARRYIN" or "OPMODE5" 
-        CARRYOUTREG => 0,     -- CARRYOUT output pipeline register (0/1)
-        CREG => 0,            -- C input pipeline register (0/1)
-        DREG => 1,            -- D pre-adder input pipeline register (0/1)
-        MREG => 0,            -- M pipeline register (0/1)
-        OPMODEREG => 1,       -- Enable=1/disable=0 OPMODE input pipeline registers
-        PREG => 1,            -- P output pipeline register (0/1)
-        RSTTYPE => "SYNC")    -- Specify reset type, "SYNC" or "ASYNC"
-      port map (
-        -- Cascade Ports: 18-bit (each) output Ports to cascade from one DSP48 to another
-        BCOUT => open,        -- 18-bit output B port cascade output
-        PCOUT => open,        -- 48-bit output P cascade output (if used, connect to PCIN of another DSP48A1)
-        -- Data Ports: 1-bit (each) output Data input and output ports
-        CARRYOUT => open,     -- 1-bit output carry output (if used, connect to CARRYIN pin of another
-                              -- DSP48A1)
-        CARRYOUTF => open,    -- 1-bit output fabric carry output
-        M => open,            -- 36-bit output fabric multiplier data output
-        P => P(i),            -- 48-bit output data output
-        -- Cascade Ports: 48-bit (each) input Ports to cascade from one DSP48 to another
-        PCIN => open,         -- 48-bit input P cascade input (if used, connect to PCOUT of another DSP48A1)
-        -- Control Input Ports: 1-bit (each) input Clocking and operation mode
-        CLK => clock,           -- 1-bit input clock input
-        OPMODE => OPMODE(i),  -- 8-bit input operation mode input
-        -- Data Ports: 18-bit (each) input Data input and output ports
-        A => A(i),            -- 18-bit input A data input
-        B => B(i),            -- 18-bit input B data input (connected to fabric or BCOUT of adjacent DSP48A1)
-        C => (others => '0'),                   -- 48-bit input C data input
-        CARRYIN => '0',       -- 1-bit input carry input signal (if used, connect to CARRYOUT pin of another
-                                  -- DSP48A1)
+  dsps: for i in 0 to dsp_amount - 1 generate
+    dsp : entity work.dsp_wrapper
+    generic map (
+      dsp48a1_implementation => true
+    )
+    port map (
+      A => dsp_A(i),
+      B => dsp_B(i),
+      D => dsp_D(i),
+      P => dsp_P(i),
 
-        D => D(i),                   -- 18-bit input B pre-adder data input
-        -- Reset/Clock Enable Input Ports: 1-bit (each) input Reset and enable input ports
-        CEA => '1',               -- 1-bit input active high clock enable input for A registers
-        CEB => '1',               -- 1-bit input active high clock enable input for B registers
-        CEC => '0',               -- 1-bit input active high clock enable input for C registers
-        CECARRYIN => '0',   -- 1-bit input active high clock enable input for CARRYIN registers
-        CED => '1',               -- 1-bit input active high clock enable input for D registers
-        CEM => '0',               -- 1-bit input active high clock enable input for multiplier registers
-        CEOPMODE => '1',     -- 1-bit input active high clock enable input for OPMODE registers
-        CEP => do_acc,               -- 1-bit input active high clock enable input for P registers
-        RSTA => '0',             -- 1-bit input reset input for A pipeline registers
-        RSTB => '0',             -- 1-bit input reset input for B pipeline registers
-        RSTC => '0',             -- 1-bit input reset input for C pipeline registers
-        RSTCARRYIN => '0', -- 1-bit input reset input for CARRYIN pipeline registers
-        RSTD => '0',             -- 1-bit input reset input for D pipeline registers
-        RSTM => '0',             -- 1-bit input reset input for M pipeline registers
-        RSTOPMODE => '0',   -- 1-bit input reset input for OPMODE pipeline registers
-        RSTP => dont_acc              -- 1-bit input reset input for P pipeline registers
-      );
+      d_sub_b    => dsp_d_sub_b(i),
+      a_mult_b   => dsp_a_mult_b(i),
+      accumulate => dsp_accumulate(i),
+
+      clock => clock
+    );
   end generate;
 
-  -----------------------------------------------------------------------------
-  -- clocked part of FSM
+  -- State machine
+  process begin
+    wait until rising_edge(clock);
+    case (state) is
 
-  process(clock,reset) is
-  begin
-    if (reset='0') then
-      dft_state <= idle;
-      cnt <= (others => '0');
-      cnt2 <= 0;
-      twiddle_index <= (others => '0');
-      feed_dsp <= "00";
-    elsif(rising_edge(clock)) then
-      case dft_state is
-        when idle =>
-          twiddle_index <= (others => '0');
-          if start_dft = '1' then
-            dft_state <= prepare_pipe;
-          else
-            dft_state <= idle;
+      when IDLE =>
+        if (run = '1') then
+          -- Reset twiddle indexes
+          input_index    <= (others => '0');
+          twiddles_index <= (others => '0');
+          -- Next state
+          state <= WAIT_FOR_INPUT;
+          done_i <= '0';
+        end if;
+
+      when WAIT_FOR_INPUT =>
+        if (unsigned(input_buffer_count) >= transform_size) then
+          -- Reset run index
+          run_index <= (others => '0');
+          -- Increment twiddle indexes
+          -- Twiddle output updates next cycle
+          input_index    <= input_index + 1;
+          twiddles_index <= twiddles_index + 1;
+          -- Next state
+          state <= RUNN;
+          repeat_buffer_mode <= FILL;
+          dsp_mode <= MULTIPLY_ACCUMULATE;
+        end if;
+
+      when RUNN =>
+        if (input_index = 0) then
+          -- Next state when last twiddle
+          state <= WAIT_FOR_SUM;
+          repeat_buffer_mode <= NOP;
+          dsp_mode <= FLUSH;
+        else
+          -- Increment indexes
+          input_index    <= input_index + 1;
+          twiddles_index <= twiddles_index + 1;
+          -- Wrap input index
+          if (input_index = transform_size - 1) then
+            input_index <= (others => '0');
           end if;
-          feed_dsp <= "00";
-          cnt2 <= 0;
-        when prepare_pipe =>
-          dft_state <= run;
-          twiddle_index <= twiddle_index + 1;
-          cnt <= cnt + 1;
-          feed_dsp <= "01";
-
-        when run =>
-          twiddle_index <= twiddle_index + 1;
-          if cnt = unsigned(one(cnt'length - 1 downto 0)) then
-            dft_state <= stop_acc;
-          else
-            dft_state <= run;
+          -- Wrap twiddles index
+          if (twiddles_index = runs_required*transform_size - 1) then
+            twiddles_index <= (others => '0');
           end if;
-          cnt <= cnt + 1;
-          feed_dsp <= "01";
+        end if;
 
-        when stop_acc =>
-          dft_state <= reset_count;
-          feed_dsp <= "00";
+      when WAIT_FOR_SUM =>
+        state <= SUM_READY;
+        repeat_buffer_mode <= NOP;
+        dsp_mode <= COMBINE;
 
-        when reset_count =>
-          dft_state <= output_wait1;
-          cnt <= (others => '0');
-          feed_dsp <= "10";
+      when SUM_READY =>
+        state <= WAIT_FOR_COMBINED;
+        repeat_buffer_mode <= FLUSH;
+        dsp_mode <= FLUSH;
 
+      when WAIT_FOR_COMBINED =>
+          state <= COMBINED_READY;
 
-        when output_wait1 =>
-          dft_state <= output_wait2;
-
-        when output_wait2 =>
-          dft_state <= set_output;
-          cnt2 <= cnt2 + 1;
-
-        when set_output =>
-          for i in 0 to PERRUN - 1 loop
-            output(i+STARTS(cnt2-1)) <= P(i*2)(17 downto 0);
-          end loop;
-          feed_dsp <= "00";
-          
-          -- Check if finished
-          if cnt2 = PERDSP then
-            dft_state <= idle;
-          else
-            dft_state <= run;
+      when COMBINED_READY =>
+        if (run_index = runs_required - 1) then
+          state <= IDLE;
+          done_i <= '1';
+        else
+          -- Increment indexes
+          run_index <= run_index + 1;
+          input_index <= input_index + 1;
+          twiddles_index <= twiddles_index + 1;
+          -- Next state
+          state <= RUNN;
+          repeat_buffer_mode <= REPEAT;
+          dsp_mode <= MULTIPLY_ACCUMULATE;
+        end if;
+        -- Write combined results
+        for r in 0 to runs_required - 1 loop
+          if (r = run_index) then
+            for i in 0 to dsp_amount/2 - 1 loop
+              result(runs_required * i + r) <= dsp_P(2*i)(result_bits - 1 downto 0);
+            end loop;
           end if;
-      end case;
-    end if;
+        end loop;
+
+    end case;
   end process;
 
-  process(feed_dsp, data_in, twiddle_out, P)
-  begin
-    for i in 0 to DFT_DSPS-1 loop
-      OPMODE(i) <= (others => '0');
-      A(i) <= (others => '0');
-      B(i) <= (others => '0');
-      D(i) <= (others => '0');
-    end loop;
-    if feed_dsp = "01" then
-      for i in 0 to PERRUN-1 loop
-        B(i*2)(DFT_INW-1 downto 0) <= data_in;
-        B(i*2+1)(DFT_INW-1 downto 0) <= data_in;
-        OPMODE(i*2) <= "00001001";
-        OPMODE(i*2+1) <= "00001001";
-        if(twiddle_out(i)(TWLEN-1)='1') then
-          A(i*2) <= "1111111111" & twiddle_out(i)(TWLEN-1 downto TWLEN/2);
-        else
-          A(i*2) <= "0000000000" & twiddle_out(i)(TWLEN-1 downto TWLEN/2);
-        end if;
-        if(twiddle_out(i)(TWLEN/2-1)='1') then
-          A(i*2+1) <= "1111111111" & twiddle_out(i)(TWLEN/2-1 downto 0);
-        else
-          A(i*2+1) <= "0000000000" & twiddle_out(i)(TWLEN/2-1 downto 0);
-        end if;
-      end loop;
-    elsif feed_dsp = "10" then
-      for i in 0 to PERRUN-1 loop
-        D(i*2) <= P(i*2)(VALSIZE-1+TW_PRES downto TW_PRES);
-        B(i*2) <= P(i*2+1)(VALSIZE-1+TW_PRES downto TW_PRES);
-        if (P(i*2+1)(VALSIZE-1+TW_PRES) = '1' and P(i*2)(VALSIZE-1+TW_PRES*2) = '1') then
-          OPMODE(i*2) <= "00010001";
-          A(i*2) <= "111111111111111111";
-        elsif (P(i*2+1)(VALSIZE-1+TW_PRES) = '1' and P(i*2)(VALSIZE-1+TW_PRES) = '0') then
-          OPMODE(i*2) <= "01010001";
-          A(i*2) <= "000000000000000001";
-        elsif (P(i*2+1)(VALSIZE-1+TW_PRES) = '0' and P(i*2)(VALSIZE-1+TW_PRES) = '1') then
-          OPMODE(i*2) <= "01010001";
-          A(i*2) <= "111111111111111111";
-        else
-          OPMODE(i*2) <= "00010001";
-          A(i*2) <= "000000000000000001";
-        end if;
-      end loop;
-    else
-      for i in 0 to DFT_DSPS-1 loop
-        OPMODE(i) <= (others => '0');
-        A(i) <= (others => '0');
-        B(i) <= (others => '0');
-        D(i) <= (others => '0');
-      end loop;
-    end if;
-  end process;
-  -----------------------------------------------------------------------------
-  -- comb. part of FSM
+  -- Repeat buffer modes
+  process (repeat_buffer_mode, input_buffer_data, repeat_buffer_data_out) begin
+    -- Defaults
+    repeat_buffer_data_in <= (others => '0');
+    repeat_buffer_reset <= '0';
+    repeat_buffer_write <= '0';
+    repeat_buffer_read  <= '0';
+    input_buffer_read   <= '0';
+    input <= (others => '0');
 
-  process (dft_state, first_addr_i,cnt)
-  begin
-    data_addr <= std_logic_vector(first_addr_i + cnt);
-    dft_idle <= '0';
-    case dft_state is
-      when idle =>
-        do_acc <= '0';
-        dft_idle <= '1';
-      
-      when prepare_pipe =>
-        null;
-      
-      when run =>
-        do_acc <= '1';
+    case (repeat_buffer_mode) is
 
-      when stop_acc =>
-        null;
+      when FLUSH =>
+        repeat_buffer_reset <= '1';
 
-      when reset_count =>
-        null;
+      when FILL =>
+        repeat_buffer_data_in <= input_buffer_data;
+        repeat_buffer_write <= '1';
+        input_buffer_read   <= '1';
+        input <= input_buffer_data;
 
-      when output_wait1 =>
-        null;
-      
-      when output_wait2 =>
-        null;
+      when REPEAT =>
+        repeat_buffer_data_in <= repeat_buffer_data_out;
+        repeat_buffer_write <= '1';
+        repeat_buffer_read  <= '1';
+        input <= repeat_buffer_data_out;
 
-      when set_output =>
+      when NOP =>
         null;
 
     end case;
   end process;
-  
-  ----------------------------------------------------------------------------
-  -- Logic to set first address to read from.
-  process (reset, clock)
-  begin
-    if reset = '0' then
-      first_addr_i <= (others => '0');
-    elsif rising_edge(clock) then
-      if set_first_addr = '1' then
-        first_addr_i <= unsigned(first_addr);
-      end if;
-    end if;
+
+  -- DSP modes
+  process (dsp_mode, twiddles_real, twiddles_imag, input, dsp_P) begin
+    -- Defaults
+    for i in 0 to dsp_amount - 1 loop
+      dsp_A(i) <= (others => '0');
+      dsp_B(i) <= (others => '0');
+      dsp_D(i) <= (others => '0');
+      dsp_d_sub_b    <= (others => false);
+      dsp_a_mult_b   <= (others => false);
+      dsp_accumulate <= (others => false);
+    end loop;
+
+    case (dsp_mode) is
+
+      when FLUSH =>
+        null;
+
+      when MULTIPLY_ACCUMULATE =>
+        -- P = P + A*B
+        dsp_a_mult_b   <= (others => true);
+        dsp_accumulate <= (others => true);
+
+        for i in 0 to dsp_amount/2 - 1 loop
+          -- Twiddles (sign extended)
+          dsp_A(2*i+0) <= std_logic_vector(resize(signed(twiddles_real(i)), 18));
+          dsp_A(2*i+1) <= std_logic_vector(resize(signed(twiddles_imag(i)), 18));
+
+          -- Input (zero extended)
+          dsp_B(2*i+0) <= std_logic_vector(resize(unsigned(input), 18));
+          dsp_B(2*i+1) <= std_logic_vector(resize(unsigned(input), 18));
+        end loop;
+
+      when COMBINE =>
+        -- Calculate Abs(Round(Real)) + Abs(Round(Imag))
+        -- Note: This uses only half of the DSPs
+        for i in 0 to dsp_amount/2 - 1 loop
+          -- Round and crop real and imaginary parts
+          dsp_D(2*i) <= std_logic_vector(resize(shift_right(signed(dsp_P(2*i+0)), twiddle_precision), 18)); -- Real part
+          dsp_B(2*i) <= std_logic_vector(resize(shift_right(signed(dsp_P(2*i+1)), twiddle_precision), 18)); -- Imag part
+
+          -- If real and imaginary parts have different signs, negate imaginary
+          if (dsp_P(2*i+0)(48-1) /= dsp_P(2*i+1)(48-1)) then
+            dsp_d_sub_b(2*i) <= true;
+          end if;
+
+          -- If real is negative (and also imaginary after negation), multiply by -1
+          if (dsp_P(2*i)(48-1) = '1') then
+            dsp_A(2*i) <= std_logic_vector(to_signed(-1, 18));
+          else
+            dsp_A(2*i) <= std_logic_vector(to_signed(1, 18));
+          end if;
+        end loop;
+
+    end case;
   end process;
-end dft_arch;
+
+  -- Array to SLV
+  process (result) begin
+    for i in 0 to transform_size/2 - 1 loop
+      result_slv((i+1)*result_bits - 1 downto i*result_bits) <= result(i);
+    end loop;
+  end process;
+
+  -- Internally used out ports
+  done <= done_i;
+
+end architecture;
