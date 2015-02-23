@@ -81,7 +81,8 @@ begin
            cell_writer_reader_data, cell_writer_reader_write,
            information_sender_data, information_sender_write,
            rule_vector_reader_data, rule_vector_reader_write,
-           rule_numbers_reader_data, rule_numbers_reader_write) begin
+           rule_numbers_reader_data, rule_numbers_reader_write,
+           fitness_sender_data, fitness_sender_write) begin
 
     -- Defaults
     cell_writer_reader_count  <= (others => '0');

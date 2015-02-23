@@ -55,10 +55,18 @@ architecture rtl of fitness_sender is
 
   signal count_to_send : unsigned(bits(fitness_buffer_size) - 1 downto 0);
 
+  -- Buffer checks
+  signal fitness_buffer_has_data : boolean;
+  signal send_buffer_has_space   : boolean;
+
   -- Internally used out ports
   signal done_i : std_logic := '1';
 
 begin
+
+  -- Buffer checks
+  fitness_buffer_has_data <= unsigned(fitness_buffer_count) > unsigned(fitness_count_per_run);
+  send_buffer_has_space   <= unsigned(send_buffer_count) < (send_buffer_size - 1 - unsigned(fitness_count_per_run));
 
   process begin
     wait until rising_edge(clock);
@@ -70,7 +78,7 @@ begin
         end if;
 
       when WAIT_FOR_FITNESS =>
-        if (fitness_buffer_count > fitness_count_per_run) then
+        if (fitness_buffer_has_data and send_buffer_has_space) then
           state <= SEND_FITNESS;
         end if;
         count_to_send <= unsigned(fitness_count_per_run);
