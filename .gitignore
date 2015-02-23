@@ -59,6 +59,7 @@
 # Generated folders
 ipcores/
 iseconfig/
+netgen/
 xlnx_auto_0_xdb/
 xst/
 _ngo/
