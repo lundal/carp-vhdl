@@ -70,6 +70,8 @@ entity decode is
 
     rule_numbers_reader_operation : out rule_numbers_reader_operation_type;
 
+    fitness_sender_operation : out fitness_sender_operation_type;
+
     cell_buffer_swap       : out std_logic;
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
     send_buffer_mux_select : out send_buffer_mux_select_type;
@@ -106,6 +108,7 @@ begin
     rule_writer_operation <= NOP;
     rule_vector_reader_operation <= NOP;
     rule_numbers_reader_operation <= NOP;
+    fitness_sender_operation <= NOP;
     cell_buffer_swap <= '0';
 
     case instruction_opcode is
@@ -185,11 +188,11 @@ begin
         cellular_automata_operation  <= STEP;
         cellular_automata_step_count <= instruction(cellular_automata_step_count'high + 16 downto 16);
 
-      when INSTRUCTION_CONFIGURE_SBM =>
+      when INSTRUCTION_CONFIGURE =>
         cellular_automata_operation <= CONFIGURE;
         cell_buffer_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
-      when INSTRUCTION_READBACK_SBM =>
+      when INSTRUCTION_READBACK =>
         cellular_automata_operation <= READBACK;
         cell_buffer_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
@@ -219,6 +222,10 @@ begin
       when INSTRUCTION_SET_RULES_ACTIVE =>
         development_operation    <= SET_RULES_ACTIVE;
         development_rules_active <= instruction(development_rules_active'high + 16 downto 16);
+
+      when INSTRUCTION_FITNESS_READ =>
+        fitness_sender_operation <= SEND;
+        send_buffer_mux_select   <= FITNESS_SENDER;
 
       when others =>
         null;

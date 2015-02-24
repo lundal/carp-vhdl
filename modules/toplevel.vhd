@@ -41,7 +41,8 @@ entity toplevel is
     rule_vector_amount       : positive := 64;
     rule_amount              : positive := 256;
     rules_tested_in_parallel : positive := 4;
-    live_count_buffer_size   : positive := 256
+    live_count_buffer_size   : positive := 256;
+    fitness_buffer_size      : positive := 256
   );
   port (
     pcie_tx_p : out std_logic;
@@ -63,6 +64,10 @@ architecture rtl of toplevel is
   constant cell_type_write_width  : positive := min(matrix_width, (instruction_bits-32)/cell_type_bits);
   constant cell_state_write_width : positive := min(matrix_width, (instruction_bits-32)/cell_state_bits);
 
+  -- Inferred constants
+  constant live_count_buffer_bits : positive := bits(matrix_depth*matrix_height*matrix_width) + 1; -- From cellular automata
+  constant send_buffer_size       : positive := 2**tx_buffer_address_bits;
+
   -- General
   signal clock : std_logic;
   signal reset : std_logic;
@@ -76,6 +81,7 @@ architecture rtl of toplevel is
   signal done_development         : std_logic;
   signal done_rule_vector_reader  : std_logic;
   signal done_rule_numbers_reader : std_logic;
+  signal done_fitness_sender      : std_logic;
 
   -- Communication
   signal tx_buffer_data  : std_logic_vector(31 downto 0);
@@ -118,6 +124,8 @@ architecture rtl of toplevel is
   signal decode_to_rule_vector_reader_count     : std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
 
   signal decode_to_rule_numbers_reader_operation : rule_numbers_reader_operation_type;
+
+  signal decode_to_fitness_sender_operation : fitness_sender_operation_type;
 
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
@@ -218,6 +226,27 @@ architecture rtl of toplevel is
   signal rule_numbers_reader_from_send_mux_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
   signal rule_numbers_reader_to_send_mux_write   : std_logic;
 
+  -- Fitness
+  signal fitness_to_live_count_buffer_read    : std_logic;
+  signal fitness_from_live_count_buffer_data  : std_logic_vector(live_count_buffer_bits - 1 downto 0);
+  signal fitness_from_live_count_buffer_count : std_logic_vector(bits(live_count_buffer_size) - 1 downto 0);
+
+  signal fitness_to_buffer_write : std_logic;
+  signal fitness_to_buffer_data  : std_logic_vector(32 - 1 downto 0);
+
+  signal fitness_to_sender_count_per_run : std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
+
+  -- Fitness buffer
+  signal fitness_buffer_count : std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
+
+  -- Fitness sender
+  signal fitness_sender_to_send_mux_write   : std_logic;
+  signal fitness_sender_to_send_mux_data    : std_logic_vector(32 - 1 downto 0);
+  signal fitness_sender_from_send_mux_count : std_logic_vector(bits(send_buffer_size) - 1 downto 0);
+
+  signal fitness_sender_to_buffer_read    : std_logic;
+  signal fitness_sender_from_buffer_data  : std_logic_vector(32 - 1 downto 0);
+
 begin
 
   leds <= "0101";
@@ -228,7 +257,8 @@ begin
      and done_cellular_automata
      and done_development
      and done_rule_vector_reader
-     and done_rule_numbers_reader;
+     and done_rule_numbers_reader
+     and done_fitness_sender;
 
   -----------------------------------------------------------------------------
 
@@ -326,6 +356,8 @@ begin
     rule_vector_reader_count     => decode_to_rule_vector_reader_count,
 
     rule_numbers_reader_operation => decode_to_rule_numbers_reader_operation,
+
+    fitness_sender_operation => decode_to_fitness_sender_operation,
 
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
@@ -527,6 +559,10 @@ begin
     rule_numbers_reader_count => rule_numbers_reader_from_send_mux_count,
     rule_numbers_reader_write => rule_numbers_reader_to_send_mux_write,
 
+    fitness_sender_data  => fitness_sender_to_send_mux_data,
+    fitness_sender_count => fitness_sender_from_send_mux_count,
+    fitness_sender_write => fitness_sender_to_send_mux_write,
+
     send_buffer_data  => tx_buffer_data,
     send_buffer_count => tx_buffer_count,
     send_buffer_write => tx_buffer_write,
@@ -563,9 +599,9 @@ begin
     lut_storage_address => lut_writer_to_cellular_automata_address,
     lut_storage_data    => lut_writer_to_cellular_automata_data,
 
-    live_count_read  => '0',
-    live_count_data  => open,
-    live_count_count => open,
+    live_count_read  => fitness_to_live_count_buffer_read,
+    live_count_data  => fitness_from_live_count_buffer_data,
+    live_count_count => fitness_from_live_count_buffer_count,
 
     decode_operation  => decode_to_cellular_automata_operation,
     decode_step_count => decode_to_cellular_automata_step_count,
@@ -712,6 +748,67 @@ begin
 
     run  => run,
     done => done_rule_numbers_reader,
+
+    clock => clock
+  );
+
+  fitness : entity work.fitness_dft -- Change this to swap fitness module
+  generic map (
+    -- General fitness interface
+    live_count_buffer_size => live_count_buffer_size,
+    live_count_buffer_bits => live_count_buffer_bits, -- TODO: bits(matrix_depth*matrix_height*matrix_width) + 1
+    fitness_buffer_size    => fitness_buffer_size
+    -- Spesific features are defined in each fitness module
+  )
+  port map (
+    live_count_buffer_read  => fitness_to_live_count_buffer_read,
+    live_count_buffer_data  => fitness_from_live_count_buffer_data,
+    live_count_buffer_count => fitness_from_live_count_buffer_count,
+
+    fitness_buffer_write => fitness_to_buffer_write,
+    fitness_buffer_data  => fitness_to_buffer_data,
+    fitness_buffer_count => fitness_buffer_count,
+
+    fitness_count_per_run => fitness_to_sender_count_per_run,
+
+    clock => clock
+  );
+
+  fitness_buffer : entity work.fifo
+  generic map (
+    address_bits => bits(fitness_buffer_size),
+    data_bits    => 32
+  )
+  port map (
+    data_in    => fitness_to_buffer_data,
+    data_out   => fitness_sender_from_buffer_data,
+    data_count => fitness_buffer_count,
+    data_read  => fitness_sender_to_buffer_read,
+    data_write => fitness_to_buffer_write,
+    reset      => '0',
+    clock      => clock
+  );
+
+  fitness_sender : entity work.fitness_sender
+  generic map (
+    send_buffer_size    => send_buffer_size,
+    fitness_buffer_size => fitness_buffer_size
+  )
+  port map (
+    send_buffer_write => fitness_sender_to_send_mux_write,
+    send_buffer_data  => fitness_sender_to_send_mux_data,
+    send_buffer_count => fitness_sender_from_send_mux_count,
+
+    fitness_buffer_read  => fitness_sender_to_buffer_read,
+    fitness_buffer_data  => fitness_sender_from_buffer_data,
+    fitness_buffer_count => fitness_buffer_count,
+
+    fitness_count_per_run => fitness_to_sender_count_per_run,
+
+    decode_operation => decode_to_fitness_sender_operation,
+
+    run  => run,
+    done => done_fitness_sender,
 
     clock => clock
   );

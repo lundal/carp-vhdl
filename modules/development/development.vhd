@@ -146,6 +146,8 @@ architecture rtl of development is
   signal rule_numbers_address : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
   signal rule_numbers_write   : std_logic := '0';
 
+  signal rule_numbers_bram_address : std_logic_vector(bits(matrix_depth) + bits(matrix_height) - 1 downto 0);
+
   -- Internally used out-signals
   signal done_i : std_logic := '1';
 
@@ -436,12 +438,14 @@ begin
     a_data_out => open,
     -- Port B
     b_write    => '0',
-    b_address  => rule_numbers_reader_address_z & rule_numbers_reader_address_y,
+    b_address  => rule_numbers_bram_address,
     b_data_in  => (others => '0'),
     b_data_out => rule_numbers_reader_data,
 
     clock => clock
   );
+
+  rule_numbers_bram_address <= rule_numbers_reader_address_z & rule_numbers_reader_address_y;
 
   -- Notify rule tester when first rule is sent
   rule_testers_rules_first <= '1' when unsigned(rule_fetcher_rules_number) = 0 else '0';

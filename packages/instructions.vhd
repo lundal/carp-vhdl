@@ -42,13 +42,12 @@ package instructions is
 
   constant INSTRUCTION_DEVSTEP           : std_logic_vector(4 downto 0) := "10000";
   constant INSTRUCTION_RUNSTEP           : std_logic_vector(4 downto 0) := "10001";
-  constant INSTRUCTION_CONFIGURE_SBM     : std_logic_vector(4 downto 0) := "10010";
-  constant INSTRUCTION_READBACK_SBM      : std_logic_vector(4 downto 0) := "10011";
-
+  constant INSTRUCTION_CONFIGURE         : std_logic_vector(4 downto 0) := "10010";
+  constant INSTRUCTION_READBACK          : std_logic_vector(4 downto 0) := "10011";
 
   constant INSTRUCTION_SWAP_CELL_BUFFERS : std_logic_vector(4 downto 0) := "10100";
 
-  -- TODO: FITNESS
+  constant INSTRUCTION_FITNESS_READ      : std_logic_vector(4 downto 0) := "10110";
 
   constant INSTRUCTION_BREAK             : std_logic_vector(4 downto 0) := "11000";
   constant INSTRUCTION_STORE             : std_logic_vector(4 downto 0) := "11010";

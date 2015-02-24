@@ -25,7 +25,7 @@ package types is
   );
 
   type send_buffer_mux_select_type is (
-    CELL_WRITER_READER, INFORMATION_SENDER, RULE_VECTOR_READER, RULE_NUMBERS_READER
+    CELL_WRITER_READER, INFORMATION_SENDER, RULE_VECTOR_READER, RULE_NUMBERS_READER, FITNESS_SENDER
   );
 
   type information_sender_operation_type is (
@@ -60,6 +60,10 @@ package types is
 
   type rule_numbers_reader_operation_type is (
     NOP, READ_ALL
+  );
+
+  type fitness_sender_operation_type is (
+    NOP, SEND
   );
 
 end types;

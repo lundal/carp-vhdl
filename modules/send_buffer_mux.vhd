@@ -48,6 +48,11 @@ entity send_buffer_mux is
     rule_numbers_reader_count : out std_logic_vector(send_buffer_address_bits - 1 downto 0);
     rule_numbers_reader_write : in  std_logic;
 
+    -- Fitness Sender
+    fitness_sender_data  : in  std_logic_vector(31 downto 0);
+    fitness_sender_count : out std_logic_vector(send_buffer_address_bits - 1 downto 0);
+    fitness_sender_write : in  std_logic;
+
     -- Buffer
     send_buffer_data  : out std_logic_vector(31 downto 0);
     send_buffer_count : in  std_logic_vector(send_buffer_address_bits - 1 downto 0);
@@ -76,13 +81,15 @@ begin
            cell_writer_reader_data, cell_writer_reader_write,
            information_sender_data, information_sender_write,
            rule_vector_reader_data, rule_vector_reader_write,
-           rule_numbers_reader_data, rule_numbers_reader_write) begin
+           rule_numbers_reader_data, rule_numbers_reader_write,
+           fitness_sender_data, fitness_sender_write) begin
 
     -- Defaults
     cell_writer_reader_count  <= (others => '0');
     information_sender_count  <= (others => '0');
     rule_vector_reader_count  <= (others => '0');
     rule_numbers_reader_count <= (others => '0');
+    fitness_sender_count      <= (others => '0');
 
     case source_select_i is
 
@@ -105,6 +112,11 @@ begin
         send_buffer_data  <= rule_numbers_reader_data;
         rule_numbers_reader_count <= send_buffer_count;
         send_buffer_write <= rule_numbers_reader_write;
+
+      when FITNESS_SENDER =>
+        send_buffer_data  <= fitness_sender_data;
+        fitness_sender_count <= send_buffer_count;
+        send_buffer_write <= fitness_sender_write;
 
     end case;
   end process;

@@ -290,7 +290,7 @@ begin
   end process;
 
   -- This part is not clocked 
-  process (send_buffer_source, shifted_states, shifted_types,
+  process (send_buffer_source, shifted_states, shifted_types, state_repeated, type_repeated,
            buffer_source, combined_state, combined_type, combined_states, combined_types) begin
     -- Default
     send_buffer_data <= (others => '0');
