@@ -752,7 +752,7 @@ begin
     clock => clock
   );
 
-  fitness : entity work.fitness_live_count -- Change this to swap fitness module
+  fitness : entity work.fitness_dft -- Change this to swap fitness module
   generic map (
     -- General fitness interface
     live_count_buffer_size => live_count_buffer_size,
@@ -814,4 +814,3 @@ begin
   );
 
 end rtl;
-
