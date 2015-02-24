@@ -51,16 +51,99 @@ end entity;
 
 architecture rtl of fitness_dft is
 
-  --
-  type state_type is (IDLE, RUN_DFT, COPY_RESULT);
-  signal state : state_type := IDLE;
+  constant results_per_word     : positive := 32/result_bits;
+  constant result_words_per_run : positive := divide_ceil(transform_size/2, results_per_word);
 
   -- DFT
   signal dft_result_slv : std_logic_vector((transform_size/2)*result_bits -1 downto 0);
   signal dft_run  : std_logic;
-  signal dft_done : std_logic;
+  signal dft_done : std_logic := '1';
+
+  -- Result
+  type result_type is array(0 to transform_size/2 - 1) of std_logic_vector(result_bits - 1 downto 0);
+  signal result : result_type;
+
+  -- Transfer
+  type transfer_state_type is (IDLE, TRANSFER);
+  signal transfer_state : transfer_state_type := IDLE;
+  signal transfer_run  : std_logic;
+  signal transfer_done : std_logic := '1';
+  signal transfer_counter : unsigned(result_words_per_run - 1 downto 0) := (others => '0');
+  signal transfer_skip : boolean := true;
+
+  -- Buffer check
+  signal buffer_has_space : boolean;
 
 begin
+
+  fitness_count_per_run <= std_logic_vector(to_unsigned(result_words_per_run, fitness_count_per_run'length));
+
+  -- Buffer must have at least as many available words as the number of cycles
+  -- between the condition is checked and the data is written. 2 should be enough.
+  buffer_has_space <= fitness_buffer_count(fitness_buffer_count'high downto 1) /= (fitness_buffer_count'high downto 1 => '1');
+
+  process (dft_done, transfer_done) begin
+
+    if (dft_done = '1' and transfer_done = '1') then
+      dft_run <= '1';
+      transfer_run <= '1';
+    else
+      dft_run <= '0';
+      transfer_run <= '0';
+    end if;
+
+  end process;
+
+  process begin
+    wait until rising_edge(clock);
+
+    -- Defaults
+    fitness_buffer_write <= '0';
+
+    case (transfer_state) is
+
+      when IDLE =>
+        if (transfer_run = '1') then
+          -- Copy result
+          for i in result'range loop
+            result(i) <= dft_result_slv((i+1)*result_bits - 1 downto i*result_bits);
+          end loop;
+          transfer_counter <= (others => '0');
+          transfer_state <= TRANSFER;
+          transfer_done <= '0';
+        end if;
+        -- Skip the first transfer since there is no valid data yet
+        if (transfer_skip) then
+          transfer_state <= IDLE;
+          transfer_done <= '1';
+          transfer_skip <= false;
+        end if;
+
+      when TRANSFER =>
+        if (buffer_has_space) then
+          fitness_buffer_write <= '1';
+          fitness_buffer_data <= (others => '0');
+          -- For each word
+          for i in 0 to result_words_per_run - 1 loop
+            -- If current word
+            if (i = transfer_counter) then
+              -- Transfer results
+              for k in 0 to results_per_word - 1 loop
+                fitness_buffer_data((k+1)*result_bits - 1 downto k*result_bits) <= result(i*results_per_word + k);
+              end loop;
+            end if;
+          end loop;
+          -- Increment counter (next word)
+          transfer_counter <= transfer_counter + 1;
+          -- Check end condition
+          if (transfer_counter = result_words_per_run - 1) then
+            transfer_state <= IDLE;
+            transfer_done <= '1';
+          end if;
+        end if;
+
+    end case;
+  end process;
 
   dft : entity work.dft
   generic map (
