@@ -65,7 +65,7 @@ architecture rtl of fitness_sender is
 begin
 
   -- Buffer checks
-  fitness_buffer_has_data <= unsigned(fitness_buffer_count) > unsigned(fitness_count_per_run);
+  fitness_buffer_has_data <= unsigned(fitness_buffer_count) >= unsigned(fitness_count_per_run);
   send_buffer_has_space   <= unsigned(send_buffer_count) < (send_buffer_size - 1 - unsigned(fitness_count_per_run));
 
   process begin
