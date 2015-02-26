@@ -9,7 +9,8 @@
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
 -- Description: Tests multiple development rules against a cell neighborhood.
---            : Note: Output is available after two clock cycles.
+--            : Note: Hits are available after one clock cycle, while new
+--            : type and state is available after two.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description

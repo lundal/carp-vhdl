@@ -85,7 +85,7 @@ architecture rtl of development is
 
   type state_type is (
     IDLE, FETCH_FIRST, MAIN_LOOP, TEST_LAST,
-    WAIT_1, WAIT_2
+    WAIT_1
   );
 
   signal state : state_type := IDLE;
@@ -123,6 +123,7 @@ architecture rtl of development is
   signal write_enable    : std_logic := '0';
 
   -- Signals delayed once
+  signal rule_fetcher_rules_number_delayed_1 : std_logic_vector(bits(rule_amount) - 1 downto 0);
   signal write_address_z_delayed_1 : std_logic_vector(bits(matrix_depth) - 1 downto 0);
   signal write_address_y_delayed_1 : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal write_enable_delayed_1    : std_logic := '0';
@@ -131,11 +132,6 @@ architecture rtl of development is
   signal write_address_z_delayed_2 : std_logic_vector(bits(matrix_depth) - 1 downto 0);
   signal write_address_y_delayed_2 : std_logic_vector(bits(matrix_height) - 1 downto 0);
   signal write_enable_delayed_2    : std_logic := '0';
-
-  -- Signals delayed thrice
-  signal write_address_z_delayed_3 : std_logic_vector(bits(matrix_depth) - 1 downto 0);
-  signal write_address_y_delayed_3 : std_logic_vector(bits(matrix_height) - 1 downto 0);
-  signal write_enable_delayed_3    : std_logic := '0';
 
   -- Rule vector
   signal rule_vector_to_fifo : std_logic_vector(rule_amount - 1 downto 0);
@@ -245,9 +241,6 @@ begin
         end if;
 
       when WAIT_1 =>
-        state <= WAIT_2;
-
-      when WAIT_2 =>
         -- Write rulevector
         rule_vector_write <= '1';
         -- Return to idle
@@ -258,10 +251,14 @@ begin
   end process;
 
   -- Run signals are asynchronous for optimal timing (see diagrams)
-  process (run, state, cell_fetcher_done, rule_fetcher_done) begin
+  process (run, state, cell_fetcher_done, rule_fetcher_done, decode_operation) begin
     case (state) is
       when IDLE =>
-        cell_fetcher_run <= run;
+        if (decode_operation = DEVELOP) then
+          cell_fetcher_run <= run;
+        else
+          cell_fetcher_run <= '0';
+        end if;
         rule_fetcher_run <= '0';
       when FETCH_FIRST =>
         cell_fetcher_run <= cell_fetcher_done and rule_fetcher_done;
@@ -279,6 +276,7 @@ begin
   process begin
     wait until rising_edge(clock);
     -- One cycle
+    rule_fetcher_rules_number_delayed_1 <= rule_fetcher_rules_number;
     write_address_z_delayed_1 <= write_address_z;
     write_address_y_delayed_1 <= write_address_y;
     write_enable_delayed_1    <= write_enable;
@@ -286,10 +284,6 @@ begin
     write_address_z_delayed_2 <= write_address_z_delayed_1;
     write_address_y_delayed_2 <= write_address_y_delayed_1;
     write_enable_delayed_2    <= write_enable_delayed_1;
-    -- Three cycles
-    write_address_z_delayed_3 <= write_address_z_delayed_2;
-    write_address_y_delayed_3 <= write_address_y_delayed_2;
-    write_enable_delayed_3    <= write_enable_delayed_2;
   end process;
 
   cell_fetcher : entity work.cell_fetcher
@@ -391,7 +385,7 @@ begin
   )
   port map (
     hits_slv    => rule_testers_hits_slv,
-    rule_number => rule_fetcher_rules_number,
+    rule_number => rule_fetcher_rules_number_delayed_1,
     rule_vector => rule_vector_to_fifo,
     clock       => clock
   );
@@ -404,7 +398,7 @@ begin
   )
   port map (
     hits_slv         => rule_testers_hits_slv,
-    rule_number      => rule_fetcher_rules_number,
+    rule_number      => rule_fetcher_rules_number_delayed_1,
     rule_numbers_slv => rule_numbers_to_bram,
     clock            => clock
   );
@@ -458,8 +452,8 @@ begin
   buffer_b_states_write <= write_enable_delayed_2;
 
   -- Rule numbers write signals
-  rule_numbers_address <= write_address_z_delayed_3 & write_address_y_delayed_3;
-  rule_numbers_write   <= write_enable_delayed_3;
+  rule_numbers_address <= write_address_z_delayed_2 & write_address_y_delayed_2;
+  rule_numbers_write   <= write_enable_delayed_2;
 
   -- Internally used out ports
   done <= done_i;
