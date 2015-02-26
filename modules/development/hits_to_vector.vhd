@@ -10,6 +10,7 @@
 -------------------------------------------------------------------------------
 -- Description: Processes hits from rule testers into rule vectors.
 --            : Note: Generates up to (rules_tested_in_parallel) unconnected.
+--            : Note: Must be reset before first hits.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -36,6 +37,8 @@ entity hits_to_vector is
     rule_number : in std_logic_vector(bits(rule_amount) - 1 downto 0);
 
     rule_vector : out std_logic_vector(rule_amount - 1 downto 0);
+
+    reset : in std_logic;
 
     clock : in std_logic
   );
@@ -69,19 +72,20 @@ begin
   process begin
     wait until rising_edge(clock);
 
-    -- Clear if first rules
-    if (unsigned(rule_number) = 0) then
+    -- Clear vector
+    if (reset = '1') then
       rule_vector_i <= (others => '0');
+    else
+      -- Insert hits into vector (OR with previous values from other cells)
+      -- Note: Requires (rule_number mod rules_tested_in_parallel) to be zero.
+      for i in 0 to rule_amount / rules_tested_in_parallel loop
+        if (unsigned(rule_number) = i * rules_tested_in_parallel) then
+          rule_vector_i((i+1) * rules_tested_in_parallel - 1 downto i * rules_tested_in_parallel)
+            <= rule_vector_i((i+1) * rules_tested_in_parallel - 1 downto i * rules_tested_in_parallel)
+            or hits_ored(hits_ored'high);
+        end if;
+      end loop;
     end if;
-
-    -- Insert hits into vector
-    -- This implementation uses less logic than a combiner, but
-    -- requires (rule_number mod rules_tested_in_parallel) to be zero.
-    for i in 0 to rule_amount / rules_tested_in_parallel loop
-      if (unsigned(rule_number) = i * rules_tested_in_parallel) then
-        rule_vector_i((i+1) * rules_tested_in_parallel - 1 downto i * rules_tested_in_parallel) <= hits_ored(hits_ored'high);
-      end if;
-    end loop;
 
   end process;
 

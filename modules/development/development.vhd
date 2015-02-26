@@ -136,6 +136,7 @@ architecture rtl of development is
   -- Rule vector
   signal rule_vector_to_fifo : std_logic_vector(rule_amount - 1 downto 0);
   signal rule_vector_write   : std_logic := '0';
+  signal rule_vector_reset   : std_logic := '0';
 
   -- Rule numbers
   signal rule_numbers_to_bram : std_logic_vector(matrix_width * bits(rule_amount) - 1 downto 0);
@@ -158,6 +159,7 @@ begin
 
     -- Defaults
     rule_vector_write <= '0';
+    rule_vector_reset <= '0';
 
     case (state) is
 
@@ -197,6 +199,8 @@ begin
           write_address_z <= (others => '0');
           write_address_y <= (others => '0');
           write_enable <= '1';
+          -- Clear rule vector
+          rule_vector_reset <= '1';
           -- Next stage
           state <= MAIN_LOOP;
         end if;
@@ -387,6 +391,7 @@ begin
     hits_slv    => rule_testers_hits_slv,
     rule_number => rule_fetcher_rules_number_delayed_1,
     rule_vector => rule_vector_to_fifo,
+    reset       => rule_vector_reset,
     clock       => clock
   );
 
