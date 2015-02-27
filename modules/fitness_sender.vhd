@@ -37,7 +37,7 @@ entity fitness_sender is
     fitness_buffer_data  : in  std_logic_vector(32 - 1 downto 0);
     fitness_buffer_count : in  std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
 
-    fitness_count_per_run : in std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
+    fitness_words_per_run : in std_logic_vector(8 - 1 downto 0);
 
     decode_operation : in fitness_sender_operation_type;
 
@@ -53,7 +53,7 @@ architecture rtl of fitness_sender is
   type state_type is (IDLE, WAIT_FOR_FITNESS, SEND_FITNESS);
   signal state : state_type := IDLE;
 
-  signal count_to_send : unsigned(bits(fitness_buffer_size) - 1 downto 0);
+  signal words_to_send : unsigned(bits(fitness_buffer_size) - 1 downto 0);
 
   -- Buffer checks
   signal fitness_buffer_has_data : boolean;
@@ -65,8 +65,8 @@ architecture rtl of fitness_sender is
 begin
 
   -- Buffer checks
-  fitness_buffer_has_data <= unsigned(fitness_buffer_count) >= unsigned(fitness_count_per_run);
-  send_buffer_has_space   <= unsigned(send_buffer_count) < (send_buffer_size - 1 - unsigned(fitness_count_per_run));
+  fitness_buffer_has_data <= unsigned(fitness_buffer_count) >= unsigned(fitness_words_per_run);
+  send_buffer_has_space   <= unsigned(send_buffer_count) < (send_buffer_size - 1 - unsigned(fitness_words_per_run));
 
   process begin
     wait until rising_edge(clock);
@@ -81,14 +81,14 @@ begin
         if (fitness_buffer_has_data and send_buffer_has_space) then
           state <= SEND_FITNESS;
         end if;
-        count_to_send <= unsigned(fitness_count_per_run);
+        words_to_send <= unsigned(fitness_words_per_run);
 
       when SEND_FITNESS =>
-        if (count_to_send = 1) then
+        if (words_to_send = 1) then
           state <= IDLE;
           done_i <= '1';
         end if;
-        count_to_send <= count_to_send - 1;
+        words_to_send <= words_to_send - 1;
 
     end case;
   end process;

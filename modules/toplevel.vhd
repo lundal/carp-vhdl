@@ -234,7 +234,9 @@ architecture rtl of toplevel is
   signal fitness_to_buffer_write : std_logic;
   signal fitness_to_buffer_data  : std_logic_vector(32 - 1 downto 0);
 
-  signal fitness_to_sender_count_per_run : std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
+  signal fitness_identifier    : std_logic_vector(8 - 1 downto 0);
+  signal fitness_words_per_run : std_logic_vector(8 - 1 downto 0);
+  signal fitness_parameters    : std_logic_vector(16 - 1 downto 0);
 
   -- Fitness buffer
   signal fitness_buffer_count : std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
@@ -385,6 +387,10 @@ begin
     send_buffer_data  => information_sender_to_send_mux_data,
     send_buffer_count => information_sender_from_send_mux_count,
     send_buffer_write => information_sender_to_send_mux_write,
+
+    fitness_identifier    => fitness_identifier,
+    fitness_words_per_run => fitness_words_per_run,
+    fitness_parameters    => fitness_parameters,
 
     decode_operation => decode_to_information_sender_operation,
 
@@ -769,7 +775,9 @@ begin
     fitness_buffer_data  => fitness_to_buffer_data,
     fitness_buffer_count => fitness_buffer_count,
 
-    fitness_count_per_run => fitness_to_sender_count_per_run,
+    identifier    => fitness_identifier,
+    words_per_run => fitness_words_per_run,
+    parameters    => fitness_parameters,
 
     clock => clock
   );
@@ -803,7 +811,7 @@ begin
     fitness_buffer_data  => fitness_sender_from_buffer_data,
     fitness_buffer_count => fitness_buffer_count,
 
-    fitness_count_per_run => fitness_to_sender_count_per_run,
+    fitness_words_per_run => fitness_words_per_run,
 
     decode_operation => decode_to_fitness_sender_operation,
 

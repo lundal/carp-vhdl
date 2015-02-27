@@ -43,7 +43,9 @@ entity fitness_dft is
     fitness_buffer_data  : out std_logic_vector(32 - 1 downto 0);
     fitness_buffer_count : in  std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
 
-    fitness_count_per_run : out std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
+    identifier    : out std_logic_vector(8 - 1 downto 0);
+    words_per_run : out std_logic_vector(8 - 1 downto 0);
+    parameters    : out std_logic_vector(16 - 1 downto 0);
 
     clock : in std_logic
   );
@@ -76,7 +78,15 @@ architecture rtl of fitness_dft is
 
 begin
 
-  fitness_count_per_run <= std_logic_vector(to_unsigned(result_words_per_run, fitness_count_per_run'length));
+  -- Generic checks
+  assert (result_bits < 2**6) report "Unsupported result_bits. Supported values are [1-63]." severity FAILURE;
+  assert (transform_size < 2**10) report "Unsupported transform_size. Supported values are [1-1023]." severity FAILURE;
+
+  -- Information
+  identifier              <= X"01";
+  words_per_run           <= std_logic_vector(to_unsigned(result_words_per_run, 8));
+  parameters( 5 downto 0) <= std_logic_vector(to_unsigned(result_bits, 6));
+  parameters(15 downto 6) <= std_logic_vector(to_unsigned(transform_size, 10));
 
   -- Buffer must have at least as many available words as the number of cycles
   -- between the condition is checked and the data is written. 2 should be enough.

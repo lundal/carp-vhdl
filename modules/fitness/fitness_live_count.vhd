@@ -38,7 +38,9 @@ entity fitness_live_count is
     fitness_buffer_data  : out std_logic_vector(32 - 1 downto 0);
     fitness_buffer_count : in  std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
 
-    fitness_count_per_run : out std_logic_vector(bits(fitness_buffer_size) - 1 downto 0);
+    identifier    : out std_logic_vector(8 - 1 downto 0);
+    words_per_run : out std_logic_vector(8 - 1 downto 0);
+    parameters    : out std_logic_vector(16 - 1 downto 0);
 
     clock : in std_logic
   );
@@ -54,6 +56,12 @@ begin
   -- Generic checks
   assert (fitness_buffer_size >= live_count_buffer_size) report "Unsupported fitness_buffer_size. Supported values are [live_count_buffer_size-N]." severity FAILURE;
 
+  -- Information
+  identifier    <= X"02";
+  words_per_run <= std_logic_vector(to_unsigned(1, 8));
+  parameters    <= (others => '0');
+
+  -- Buffer checks
   live_count_buffer_has_data_one <= live_count_buffer_count /= (live_count_buffer_count'range => '0');
   fitness_buffer_has_space_one <= fitness_buffer_count /= (fitness_buffer_count'range => '1');
 
@@ -70,8 +78,5 @@ begin
 
   -- Forward data
   fitness_buffer_data <= std_logic_vector(resize(unsigned(live_count_buffer_data), fitness_buffer_data'length));
-
-  -- One value per fitness run
-  fitness_count_per_run <= std_logic_vector(to_unsigned(1, fitness_count_per_run'length));
 
 end architecture;
