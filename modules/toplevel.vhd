@@ -762,7 +762,7 @@ begin
   generic map (
     -- General fitness interface
     live_count_buffer_size => live_count_buffer_size,
-    live_count_buffer_bits => live_count_buffer_bits, -- TODO: bits(matrix_depth*matrix_height*matrix_width) + 1
+    live_count_buffer_bits => live_count_buffer_bits,
     fitness_buffer_size    => fitness_buffer_size
     -- Spesific features are defined in each fitness module
   )
