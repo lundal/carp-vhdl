@@ -64,6 +64,7 @@ entity development is
     rule_vector_reader_data  : out std_logic_vector(rule_amount - 1 downto 0);
     rule_vector_reader_count : out std_logic_vector(bits(rule_vector_amount) - 1 downto 0);
     rule_vector_reader_read  : in  std_logic;
+    rule_vector_buffer_reset : in  std_logic;
 
     rule_numbers_reader_address_z : in  std_logic_vector(bits(matrix_depth) - 1 downto 0);
     rule_numbers_reader_address_y : in  std_logic_vector(bits(matrix_height) - 1 downto 0);
@@ -419,8 +420,8 @@ begin
     data_count => rule_vector_reader_count,
     data_read  => rule_vector_reader_read,
     data_write => rule_vector_write,
-    clock      => clock,
-    reset      => '0' -- TODO
+    reset      => rule_vector_buffer_reset,
+    clock      => clock
   );
 
   rule_numbers_bram : entity work.bram_tdp

@@ -127,6 +127,7 @@ architecture rtl of toplevel is
 
   signal decode_to_fitness_sender_operation : fitness_sender_operation_type;
 
+  signal decode_to_buffers_reset          : std_logic;
   signal decode_to_cell_buffer_swap       : std_logic;
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
@@ -361,6 +362,7 @@ begin
 
     fitness_sender_operation => decode_to_fitness_sender_operation,
 
+    buffer_reset           => decode_to_buffers_reset,
     cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
     send_buffer_mux_select => decode_to_send_buffer_mux_select,
@@ -608,6 +610,7 @@ begin
     live_count_read  => fitness_to_live_count_buffer_read,
     live_count_data  => fitness_from_live_count_buffer_data,
     live_count_count => fitness_from_live_count_buffer_count,
+    live_count_reset => decode_to_buffers_reset,
 
     decode_operation  => decode_to_cellular_automata_operation,
     decode_step_count => decode_to_cellular_automata_step_count,
@@ -695,6 +698,7 @@ begin
     rule_vector_reader_data  => rule_vector_reader_from_development_data,
     rule_vector_reader_count => rule_vector_reader_from_development_count,
     rule_vector_reader_read  => rule_vector_reader_to_development_read,
+    rule_vector_buffer_reset => decode_to_buffers_reset,
 
     rule_numbers_reader_address_z => rule_numbers_reader_to_development_address_z,
     rule_numbers_reader_address_y => rule_numbers_reader_to_development_address_y,
@@ -793,7 +797,7 @@ begin
     data_count => fitness_buffer_count,
     data_read  => fitness_sender_to_buffer_read,
     data_write => fitness_to_buffer_write,
-    reset      => '0',
+    reset      => decode_to_buffers_reset,
     clock      => clock
   );
 

@@ -52,6 +52,7 @@ entity cellular_automata is
     live_count_read  : in  std_logic;
     live_count_data  : out std_logic_vector(bits(matrix_depth*matrix_height*matrix_width) downto 0);
     live_count_count : out std_logic_vector(bits(live_count_buffer_size) - 1 downto 0);
+    live_count_reset : in  std_logic;
 
     decode_operation  : in cellular_automata_operation_type;
     decode_step_count : in std_logic_vector(15 downto 0);
@@ -302,7 +303,7 @@ begin
     data_count => live_count_count,
     data_read  => live_count_read,
     data_write => live_counter_to_buffer_write,
-    reset      => '0',
+    reset      => live_count_reset,
     clock      => clock
   );
 

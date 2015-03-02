@@ -46,6 +46,7 @@ package instructions is
   constant INSTRUCTION_READBACK          : std_logic_vector(4 downto 0) := "10011";
 
   constant INSTRUCTION_SWAP_CELL_BUFFERS : std_logic_vector(4 downto 0) := "10100";
+  constant INSTRUCTION_RESET_BUFFERS     : std_logic_vector(4 downto 0) := "10101";
 
   constant INSTRUCTION_FITNESS_READ      : std_logic_vector(4 downto 0) := "10110";
 
