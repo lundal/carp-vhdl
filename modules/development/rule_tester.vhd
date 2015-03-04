@@ -39,9 +39,6 @@ entity rule_tester is
 
     hit : out std_logic;
 
-    change_type  : out std_logic;
-    change_state : out std_logic;
-
     result_type  : out std_logic_vector(cell_type_bits - 1 downto 0);
     result_state : out std_logic_vector(cell_state_bits - 1 downto 0);
 
@@ -116,8 +113,8 @@ begin
 
     -- Defaults
     hit          <= '0';
-    change_type  <= '0';
-    change_state <= '0';
+    result_type  <= neighborhood_types(0);
+    result_state <= neighborhood_states(0);
 
     -- Check conditions
     if (conditions_ok = (conditions_ok'range => '1')) then
@@ -125,12 +122,10 @@ begin
       hit <= result.type_change or result.state_change;
       -- Apply any change in type
       if (result.type_change = '1') then
-        change_type <= '1';
         result_type <= result.type_i;
       end if;
       -- Apply any change in state
       if (result.state_change = '1') then
-        change_state <= '1';
         result_state <= result.state_i;
       end if;
     end if;
@@ -139,9 +134,7 @@ begin
     -- This is needed to "reset" the rule tester.
     if (rule_first = '1') then
       hit <= '1';
-      change_type  <= '1';
       result_type  <= neighborhood_types(0);
-      change_state <= '1';
       result_state <= neighborhood_states(0);
     end if;
 

@@ -59,14 +59,14 @@ architecture rtl of rule_tester_multi is
   signal rules           : rules_type;
   signal rules_first_slv : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
 
-  signal change_types  : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
-  signal change_states : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
-
   type types_type  is array (rules_tested_in_parallel - 1 downto 0) of std_logic_vector(cell_type_bits - 1 downto 0);
   type states_type is array (rules_tested_in_parallel - 1 downto 0) of std_logic_vector(cell_state_bits - 1 downto 0);
 
   signal result_types  : types_type;
   signal result_states : states_type;
+
+  -- Internally used out ports
+  signal hits_i : std_logic_vector(rules_tested_in_parallel - 1 downto 0);
 
 begin
 
@@ -88,10 +88,7 @@ begin
       rule       => rules(i),
       rule_first => rules_first_slv(i),
 
-      hit => hits(i),
-
-      change_type  => change_types(i),
-      change_state => change_states(i),
+      hit => hits_i(i),
 
       result_type  => result_types(i),
       result_state => result_states(i),
@@ -110,13 +107,14 @@ begin
   process begin
     wait until rising_edge(clock);
     for i in 0 to rules_tested_in_parallel - 1 loop
-      if (change_types(i) = '1') then
+      if (hits_i(i) = '1') then
         result_type  <= result_types(i);
-      end if;
-      if (change_states(i) = '1') then
         result_state <= result_states(i);
       end if;
     end loop;
   end process;
+
+  -- Internally used out ports
+  hits <= hits_i;
 
 end rtl;
