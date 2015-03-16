@@ -205,6 +205,9 @@ begin
         end if;
         -- Write row
         buffer_states_selected <= std_logic_vector(unsigned(buffer_states_selected) + 1);
+        if (unsigned(buffer_states_selected) = matrix_depth * matrix_height - 1) then
+          buffer_states_selected <= (others => '0');
+        end if;
         buffer_states_write <= '1';
 
       when STEP =>
