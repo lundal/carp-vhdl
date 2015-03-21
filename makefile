@@ -1,18 +1,148 @@
-PROJECT_NAME = toplevel
-BITFILE = $(PROJECT_NAME).bit
-PROGFILE = $(PROJECT_NAME).mcs
+DEVICE = xc6slx45t
+PACKAGE = fgg484
+SPEED = 3
 
-.PHONY: clean purge
+PROJECT_NAME = carp
 
-$(PROGFILE): $(BITFILE)
-	promgen -w -p mcs -c FF -o $(PROGFILE) -s 4096 -u 0000 $(BITFILE) -spi
+COREFILES = $(shell find ipcores -name *.xco)
+VHDLFILES = $(shell find modules packages ipcores sp605 -name *.vhd)
+CONSTRAINTSFILE = sp605/constraints.ucf
 
-flash: $(PROGFILE)
+.PHONY: help regenerate synthesize implement flash clean purge
+
+help:
+	@echo "make regenerate: Regenerate ip cores (must be run separately)"
+	@echo "make synthesize: Synthesize design using constants in TODO"
+	@echo "make implement:  Implement the synthesized design"
+	@echo "make flash:      Upload the implemented design"
+
+regenerate: ipcores/coregen.cgp
+
+synthesize: $(PROJECT_NAME).ngc
+
+implement: $(PROJECT_NAME).ncd
+
+ipcores/coregen.cgp: $(COREFILES) makefile
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Regenerating ip cores...              #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	cd ipcores; echo "SET addpads = false" > coregen.cgp
+	cd ipcores; echo "SET asysymbol = true" >> coregen.cgp
+	cd ipcores; echo "SET busformat = BusFormatAngleBracketNotRipped" >> coregen.cgp
+	cd ipcores; echo "SET createndf = false" >> coregen.cgp
+	cd ipcores; echo "SET designentry = VHDL" >> coregen.cgp
+	cd ipcores; echo "SET device = $(DEVICE)" >> coregen.cgp
+	cd ipcores; echo "SET devicefamily = spartan6" >> coregen.cgp
+	cd ipcores; echo "SET flowvendor = Other" >> coregen.cgp
+	cd ipcores; echo "SET formalverification = false" >> coregen.cgp
+	cd ipcores; echo "SET foundationsym = false" >> coregen.cgp
+	cd ipcores; echo "SET implementationfiletype = Ngc" >> coregen.cgp
+	cd ipcores; echo "SET package = $(PACKAGE)" >> coregen.cgp
+	cd ipcores; echo "SET removerpms = false" >> coregen.cgp
+	cd ipcores; echo "SET simulationfiles = Behavioral" >> coregen.cgp
+	cd ipcores; echo "SET speedgrade = -$(SPEED)" >> coregen.cgp
+	cd ipcores; echo "SET verilogsim = false" >> coregen.cgp
+	cd ipcores; echo "SET vhdlsim = true" >> coregen.cgp
+# The core file has to be backed up because coregen overwrites it and hardcodes part
+	cd ipcores; for core in $(COREFILES); do \
+	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
+
+%.ucf: %.ucf.in makefile
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Preprocessing constraints...          #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	sed "s/@PART/$(DEVICE)-$(PACKAGE)-$(SPEED)/" $< > $@
+
+$(PROJECT_NAME).ngc: $(VHDLFILES)
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Synthesizing...                       #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	echo $(VHDLFILES) | xargs -n 1 > vhdlfiles.tmp
+	echo "run " > synthesis.tmp
+	echo "-ifn vhdlfiles.tmp" >> synthesis.tmp
+	echo "-ifmt VHDL" >> synthesis.tmp
+	echo "-p $(DEVICE)-$(PACKAGE)-$(SPEED)" >> synthesis.tmp
+	echo "-top toplevel" >> synthesis.tmp
+	echo "-opt_level 2" >> synthesis.tmp
+	echo "-shreg_min_size 8" >> synthesis.tmp
+	echo "-ofn $@" >> synthesis.tmp
+	xst -ifn synthesis.tmp
+
+$(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE)
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Translating...                        #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTSFILE) $< $@
+
+$(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Mapping...                            #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -mt 2 -o mapped.ncd $< $@
+
+$(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Placing and routing...                #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	par -w -ol high -mt 4 mapped.ncd $@ $<
+
+$(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Generating bit file...                #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	bitgen -g INIT_9K:YES $< $@
+
+$(PROJECT_NAME).mcs: $(PROJECT_NAME).bit
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Generating programming file...        #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	promgen -w -p mcs -c FF -o $@ -s 4096 -u 0000 $< -spi
+
+flash: $(PROJECT_NAME).mcs
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Flashing...                           #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
 	echo "setmode -bs" > flash.tmp
 	echo "setcable -port auto" >> flash.tmp
 	echo "identify" >> flash.tmp
 	echo "attachflash -position 2 -spi \"W25Q64BV\"" >> flash.tmp
-	echo "assignfiletoattachedflash -position 2 -file \"$(PROGFILE)\"" >> flash.tmp
+	echo "assignfiletoattachedflash -position 2 -file \"$<\"" >> flash.tmp
 	echo "program -p 2 -spionly -e -loadfpga " >> flash.tmp
 	echo "exit" >> flash.tmp
 	impact -batch flash.tmp
@@ -20,7 +150,7 @@ flash: $(PROGFILE)
 clean:
 	git clean -Xdf
 
-purge::
+purge:
 	git clean -xdf
 	git reset --hard
 
