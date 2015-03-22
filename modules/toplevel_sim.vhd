@@ -20,29 +20,30 @@ use ieee.std_logic_1164.all;
 
 library work;
 use work.functions.all;
+use work.parameters.all;
 use work.types.all;
 
 entity toplevel_sim is
   generic (
-    tx_buffer_address_bits   : positive := 10; -- PCIe packet length field is 10 bits
-    rx_buffer_address_bits   : positive := 10;
-    reverse_payload_endian   : boolean  := true; -- Required for x86 systems
-    program_counter_bits     : positive := 8;
-    matrix_width             : positive := 8;
-    matrix_height            : positive := 8;
-    matrix_depth             : positive := 8;
-    matrix_wrap              : boolean  := true;
-    cell_type_bits           : positive := 8;
-    cell_state_bits          : positive := 1; -- Must be 1 due to implementation of CA
-    jump_counters            : positive := 4;
-    jump_counter_bits        : positive := 16;
-    instruction_bits         : positive := 256; -- Must be 256 due to implementation of fetch_communication
-    lut_configuration_bits   : positive := 8; -- Should optimally be 2 for 2D and 8 for 3D
-    rule_vector_amount       : positive := 64;
-    rule_amount              : positive := 256;
-    rules_tested_in_parallel : positive := 4;
-    live_count_buffer_size   : positive := 256;
-    fitness_buffer_size      : positive := 256
+    tx_buffer_address_bits   : positive := COMMUNICATION_BUFFER_SIZE_LG;
+    rx_buffer_address_bits   : positive := COMMUNICATION_BUFFER_SIZE_LG;
+    reverse_payload_endian   : boolean  := COMMUNICATION_REVERSE_ENDIAN;
+    program_counter_bits     : positive := PROGRAM_COUNTER_BITS;
+    matrix_width             : positive := MATRIX_WIDTH;
+    matrix_height            : positive := MATRIX_HEIGHT;
+    matrix_depth             : positive := MATRIX_DEPTH;
+    matrix_wrap              : boolean  := MATRIX_WRAP;
+    cell_type_bits           : positive := TYPE_BITS;
+    cell_state_bits          : positive := STATE_BITS;
+    jump_counters            : positive := COUNTER_AMOUNT;
+    jump_counter_bits        : positive := COUNTER_BITS;
+    instruction_bits         : positive := INSTRUCTION_BITS;
+    lut_configuration_bits   : positive := LUT_CONFIGURATION_BITS;
+    rule_amount              : positive := RULE_AMOUNT;
+    rules_tested_in_parallel : positive := RULES_TESTED_IN_PARALLEL;
+    rule_vector_amount       : positive := RULE_VECTOR_BUFFER_SIZE;
+    live_count_buffer_size   : positive := LIVE_COUNT_BUFFER_SIZE;
+    fitness_buffer_size      : positive := FITNESS_BUFFER_SIZE
   );
   port (
     sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
@@ -675,6 +676,7 @@ begin
     matrix_wrap              => matrix_wrap,
     cell_type_bits           => cell_type_bits,
     cell_state_bits          => cell_state_bits,
+    rule_vector_amount       => rule_vector_amount,
     rule_amount              => rule_amount,
     rules_tested_in_parallel => rules_tested_in_parallel
   )
