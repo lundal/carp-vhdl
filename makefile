@@ -61,7 +61,7 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	@echo
 	sed "s/@PART/$(DEVICE)-$(PACKAGE)-$(SPEED)/" $< > $@
 
-$(PROJECT_NAME).ngc: $(VHDLFILES)
+$(PROJECT_NAME).ngc: $(VHDLFILES) makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -80,7 +80,7 @@ $(PROJECT_NAME).ngc: $(VHDLFILES)
 	echo "-ofn $@" >> synthesis.tmp
 	xst -ifn synthesis.tmp
 
-$(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE)
+$(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -90,7 +90,7 @@ $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE)
 	@echo
 	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTSFILE) $< $@
 
-$(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd
+$(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
