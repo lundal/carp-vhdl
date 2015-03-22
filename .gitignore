@@ -1,91 +1,50 @@
-# Source: https://raw.github.com/github/gitignore/master/Global/XilinxISE.gitignore
+# General
+*.html
+*.log
+*.tmp
+*.xml
 
-# Intermediate build files
-*.bgn
-*.bit
-*.bld
-*.cmd_log
+# ISE
+ipcores/
+iseconfig/
+xlnx_auto_0_xdb/
+xst/
+_xmsgs/
 *.drc
-*.ll
+*.bit
+*.bgn
+*.bld
+*.cfi
 *.lso
-*.msd
-*.msk
+*.lst
+*.gise
+*.map
+*.mcs
+*.mrp
 *.ncd
 *.ngc
 *.ngd
-*.ngr
+*.ngm
 *.pad
 *.par
 *.pcf
-*.prj
+*.prm
 *.ptwx
-*.rbb
-*.rbd
-*.stx
-*.syr
-*.twr
-*.twx
+*.srp
 *.unroutes
-*.ut
 *.xpi
-*.xst
-*.fdo
-*.udo
-*.map
-*.mrp
-*.wlf
-*_bitgen.xwbt
-*_envsettings.html
-*_map.map
-*_map.mrp
-*_map.ngm
-*_map.xrpt
-*_ngdbuild.xrpt
+*.xrpt
+*.xwbt
 *_pad.csv
 *_pad.txt
-*_par.xrpt
-*_summary.html
-*_summary.xml
-*_usage.xml
-*_xst.xrpt
-
-# Project-wide generated files
-*.gise
-*.html
-*.log
-*.xml
-*.xrpt
-
-# Generated folders
-ipcores/
-iseconfig/
-netgen/
-xlnx_auto_0_xdb/
-xst/
-_ngo/
-_xmsgs/
-work/
 
 # ISIM
 isim/
-*isim_beh.*
+fuse*
 isim.cmd
+*_beh.*
 xilinxsim.ini
-*.wdb
 
-# Extra
-wlft*
-transcript
-*.tmp
-*.cfi
-*.mcs
-*.prm
-
-# Linux toolchain garbage
-*.o
-*.out
-*.cf
-
-# Vim swap files
+# Vim
 *.swp
-
+*.swo
