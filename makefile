@@ -1,3 +1,4 @@
+FAMILY = spartan6
 DEVICE = xc6slx45t
 PACKAGE = fgg484
 SPEED = 3
@@ -36,7 +37,7 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	cd ipcores; echo "SET createndf = false" >> coregen.cgp
 	cd ipcores; echo "SET designentry = VHDL" >> coregen.cgp
 	cd ipcores; echo "SET device = $(DEVICE)" >> coregen.cgp
-	cd ipcores; echo "SET devicefamily = spartan6" >> coregen.cgp
+	cd ipcores; echo "SET devicefamily = $(FAMILY)" >> coregen.cgp
 	cd ipcores; echo "SET flowvendor = Other" >> coregen.cgp
 	cd ipcores; echo "SET formalverification = false" >> coregen.cgp
 	cd ipcores; echo "SET foundationsym = false" >> coregen.cgp
@@ -47,8 +48,8 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	cd ipcores; echo "SET speedgrade = -$(SPEED)" >> coregen.cgp
 	cd ipcores; echo "SET verilogsim = false" >> coregen.cgp
 	cd ipcores; echo "SET vhdlsim = true" >> coregen.cgp
-# The core file has to be backed up because coregen overwrites it and hardcodes part
-	cd ipcores; for core in $(COREFILES); do \
+# The core file has to be backed up because coregen overwrites it and hardcodes part info
+	cd ipcores; for core in $^; do \
 	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
 
 %.ucf: %.ucf.in makefile
@@ -59,9 +60,10 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	sed "s/@PART/$(DEVICE)-$(PACKAGE)-$(SPEED)/" $< > $@
+	sed -e "s/@DEVICE/$(DEVICE)/" -e "s/@PACKAGE/$(PACKAGE)/" -e "s/@SPEED/$(SPEED)/" \
+	    $< > $@
 
-$(PROJECT_NAME).ngc: $(VHDLFILES) makefile
+$(PROJECT_NAME).ngc: $(VHDLFILES) ipcores/coregen.cgp makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -79,6 +81,7 @@ $(PROJECT_NAME).ngc: $(VHDLFILES) makefile
 	echo "-shreg_min_size 8" >> synthesis.tmp
 	echo "-ofn $@" >> synthesis.tmp
 	xst -ifn synthesis.tmp
+	cp synthesis.srp synthesis.log
 
 $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
 	@echo
@@ -89,6 +92,7 @@ $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
 	@echo "##########################################"
 	@echo
 	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTSFILE) $< $@
+	cp $(PROJECT_NAME).bld translate.log
 
 $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo
@@ -99,6 +103,7 @@ $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo "##########################################"
 	@echo
 	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -mt 2 -o mapped.ncd $< $@
+	cp mapped.map map.log
 
 $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
 	@echo
@@ -109,6 +114,7 @@ $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
 	@echo "##########################################"
 	@echo
 	par -w -ol high -mt 4 mapped.ncd $@ $<
+	cp $(PROJECT_NAME).par place_and_route.log
 
 $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
 	@echo
@@ -119,6 +125,7 @@ $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
 	@echo "##########################################"
 	@echo
 	bitgen -g INIT_9K:YES $< $@
+	cp $(PROJECT_NAME).bgn bitgen.log
 
 $(PROJECT_NAME).mcs: $(PROJECT_NAME).bit
 	@echo

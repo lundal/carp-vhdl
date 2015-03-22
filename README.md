@@ -4,13 +4,13 @@ This repository contains the hardware design for my work on the Cellular Automat
 
 #### How to flash
 1. source /path/to/ise/13.3/settings[32|64].sh
-2. make regenerate
-3. make flash
+2. make flash
 
 #### Requirements
 * SP605 Evaluation Kit
 * Xilinx ISE 13.3 or newer (older versions might work if PCIe ipcore is replaced)
 * USB driver from http://rmdir.de/~michael/xilinx/ if the one provided by Xilinx does not work
+* Basic development tools (Make, Git, Sed)
 
 #### Board setup
 * Everything should be set to factory default (as per ug526)
