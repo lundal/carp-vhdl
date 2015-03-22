@@ -2,7 +2,7 @@
 # SP605 Constraints
 ###############################################################################
 
-CONFIG PART = xc6slx45t-fgg484-3;
+CONFIG PART = @DEVICE-@PACKAGE-@SPEED;
 
 # Pinout
 NET reset_n LOC = J7 | IOSTANDARD = LVCMOS25 | PULLUP | NODELAY;
