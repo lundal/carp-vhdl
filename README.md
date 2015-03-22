@@ -3,10 +3,9 @@
 This repository contains the hardware design for my work on the Cellular Automata Reasearch Platform at the Norwegian University of Science and Technology
 
 #### How to flash
-1. Open project in ISE
-2. Regenerate ip cores
-3. Generate bit file
-4. Run make flash
+1. source /path/to/ise/13.3/settings[32|64].sh
+2. make regenerate
+3. make flash
 
 #### Requirements
 * SP605 Evaluation Kit
