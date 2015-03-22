@@ -49,7 +49,7 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	cd ipcores; echo "SET verilogsim = false" >> coregen.cgp
 	cd ipcores; echo "SET vhdlsim = true" >> coregen.cgp
 # The core file has to be backed up because coregen overwrites it and hardcodes part info
-	cd ipcores; for core in $^; do \
+	cd ipcores; for core in $(COREFILES); do \
 	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
 
 %.ucf: %.ucf.in makefile
