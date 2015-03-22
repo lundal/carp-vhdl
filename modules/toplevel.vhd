@@ -670,6 +670,7 @@ begin
     matrix_wrap              => matrix_wrap,
     cell_type_bits           => cell_type_bits,
     cell_state_bits          => cell_state_bits,
+    rule_vector_amount       => rule_vector_amount,
     rule_amount              => rule_amount,
     rules_tested_in_parallel => rules_tested_in_parallel
   )
