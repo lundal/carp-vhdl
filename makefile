@@ -12,10 +12,10 @@ CONSTRAINTSFILE = sp605/constraints.ucf
 .PHONY: help regenerate synthesize implement flash clean purge
 
 help:
-	@echo "make regenerate: Regenerate ip cores (must be run separately)"
-	@echo "make synthesize: Synthesize design using constants in TODO"
+	@echo "make regenerate: Regenerate ip cores"
+	@echo "make synthesize: Synthesize the design using parameters in packages/parameters.vhd"
 	@echo "make implement:  Implement the synthesized design"
-	@echo "make flash:      Upload the implemented design"
+	@echo "make flash:      Flash the implemented design to development board"
 
 regenerate: ipcores/coregen.cgp
 
