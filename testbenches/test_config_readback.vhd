@@ -25,24 +25,7 @@ architecture behavior of test_config_readback is
 begin
 
   toplevel : entity work.toplevel_sim
-  generic map (
-    tx_buffer_address_bits => 10,
-    rx_buffer_address_bits => 10,
-    reverse_payload_endian => true,
-    program_counter_bits   => 8,
-    matrix_width           => 8,
-    matrix_height          => 8,
-    matrix_depth           => 8,
-    matrix_wrap            => true,
-    cell_type_bits         => 8,
-    cell_state_bits        => 1,
-    cell_write_width       => 8,
-    instruction_bits       => 256,
-    lut_configuration_bits => 8,
-    rule_amount            => 256,
-    rules_tested_in_parallel => 2
-  )
-  port map(
+  port map (
     sim_tx_buffer_data  => tx_buffer_data,
     sim_tx_buffer_count => tx_buffer_count,
     sim_tx_buffer_read  => tx_buffer_read,
