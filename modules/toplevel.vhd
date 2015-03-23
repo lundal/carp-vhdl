@@ -43,9 +43,18 @@ entity toplevel is
     rules_tested_in_parallel : positive := RULES_TESTED_IN_PARALLEL;
     rule_vector_amount       : positive := RULE_VECTOR_BUFFER_SIZE;
     live_count_buffer_size   : positive := LIVE_COUNT_BUFFER_SIZE;
-    fitness_buffer_size      : positive := FITNESS_BUFFER_SIZE
+    fitness_buffer_size      : positive := FITNESS_BUFFER_SIZE;
+    simulation_mode          : boolean  := false
   );
   port (
+    sim_tx_buffer_data  : out std_logic_vector(31 downto 0);
+    sim_tx_buffer_count : out std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+    sim_tx_buffer_read  : in  std_logic;
+
+    sim_rx_buffer_data  : in  std_logic_vector(31 downto 0);
+    sim_rx_buffer_count : out std_logic_vector(rx_buffer_address_bits - 1 downto 0);
+    sim_rx_buffer_write : in  std_logic;
+
     pcie_tx_p : out std_logic;
     pcie_tx_n : out std_logic;
     pcie_rx_p : in  std_logic;
@@ -266,33 +275,68 @@ begin
 
   -----------------------------------------------------------------------------
 
-  communication : entity work.communication
-  generic map (
-    tx_buffer_address_bits => tx_buffer_address_bits,
-    rx_buffer_address_bits => rx_buffer_address_bits,
-    reverse_payload_endian => reverse_payload_endian
-  )
-  port map (
-    pcie_tx_p => pcie_tx_p,
-    pcie_tx_n => pcie_tx_n,
-    pcie_rx_p => pcie_rx_p,
-    pcie_rx_n => pcie_rx_n,
+  communication_sim: if simulation_mode generate
+    communication : entity work.communication_sim
+    generic map (
+      tx_buffer_address_bits => tx_buffer_address_bits,
+      rx_buffer_address_bits => rx_buffer_address_bits,
+      reverse_payload_endian => reverse_payload_endian
+    )
+    port map (
+      sim_tx_buffer_out   => sim_tx_buffer_data,
+      sim_tx_buffer_count => sim_tx_buffer_count,
+      sim_tx_buffer_read  => sim_tx_buffer_read,
 
-    clock_p => clock_p,
-    clock_n => clock_n,
-    reset_n => reset_n,
+      sim_rx_buffer_in    => sim_rx_buffer_data,
+      sim_rx_buffer_count => sim_rx_buffer_count,
+      sim_rx_buffer_write => sim_rx_buffer_write,
 
-    tx_buffer_in    => tx_buffer_data,
-    tx_buffer_count => tx_buffer_count,
-    tx_buffer_write => tx_buffer_write,
+      clock_p => clock_p,
+      clock_n => clock_n,
+      reset_n => reset_n,
 
-    rx_buffer_out   => rx_buffer_data,
-    rx_buffer_count => rx_buffer_count,
-    rx_buffer_read  => rx_buffer_read,
+      tx_buffer_in    => tx_buffer_data,
+      tx_buffer_count => tx_buffer_count,
+      tx_buffer_write => tx_buffer_write,
 
-    clock => clock,
-    reset => reset
-  );
+      rx_buffer_out   => rx_buffer_data,
+      rx_buffer_count => rx_buffer_count,
+      rx_buffer_read  => rx_buffer_read,
+
+      clock => clock,
+      reset => reset
+    );
+  end generate;
+
+  communication_pcie: if not simulation_mode generate
+    communication : entity work.communication
+    generic map (
+      tx_buffer_address_bits => tx_buffer_address_bits,
+      rx_buffer_address_bits => rx_buffer_address_bits,
+      reverse_payload_endian => reverse_payload_endian
+    )
+    port map (
+      pcie_tx_p => pcie_tx_p,
+      pcie_tx_n => pcie_tx_n,
+      pcie_rx_p => pcie_rx_p,
+      pcie_rx_n => pcie_rx_n,
+
+      clock_p => clock_p,
+      clock_n => clock_n,
+      reset_n => reset_n,
+
+      tx_buffer_in    => tx_buffer_data,
+      tx_buffer_count => tx_buffer_count,
+      tx_buffer_write => tx_buffer_write,
+
+      rx_buffer_out   => rx_buffer_data,
+      rx_buffer_count => rx_buffer_count,
+      rx_buffer_read  => rx_buffer_read,
+
+      clock => clock,
+      reset => reset
+    );
+  end generate;
 
   fetch : entity work.fetch
   generic map (
