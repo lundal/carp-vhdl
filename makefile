@@ -102,7 +102,7 @@ $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -mt 2 -o mapped.ncd $< $@
+	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -global_opt speed -logic_opt on -lc auto -mt 2 -o mapped.ncd $< $@
 	cp mapped.map map.log
 
 $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
