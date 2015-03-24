@@ -80,8 +80,8 @@ $(PROJECT_NAME).ngc: $(VHDLFILES) ipcores/coregen.cgp makefile
 	echo "-opt_level 2" >> synthesis.tmp
 	echo "-shreg_min_size 8" >> synthesis.tmp
 	echo "-ofn $@" >> synthesis.tmp
-	xst -ifn synthesis.tmp
-	cp synthesis.srp synthesis.log
+	xst -ifn synthesis.tmp | tee synthesis.log
+	cat synthesis.srp > synthesis.report
 
 $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
 	@echo
@@ -91,8 +91,7 @@ $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTSFILE) $< $@
-	cp $(PROJECT_NAME).bld translate.log
+	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTSFILE) $< $@ | tee translate.log
 
 $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo
@@ -102,8 +101,8 @@ $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -global_opt speed -logic_opt on -lc auto -mt 2 -o placed.ncd $< $@
-	cp placed.map map_and_place.log
+	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -global_opt speed -logic_opt on -lc auto -mt 2 -o placed.ncd $< $@ | tee map_and_place.log
+	cat placed.mrp placed.psr > map_and_place.report
 
 $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
 	@echo
@@ -113,8 +112,7 @@ $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	par -w -ol high -mt 4 placed.ncd $@ $<
-	cp $(PROJECT_NAME).par route.log
+	par -w -ol high -mt 4 placed.ncd $@ $< | tee route.log
 
 $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
 	@echo
@@ -124,8 +122,7 @@ $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	bitgen -g INIT_9K:YES $< $@
-	cp $(PROJECT_NAME).bgn bitgen.log
+	bitgen -g INIT_9K:YES $< $@ | tee bitgen.log
 
 $(PROJECT_NAME).mcs: $(PROJECT_NAME).bit
 	@echo
@@ -135,7 +132,7 @@ $(PROJECT_NAME).mcs: $(PROJECT_NAME).bit
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	promgen -w -p mcs -c FF -o $@ -s 4096 -u 0000 $< -spi
+	promgen -w -p mcs -c FF -o $@ -s 4096 -u 0000 $< -spi | tee promgen.log
 
 flash: $(PROJECT_NAME).mcs
 	@echo
@@ -152,7 +149,7 @@ flash: $(PROJECT_NAME).mcs
 	echo "assignfiletoattachedflash -position 2 -file \"$<\"" >> flash.tmp
 	echo "program -p 2 -spionly -e -loadfpga " >> flash.tmp
 	echo "exit" >> flash.tmp
-	impact -batch flash.tmp
+	impact -batch flash.tmp | tee flash.log
 
 clean:
 	git clean -Xdf

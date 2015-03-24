@@ -1,6 +1,7 @@
 # General
 *.html
 *.log
+*.report
 *.tmp
 *.xml
 
@@ -32,6 +33,7 @@ _xmsgs/
 *.pcf
 *.prj
 *.prm
+*.psr
 *.ptwx
 *.srp
 *.stx
