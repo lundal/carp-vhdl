@@ -62,13 +62,6 @@ begin
 
     -- Instructions
 
-    wait for clock_period;
-    rx_buffer_write <= '0';
-    rx_buffer_data <= x"00000000";
-
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000001";
-
     -- Fill (x42, 1)
     wait for clock_period;
     rx_buffer_write <= '1';
