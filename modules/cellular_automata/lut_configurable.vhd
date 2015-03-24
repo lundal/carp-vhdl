@@ -47,7 +47,7 @@ architecture rtl of lut_configurable is
   function is_pow_2 (
     number : positive
   ) return boolean is
-    constant num : unsigned := to_unsigned(number, bits(number));
+    constant num : unsigned := to_unsigned(number, 32);
   begin
      return (num and (num - 1)) = 0;
   end is_pow_2;
