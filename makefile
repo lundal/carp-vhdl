@@ -98,23 +98,23 @@ $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
-	@echo "#  Mapping...                            #"
+	@echo "#  Mapping and placing...                #"
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -global_opt speed -logic_opt on -lc auto -mt 2 -o mapped.ncd $< $@
-	cp mapped.map map.log
+	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -global_opt speed -logic_opt on -lc auto -mt 2 -o placed.ncd $< $@
+	cp placed.map map_and_place.log
 
 $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
-	@echo "#  Placing and routing...                #"
+	@echo "#  Routing...                            #"
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	par -w -ol high -mt 4 mapped.ncd $@ $<
-	cp $(PROJECT_NAME).par place_and_route.log
+	par -w -ol high -mt 4 placed.ncd $@ $<
+	cp $(PROJECT_NAME).par route.log
 
 $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
 	@echo
