@@ -6,7 +6,7 @@ SPEED   = 3
 
 # System parameters
 COMMUNICATION_BUFFER_SIZE_LG = 10
-COMMUNICATION_REVERSE_ENDIAN = true
+COMMUNICATION_REVERSE_ENDIAN = true # Must be true for x86 systems
 PROGRAM_COUNTER_BITS         = 8
 MATRIX_WIDTH                 = 10
 MATRIX_HEIGHT                = 10
