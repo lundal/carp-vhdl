@@ -34,19 +34,18 @@ VHDLFILES = $(shell find modules packages ipcores sp605 -name *.vhd)
 
 # Preprocessed files
 TOPLEVEL    = modules/toplevel.vhd
-TOPLEVEL_IN = modules/toplevel.vhd.in
-CONSTRAINTS    = sp605/constraints.ucf
-CONSTRAINTS_IN = sp605/constraints.ucf.in
+CONSTRAINTS = sp605/constraints.ucf
 
-.PHONY: help regenerate synthesize implement flash clean purge
+.PHONY: help rebuild synthesize implement flash clean purge
 
 help:
-	@echo "make regenerate: Regenerate ip cores"
-	@echo "make synthesize: Synthesize the design using parameters in packages/parameters.vhd"
+	@echo "Commands:"
+	@echo "make rebuild:    Regenerate cores and preprocess files with parameters set in makefile"
+	@echo "make synthesize: Synthesize the design"
 	@echo "make implement:  Implement the synthesized design"
 	@echo "make flash:      Flash the implemented design to development board"
 
-regenerate: ipcores/coregen.cgp
+rebuild: ipcores/coregen.cgp $(TOPLEVEL) $(CONSTRAINTS)
 
 synthesize: $(PROJECT_NAME).ngc
 
@@ -81,7 +80,7 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	cd ipcores; for core in $(COREFILES); do \
 	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
 
-$(TOPLEVEL): $(TOPLEVEL_IN) makefile
+$(TOPLEVEL): $(addsuffix .in, $(TOPLEVEL)) makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -110,7 +109,7 @@ $(TOPLEVEL): $(TOPLEVEL_IN) makefile
 		-e "s/@FITNESS_MODULE_NAME/$(FITNESS_MODULE_NAME)/" \
 		$< > $@
 
-$(CONSTRAINTS): $(CONSTRAINTS_IN) makefile
+$(CONSTRAINTS): $(addsuffix .in, $(CONSTRAINTS)) makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
