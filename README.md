@@ -3,8 +3,14 @@
 This repository contains the hardware design for my work on the Cellular Automata Reasearch Platform at the Norwegian University of Science and Technology
 
 #### How to flash
-1. source /path/to/ise/13.3/settings[32|64].sh
-2. make flash
+1. Run source /path/to/ise/settings[32|64].sh
+2. Run make flash
+
+#### How to open project in ISE
+1. Run source /path/to/ise/settings[32|64].sh
+2. Run make rebuild
+3. Run ise
+4. Open carp.xise
 
 #### Requirements
 * SP605 Evaluation Kit
