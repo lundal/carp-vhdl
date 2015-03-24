@@ -1,13 +1,42 @@
-FAMILY = spartan6
-DEVICE = xc6slx45t
+# Part spesification
+FAMILY  = spartan6
+DEVICE  = xc6slx45t
 PACKAGE = fgg484
-SPEED = 3
+SPEED   = 3
 
+# System parameters
+COMMUNICATION_BUFFER_SIZE_LG = 10
+COMMUNICATION_REVERSE_ENDIAN = true
+PROGRAM_COUNTER_BITS         = 10
+MATRIX_WIDTH                 = 10
+MATRIX_HEIGHT                = 10
+MATRIX_DEPTH                 = 8
+MATRIX_WRAP                  = true
+TYPE_BITS                    = 8
+STATE_BITS                   = 1
+COUNTER_AMOUNT               = 4
+COUNTER_BITS                 = 16
+INSTRUCTION_BITS             = 256
+LUT_CONFIGURATION_BITS       = 1
+RULE_AMOUNT                  = 256
+RULES_TESTED_IN_PARALLEL     = 7
+RULE_VECTOR_BUFFER_SIZE      = 64
+LIVE_COUNT_BUFFER_SIZE       = 256
+FITNESS_BUFFER_SIZE          = 256
+FITNESS_MODULE_NAME          = dft
+
+# Project settings
 PROJECT_NAME = carp
 
+# Main files
 COREFILES = $(shell find ipcores -name *.xco)
 VHDLFILES = $(shell find modules packages ipcores sp605 -name *.vhd)
-CONSTRAINTSFILE = sp605/constraints.ucf
+
+# Preprocessed files
+TOPLEVEL    = modules/toplevel.vhd
+TOPLEVEL_IN = modules/toplevel.vhd.in
+CONSTRAINTS    = sp605/constraints.ucf
+CONSTRAINTS_IN = sp605/constraints.ucf.in
 
 .PHONY: help regenerate synthesize implement flash clean purge
 
@@ -52,7 +81,36 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	cd ipcores; for core in $(COREFILES); do \
 	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
 
-%.ucf: %.ucf.in makefile
+$(TOPLEVEL): $(TOPLEVEL_IN) makefile
+	@echo
+	@echo "##########################################"
+	@echo "#                                        #"
+	@echo "#  Preprocessing toplevel...             #"
+	@echo "#                                        #"
+	@echo "##########################################"
+	@echo
+	sed -e "s/@COMMUNICATION_BUFFER_SIZE_LG/$(COMMUNICATION_BUFFER_SIZE_LG)/" \
+		-e "s/@COMMUNICATION_REVERSE_ENDIAN/$(COMMUNICATION_REVERSE_ENDIAN)/" \
+		-e "s/@PROGRAM_COUNTER_BITS/$(PROGRAM_COUNTER_BITS)/" \
+		-e "s/@MATRIX_WIDTH/$(MATRIX_WIDTH)/" \
+		-e "s/@MATRIX_HEIGHT/$(MATRIX_HEIGHT)/" \
+		-e "s/@MATRIX_DEPTH/$(MATRIX_DEPTH)/" \
+		-e "s/@MATRIX_WRAP/$(MATRIX_WRAP)/" \
+		-e "s/@TYPE_BITS/$(TYPE_BITS)/" \
+		-e "s/@STATE_BITS/$(STATE_BITS)/" \
+		-e "s/@COUNTER_AMOUNT/$(COUNTER_AMOUNT)/" \
+		-e "s/@COUNTER_BITS/$(COUNTER_BITS)/" \
+		-e "s/@INSTRUCTION_BITS/$(INSTRUCTION_BITS)/" \
+		-e "s/@LUT_CONFIGURATION_BITS/$(LUT_CONFIGURATION_BITS)/" \
+		-e "s/@RULE_AMOUNT/$(RULE_AMOUNT)/" \
+		-e "s/@RULES_TESTED_IN_PARALLEL/$(RULES_TESTED_IN_PARALLEL)/" \
+		-e "s/@RULE_VECTOR_BUFFER_SIZE/$(RULE_VECTOR_BUFFER_SIZE)/" \
+		-e "s/@LIVE_COUNT_BUFFER_SIZE/$(LIVE_COUNT_BUFFER_SIZE)/" \
+		-e "s/@FITNESS_BUFFER_SIZE/$(FITNESS_BUFFER_SIZE)/" \
+		-e "s/@FITNESS_MODULE_NAME/$(FITNESS_MODULE_NAME)/" \
+		$< > $@
+
+$(CONSTRAINTS): $(CONSTRAINTS_IN) makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -60,10 +118,12 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	sed -e "s/@DEVICE/$(DEVICE)/" -e "s/@PACKAGE/$(PACKAGE)/" -e "s/@SPEED/$(SPEED)/" \
-	    $< > $@
+	sed -e "s/@DEVICE/$(DEVICE)/" \
+		-e "s/@PACKAGE/$(PACKAGE)/" \
+		-e "s/@SPEED/$(SPEED)/" \
+		$< > $@
 
-$(PROJECT_NAME).ngc: $(VHDLFILES) ipcores/coregen.cgp makefile
+$(PROJECT_NAME).ngc: $(VHDLFILES) $(TOPLEVEL) ipcores/coregen.cgp makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -83,7 +143,7 @@ $(PROJECT_NAME).ngc: $(VHDLFILES) ipcores/coregen.cgp makefile
 	xst -ifn synthesis.tmp | tee synthesis.log
 	cat synthesis.srp > synthesis.report
 
-$(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
+$(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTS) makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -91,7 +151,7 @@ $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTSFILE) makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTSFILE) $< $@ | tee translate.log
+	ngdbuild -p $(DEVICE)-$(PACKAGE)-$(SPEED) -uc $(CONSTRAINTS) $< $@ | tee translate.log
 
 $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	@echo

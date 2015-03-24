@@ -57,6 +57,7 @@ isim.cmd
 xilinxsim.ini
 
 # Preprocessed files
+modules/toplevel.vhd
 sp605/constraints.ucf
 
 # Vim

@@ -20,30 +20,29 @@ use ieee.std_logic_1164.all;
 
 library work;
 use work.functions.all;
-use work.parameters.all;
 use work.types.all;
 
 entity toplevel is
   generic (
-    tx_buffer_address_bits   : positive := COMMUNICATION_BUFFER_SIZE_LG;
-    rx_buffer_address_bits   : positive := COMMUNICATION_BUFFER_SIZE_LG;
-    reverse_payload_endian   : boolean  := COMMUNICATION_REVERSE_ENDIAN;
-    program_counter_bits     : positive := PROGRAM_COUNTER_BITS;
-    matrix_width             : positive := MATRIX_WIDTH;
-    matrix_height            : positive := MATRIX_HEIGHT;
-    matrix_depth             : positive := MATRIX_DEPTH;
-    matrix_wrap              : boolean  := MATRIX_WRAP;
-    cell_type_bits           : positive := TYPE_BITS;
-    cell_state_bits          : positive := STATE_BITS;
-    jump_counters            : positive := COUNTER_AMOUNT;
-    jump_counter_bits        : positive := COUNTER_BITS;
-    instruction_bits         : positive := INSTRUCTION_BITS;
-    lut_configuration_bits   : positive := LUT_CONFIGURATION_BITS;
-    rule_amount              : positive := RULE_AMOUNT;
-    rules_tested_in_parallel : positive := RULES_TESTED_IN_PARALLEL;
-    rule_vector_amount       : positive := RULE_VECTOR_BUFFER_SIZE;
-    live_count_buffer_size   : positive := LIVE_COUNT_BUFFER_SIZE;
-    fitness_buffer_size      : positive := FITNESS_BUFFER_SIZE;
+    tx_buffer_address_bits   : positive := @COMMUNICATION_BUFFER_SIZE_LG;
+    rx_buffer_address_bits   : positive := @COMMUNICATION_BUFFER_SIZE_LG;
+    reverse_payload_endian   : boolean  := @COMMUNICATION_REVERSE_ENDIAN;
+    program_counter_bits     : positive := @PROGRAM_COUNTER_BITS;
+    matrix_width             : positive := @MATRIX_WIDTH;
+    matrix_height            : positive := @MATRIX_HEIGHT;
+    matrix_depth             : positive := @MATRIX_DEPTH;
+    matrix_wrap              : boolean  := @MATRIX_WRAP;
+    cell_type_bits           : positive := @TYPE_BITS;
+    cell_state_bits          : positive := @STATE_BITS;
+    jump_counters            : positive := @COUNTER_AMOUNT;
+    jump_counter_bits        : positive := @COUNTER_BITS;
+    instruction_bits         : positive := @INSTRUCTION_BITS;
+    lut_configuration_bits   : positive := @LUT_CONFIGURATION_BITS;
+    rule_amount              : positive := @RULE_AMOUNT;
+    rules_tested_in_parallel : positive := @RULES_TESTED_IN_PARALLEL;
+    rule_vector_amount       : positive := @RULE_VECTOR_BUFFER_SIZE;
+    live_count_buffer_size   : positive := @LIVE_COUNT_BUFFER_SIZE;
+    fitness_buffer_size      : positive := @FITNESS_BUFFER_SIZE;
     simulation_mode          : boolean  := false
   );
   port (
@@ -808,7 +807,7 @@ begin
     clock => clock
   );
 
-  fitness : entity work.fitness_dft -- Change this to swap fitness module
+  fitness : entity work.fitness_@FITNESS_MODULE_NAME
   generic map (
     -- General fitness interface
     live_count_buffer_size => live_count_buffer_size,
