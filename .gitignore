@@ -56,6 +56,9 @@ isim.cmd
 *_beh.*
 xilinxsim.ini
 
+# Preprocessed files
+sp605/constraints.ucf
+
 # Vim
 *.swp
 *.swo
