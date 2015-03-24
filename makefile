@@ -7,23 +7,23 @@ SPEED   = 3
 # System parameters
 COMMUNICATION_BUFFER_SIZE_LG = 10
 COMMUNICATION_REVERSE_ENDIAN = true
-PROGRAM_COUNTER_BITS         = 10
+PROGRAM_COUNTER_BITS         = 8
 MATRIX_WIDTH                 = 10
 MATRIX_HEIGHT                = 10
 MATRIX_DEPTH                 = 8
 MATRIX_WRAP                  = true
 TYPE_BITS                    = 8
-STATE_BITS                   = 1
+STATE_BITS                   = 1    # Must be one due to implementation of CA
 COUNTER_AMOUNT               = 4
 COUNTER_BITS                 = 16
-INSTRUCTION_BITS             = 256
-LUT_CONFIGURATION_BITS       = 1
+INSTRUCTION_BITS             = 256  # Must be 256 due to implementation of Fetch
+LUT_CONFIGURATION_BITS       = 1    # Power of two <= 2 for 2D and <= 8 for 3D
 RULE_AMOUNT                  = 256
-RULES_TESTED_IN_PARALLEL     = 7
+RULES_TESTED_IN_PARALLEL     = 8
 RULE_VECTOR_BUFFER_SIZE      = 64
 LIVE_COUNT_BUFFER_SIZE       = 256
 FITNESS_BUFFER_SIZE          = 256
-FITNESS_MODULE_NAME          = dft
+FITNESS_MODULE_NAME          = dft  # Name of VHDL module without "fitness_" prefix
 
 # Project settings
 PROJECT_NAME = carp
