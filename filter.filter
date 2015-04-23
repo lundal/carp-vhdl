@@ -1,0 +1,198 @@
+<filters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation='filter.xsd'>
+    <!-- PCI Express Core -->
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*/sp605_pcie_core/*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">*/sp605_pcie_core/*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*</arg>
+        <arg index="2" match_type="wildcard">?x_pipeline_inst</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">?x_pipeline_inst</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1895" type="warning">
+        <arg index="1" match_type="wildcard">*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">axi_basic_?x_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">axi_basic_?x_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*tx_thrl_ctl*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2404" type="warning">
+        <arg index="1" match_type="wildcard">*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+        <arg index="4" match_type="wildcard">0</arg>
+        <arg index="5" match_type="wildcard">axi_basic_?x_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">?_AXIS_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">TRN_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">CFG_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="3210" type="info">
+        <arg index="1" match_type="wildcard">*/sp605_pcie/*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+        <arg index="4" match_type="wildcard">*</arg>
+    </filter>
+    <!-- BRAM TDP -->
+    <filter task="xst" file="Xst" num="2404" type="warning">
+        <arg index="1" match_type="wildcard">?_send_?</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+        <arg index="4" match_type="wildcard">*</arg>
+        <arg index="5" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1293" type="warning">
+        <arg index="1" match_type="wildcard">*?_send_?</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*/?_send_?</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <!-- Instructions -->
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*instruction_i*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">a_data_out_i*</arg>
+        <arg index="2" match_type="wildcard">instruction*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*bram_instruction_out*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">instruction&lt;*:*&gt;</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">communication_instruction&lt;*:*&gt;</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">bram_instruction_in*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*instruction_bram/Mram_memory*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <!-- Communication -->
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*tlp_address_*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">*tlp_bar_hit_*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">*communication/tx_engine/special_data_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <!-- Development -->
+    <filter task="xst" file="Xst" num="1895" type="warning">
+        <arg index="1" match_type="wildcard">rules_number_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">rule_fetcher</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1896" type="warning">
+        <arg index="1" match_type="wildcard">rules_current_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">rule_fetcher</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1293" type="warning">
+        <arg index="1" match_type="wildcard">rules_current_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">rule_fetcher</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2677" type="warning">
+        <arg index="1" match_type="wildcard">rule_vector_i_*</arg>
+        <arg index="2" match_type="wildcard">hits_to_vector</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">development/rule_fetcher_rules_number_delayed_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1293" type="warning">
+        <arg index="1" match_type="wildcard">development/rule_fetcher/rules_current_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <!-- Rule Numbers Reader -->
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">address_x_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">rule_numbers_reader</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1895" type="warning">
+        <arg index="1" match_type="wildcard">address_x_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">rule_numbers_reader</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1895" type="warning">
+        <arg index="1" match_type="wildcard">shift_amount_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">rule_numbers_reader</arg>
+    </filter>
+    <!-- Cellular Automata -->
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">cellular_automata/live_counter/bit_counter/*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1895" type="warning">
+        <arg index="1" match_type="wildcard">cellular_automata/live_counter/bit_counter/*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <!-- Fitness -->
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">fitness_buffer_data_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">fitness_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1895" type="warning">
+        <arg index="1" match_type="wildcard">fitness_buffer_data_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">fitness_*</arg>
+    </filter>
+    <!-- Other -->
+    <filter task="xst" file="Xst" num="2999" type="warning">
+        <arg index="1" match_type="wildcard">twiddles*</arg>
+        <arg index="2" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="1710" type="warning">
+        <arg index="1" match_type="wildcard">information_sender/send_buffer_data_*</arg>
+        <arg index="2" match_type="wildcard">0</arg>
+        <arg index="3" match_type="wildcard">*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="647" type="warning">
+        <arg index="1" match_type="wildcard">sim_*</arg>
+    </filter>
+    <filter task="xst" file="Xst" num="2261" type="info">
+    </filter>
+</filters>

@@ -139,7 +139,7 @@ $(PROJECT_NAME).ngc: $(VHDLFILES) $(TOPLEVEL) ipcores/coregen.cgp makefile
 	echo "-opt_level 2" >> synthesis.tmp
 	echo "-shreg_min_size 8" >> synthesis.tmp
 	echo "-ofn $@" >> synthesis.tmp
-	xst -ifn synthesis.tmp | tee synthesis.log
+	xst -ifn synthesis.tmp -filter filter.filter | tee synthesis.log
 	cat synthesis.srp > synthesis.report
 
 $(PROJECT_NAME).ngd: $(PROJECT_NAME).ngc $(CONSTRAINTS) makefile
