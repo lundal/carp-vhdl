@@ -46,6 +46,9 @@ help:
 	@echo "make flash:      Flash the implemented design to development board"
 
 rebuild: ipcores/coregen.cgp $(TOPLEVEL) $(CONSTRAINTS)
+# ISE requires a copy of the filters
+	mkdir -p iseconfig
+	cp filter.filter iseconfig/filter.filter
 
 synthesize: $(PROJECT_NAME).ngc
 
