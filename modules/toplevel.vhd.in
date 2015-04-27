@@ -136,8 +136,10 @@ architecture rtl of toplevel is
 
   signal decode_to_fitness_sender_operation : fitness_sender_operation_type;
 
-  signal decode_to_buffers_reset          : std_logic;
-  signal decode_to_cell_buffer_swap       : std_logic;
+  signal decode_to_cell_buffer_operation : cell_buffer_operation_type;
+
+  signal decode_to_buffers_reset : std_logic;
+
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
 
@@ -406,8 +408,9 @@ begin
 
     fitness_sender_operation => decode_to_fitness_sender_operation,
 
+    cell_buffer_operation => decode_to_cell_buffer_operation,
+
     buffer_reset           => decode_to_buffers_reset,
-    cell_buffer_swap       => decode_to_cell_buffer_swap,
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
     send_buffer_mux_select => decode_to_send_buffer_mux_select,
 
@@ -583,7 +586,7 @@ begin
     b_states_in    => cell_buffer_from_mux_b_states,
     b_states_out   => cell_buffer_to_mux_b_states,
 
-    swap => decode_to_cell_buffer_swap,
+    operation => decode_to_cell_buffer_operation,
 
     run => run,
 

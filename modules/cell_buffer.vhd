@@ -22,6 +22,7 @@ use ieee.numeric_std.all;
 
 library work;
 use work.functions.all;
+use work.types.all;
 
 entity cell_buffer is
   generic (
@@ -52,7 +53,7 @@ entity cell_buffer is
     b_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
     b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
-    swap : in std_logic;
+    operation : in cell_buffer_operation_type;
 
     run : in std_logic;
 
@@ -71,9 +72,13 @@ begin
 
   process begin
     wait until rising_edge(clock) and run = '1';
-    if (swap = '1') then
-      swapped <= not swapped;
-    end if;
+    case (operation) is
+      when SWAP =>
+        swapped <= not swapped;
+
+      when others=>
+
+    end case;
   end process;
 
   a_address_bram <=     swapped & a_address_z & a_address_y;

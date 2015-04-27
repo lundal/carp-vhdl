@@ -66,4 +66,8 @@ package types is
     NOP, SEND
   );
 
+  type cell_buffer_operation_type is (
+    NOP, SWAP
+  );
+
 end types;

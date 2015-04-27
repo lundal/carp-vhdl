@@ -72,8 +72,10 @@ entity decode is
 
     fitness_sender_operation : out fitness_sender_operation_type;
 
-    buffer_reset           : out std_logic;
-    cell_buffer_swap       : out std_logic;
+    cell_buffer_operation : out cell_buffer_operation_type;
+
+    buffer_reset : out std_logic;
+
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
     send_buffer_mux_select : out send_buffer_mux_select_type;
 
@@ -110,8 +112,8 @@ begin
     rule_vector_reader_operation <= NOP;
     rule_numbers_reader_operation <= NOP;
     fitness_sender_operation <= NOP;
+    cell_buffer_operation <= NOP;
     buffer_reset <= '0';
-    cell_buffer_swap <= '0';
 
     case instruction_opcode is
 
@@ -184,7 +186,7 @@ begin
         cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_SWAP_CELL_BUFFERS =>
-        cell_buffer_swap <= '1';
+        cell_buffer_operation <= SWAP;
 
       when INSTRUCTION_RUNSTEP =>
         cellular_automata_operation  <= STEP;
