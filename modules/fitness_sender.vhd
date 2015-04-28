@@ -53,7 +53,7 @@ architecture rtl of fitness_sender is
   type state_type is (IDLE, WAIT_FOR_FITNESS, SEND_FITNESS);
   signal state : state_type := IDLE;
 
-  signal words_to_send : unsigned(bits(fitness_buffer_size) - 1 downto 0);
+  signal words_to_send : unsigned(8 - 1 downto 0);
 
   -- Buffer checks
   signal fitness_buffer_has_data : boolean;
