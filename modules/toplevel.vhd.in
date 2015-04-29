@@ -261,6 +261,9 @@ architecture rtl of toplevel is
   signal fitness_sender_to_buffer_read    : std_logic;
   signal fitness_sender_from_buffer_data  : std_logic_vector(32 - 1 downto 0);
 
+  -- Resetter
+  signal resetter_to_buffers_reset : std_logic;
+
 begin
 
   leds <= "0101";
@@ -410,7 +413,8 @@ begin
 
     cell_buffer_operation => decode_to_cell_buffer_operation,
 
-    buffer_reset           => resetter_to_buffers_reset,
+    resetter_operation => decode_to_resetter_operation,
+
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
     send_buffer_mux_select => decode_to_send_buffer_mux_select,
 
@@ -875,7 +879,7 @@ begin
 
   resetter : entity work.resetter
   port map (
-    buffer_reset => resetter_to_buffer_reset,
+    buffer_reset => resetter_to_buffers_reset,
 
     operation => decode_to_resetter_operation,
 
