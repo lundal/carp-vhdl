@@ -70,4 +70,8 @@ package types is
     NOP, SWAP
   );
 
+  type resetter_operation_type is (
+    NOP, RESET_BUFFERS
+  );
+
 end types;
