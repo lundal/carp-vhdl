@@ -138,7 +138,7 @@ architecture rtl of toplevel is
 
   signal decode_to_cell_buffer_operation : cell_buffer_operation_type;
 
-  signal decode_to_buffers_reset : std_logic;
+  signal decode_to_resetter_operation : resetter_operation_type;
 
   signal decode_to_cell_buffer_mux_select : cell_buffer_mux_select_type;
   signal decode_to_send_buffer_mux_select : send_buffer_mux_select_type;
@@ -260,6 +260,9 @@ architecture rtl of toplevel is
 
   signal fitness_sender_to_buffer_read    : std_logic;
   signal fitness_sender_from_buffer_data  : std_logic_vector(32 - 1 downto 0);
+
+  -- Resetter
+  signal resetter_to_buffers_reset : std_logic;
 
 begin
 
@@ -410,7 +413,8 @@ begin
 
     cell_buffer_operation => decode_to_cell_buffer_operation,
 
-    buffer_reset           => decode_to_buffers_reset,
+    resetter_operation => decode_to_resetter_operation,
+
     cell_buffer_mux_select => decode_to_cell_buffer_mux_select,
     send_buffer_mux_select => decode_to_send_buffer_mux_select,
 
@@ -657,7 +661,7 @@ begin
     live_count_read  => fitness_to_live_count_buffer_read,
     live_count_data  => fitness_from_live_count_buffer_data,
     live_count_count => fitness_from_live_count_buffer_count,
-    live_count_reset => decode_to_buffers_reset,
+    live_count_reset => resetter_to_buffers_reset,
 
     decode_operation  => decode_to_cellular_automata_operation,
     decode_step_count => decode_to_cellular_automata_step_count,
@@ -746,7 +750,7 @@ begin
     rule_vector_reader_data  => rule_vector_reader_from_development_data,
     rule_vector_reader_count => rule_vector_reader_from_development_count,
     rule_vector_reader_read  => rule_vector_reader_to_development_read,
-    rule_vector_buffer_reset => decode_to_buffers_reset,
+    rule_vector_buffer_reset => resetter_to_buffers_reset,
 
     rule_numbers_reader_address_z => rule_numbers_reader_to_development_address_z,
     rule_numbers_reader_address_y => rule_numbers_reader_to_development_address_y,
@@ -845,7 +849,7 @@ begin
     data_count => fitness_buffer_count,
     data_read  => fitness_sender_to_buffer_read,
     data_write => fitness_to_buffer_write,
-    reset      => decode_to_buffers_reset,
+    reset      => resetter_to_buffers_reset,
     clock      => clock
   );
 
@@ -869,6 +873,17 @@ begin
 
     run  => run,
     done => done_fitness_sender,
+
+    clock => clock
+  );
+
+  resetter : entity work.resetter
+  port map (
+    buffer_reset => resetter_to_buffers_reset,
+
+    operation => decode_to_resetter_operation,
+
+    run  => run,
 
     clock => clock
   );
