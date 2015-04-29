@@ -74,12 +74,12 @@ entity decode is
 
     cell_buffer_operation : out cell_buffer_operation_type;
 
-    buffer_reset : out std_logic;
+    resetter_operation : out resetter_operation_type;
 
     cell_buffer_mux_select : out cell_buffer_mux_select_type;
     send_buffer_mux_select : out send_buffer_mux_select_type;
 
-    run  : in  std_logic;
+    run : in std_logic;
 
     clock : in std_logic
   );
@@ -113,7 +113,7 @@ begin
     rule_numbers_reader_operation <= NOP;
     fitness_sender_operation <= NOP;
     cell_buffer_operation <= NOP;
-    buffer_reset <= '0';
+    resetter_operation <= NOP;
 
     case instruction_opcode is
 
@@ -232,7 +232,7 @@ begin
         send_buffer_mux_select   <= FITNESS_SENDER;
 
       when INSTRUCTION_RESET_BUFFERS =>
-        buffer_reset <= '1';
+        resetter_operation <= RESET_BUFFERS;
 
       when others =>
         null;
