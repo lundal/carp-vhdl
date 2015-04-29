@@ -880,7 +880,6 @@ begin
     operation => decode_to_resetter_operation,
 
     run  => run,
-    done => done_fitness_sender,
 
     clock => clock
   );

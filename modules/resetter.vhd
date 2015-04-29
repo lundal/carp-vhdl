@@ -28,8 +28,7 @@ entity resetter is
 
     operation : in resetter_operation_type;
 
-    run  : in  std_logic;
-    done : out std_logic;
+    run : in std_logic;
 
     clock : in std_logic
   );
