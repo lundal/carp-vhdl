@@ -1,15 +1,15 @@
 -------------------------------------------------------------------------------
--- Title      : Cell Buffer
+-- Title      : Cell Storage
 -- Project    : Cellular Automata Research Platform
 -------------------------------------------------------------------------------
--- File       : cell_buffer.vhd
+-- File       : cell_storage.vhd
 -- Author     : Per Thomas Lundal <perthomas@gmail.com>
 -- Company    : NTNU
 -- Last update: 2015-01-23
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: BRAM holding cell types and states.
---            : It is divided into two regions; one for each port.
+-- Description: Storage for cell types and states.
+--            : It has two regions that can be swapped.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -24,7 +24,7 @@ library work;
 use work.functions.all;
 use work.types.all;
 
-entity cell_buffer is
+entity cell_storage is
   generic (
     matrix_width    : positive := 8;
     matrix_height   : positive := 8;
@@ -53,15 +53,15 @@ entity cell_buffer is
     b_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
     b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
-    operation : in cell_buffer_operation_type;
+    operation : in cell_storage_operation_type;
 
     run : in std_logic;
 
     clock : in std_logic
   );
-end cell_buffer;
+end cell_storage;
 
-architecture rtl of cell_buffer is
+architecture rtl of cell_storage is
 
   signal a_address_bram : std_logic_vector(bits(matrix_depth) + bits(matrix_height) downto 0);
   signal b_address_bram : std_logic_vector(bits(matrix_depth) + bits(matrix_height) downto 0);

@@ -20,7 +20,7 @@ use ieee.std_logic_1164.all;
 
 package types is
 
-  type cell_buffer_mux_select_type is (
+  type cell_storage_mux_select_type is (
     WRITER_READER_AND_CELLULAR_AUTOMATA, DEVELOPMENT
   );
 
@@ -66,7 +66,7 @@ package types is
     NOP, SEND
   );
 
-  type cell_buffer_operation_type is (
+  type cell_storage_operation_type is (
     NOP, SWAP
   );
 

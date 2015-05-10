@@ -8,7 +8,7 @@
 -- Last update: 2015-02-04
 -- Platform   : Spartan-6
 -------------------------------------------------------------------------------
--- Description: Fetches cells neighborhoods from buffer.
+-- Description: Fetches cells neighborhoods from cell bram.
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author    Description
@@ -33,14 +33,14 @@ entity cell_fetcher is
     cell_state_bits  : positive := 1
   );
   port (
-    buffer_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
-    buffer_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
-    buffer_types_write  : out std_logic;
-    buffer_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_states_write : out std_logic;
-    buffer_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
-    buffer_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    bram_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
+    bram_types_write  : out std_logic;
+    bram_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_states_write : out std_logic;
+    bram_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     row_neighborhood_types_slv  : out std_logic_vector(matrix_width * cell_type_bits * if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
     row_neighborhood_states_slv : out std_logic_vector(matrix_width * cell_state_bits * if_else(matrix_depth = 1, 5, 7) - 1 downto 0);
@@ -109,8 +109,8 @@ begin
   end generate;
 
   slv_to_array : for i in 0 to matrix_width - 1 generate
-    types_in(i)  <= buffer_types_in((i+1) * cell_type_bits - 1 downto i * cell_type_bits);
-    states_in(i) <= buffer_states_in((i+1) * cell_state_bits - 1 downto i * cell_state_bits);
+    types_in(i)  <= bram_types_in((i+1) * cell_type_bits - 1 downto i * cell_type_bits);
+    states_in(i) <= bram_states_in((i+1) * cell_state_bits - 1 downto i * cell_state_bits);
   end generate;
 
   -- Adjacent address calculation
@@ -137,21 +137,21 @@ begin
         -- Store center address
         address_z_center <= address_z;
         address_y_center <= address_y;
-        buffer_address_z <= address_z;
-        buffer_address_y <= address_y;
+        bram_address_z <= address_z;
+        bram_address_y <= address_y;
         if (run = '1') then
           address_state <= FETCH_Y_POSITIVE;
           done_i <= '0';
         end if;
 
       when FETCH_Y_POSITIVE =>
-        buffer_address_z <= address_z_center;
-        buffer_address_y <= address_y_positive;
+        bram_address_z <= address_z_center;
+        bram_address_y <= address_y_positive;
         address_state <= FETCH_Y_NEGATIVE;
 
       when FETCH_Y_NEGATIVE =>
-        buffer_address_z <= address_z_center;
-        buffer_address_y <= address_y_negative;
+        bram_address_z <= address_z_center;
+        bram_address_y <= address_y_negative;
         -- Skip Z axis if depth is 1
         if (matrix_depth > 1) then
           address_state <= FETCH_Z_POSITIVE;
@@ -160,13 +160,13 @@ begin
         end if;
 
       when FETCH_Z_POSITIVE =>
-        buffer_address_z <= address_z_positive;
-        buffer_address_y <= address_y_center;
+        bram_address_z <= address_z_positive;
+        bram_address_y <= address_y_center;
         address_state <= FETCH_Z_NEGATIVE;
 
       when FETCH_Z_NEGATIVE =>
-        buffer_address_z <= address_z_negative;
-        buffer_address_y <= address_y_center;
+        bram_address_z <= address_z_negative;
+        bram_address_y <= address_y_center;
         address_state <= WAIT_1;
 
       when WAIT_1 =>
@@ -309,10 +309,10 @@ begin
   end generate;
 
   -- Output tie-offs
-  buffer_types_out    <= (others => '0');
-  buffer_types_write  <= '0';
-  buffer_states_out   <= (others => '0');
-  buffer_states_write <= '0';
+  bram_types_out    <= (others => '0');
+  bram_types_write  <= '0';
+  bram_states_out   <= (others => '0');
+  bram_states_write <= '0';
 
   -- Internally used out-signals
   done <= done_i;

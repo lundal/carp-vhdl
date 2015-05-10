@@ -38,24 +38,24 @@ entity development is
   );
   port (
     -- Buffer - Port A
-    buffer_a_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
-    buffer_a_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
-    buffer_a_types_write  : out std_logic;
-    buffer_a_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_a_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_a_states_write : out std_logic;
-    buffer_a_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
-    buffer_a_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_a_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    bram_a_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
+    bram_a_types_write  : out std_logic;
+    bram_a_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_a_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_a_states_write : out std_logic;
+    bram_a_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_a_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     -- Buffer - Port B
-    buffer_b_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
-    buffer_b_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
-    buffer_b_types_write  : out std_logic;
-    buffer_b_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_b_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_b_states_write : out std_logic;
-    buffer_b_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
-    buffer_b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_b_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    bram_b_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
+    bram_b_types_write  : out std_logic;
+    bram_b_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_b_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_b_states_write : out std_logic;
+    bram_b_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_b_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     rule_storage_write   : in std_logic;
     rule_storage_address : in std_logic_vector(bits(rule_amount) - 1 downto 0);
@@ -301,14 +301,14 @@ begin
     cell_state_bits  => cell_state_bits
   )
   port map (
-    buffer_address_z    => buffer_a_address_z,
-    buffer_address_y    => buffer_a_address_y,
-    buffer_types_write  => buffer_a_types_write,
-    buffer_types_in     => buffer_a_types_in,
-    buffer_types_out    => buffer_a_types_out,
-    buffer_states_write => buffer_a_states_write,
-    buffer_states_in    => buffer_a_states_in,
-    buffer_states_out   => buffer_a_states_out,
+    bram_address_z    => bram_a_address_z,
+    bram_address_y    => bram_a_address_y,
+    bram_types_write  => bram_a_types_write,
+    bram_types_in     => bram_a_types_in,
+    bram_types_out    => bram_a_types_out,
+    bram_states_write => bram_a_states_write,
+    bram_states_in    => bram_a_states_in,
+    bram_states_out   => bram_a_states_out,
 
     row_neighborhood_types_slv  => cell_fetcher_types_slv,
     row_neighborhood_states_slv => cell_fetcher_states_slv,
@@ -376,8 +376,8 @@ begin
 
     hits_slv => rule_testers_hits_slv,
 
-    results_type  => buffer_b_types_out,
-    results_state => buffer_b_states_out,
+    results_type  => bram_b_types_out,
+    results_state => bram_b_states_out,
 
     clock => clock
   );
@@ -452,10 +452,10 @@ begin
 
   -- Buffer write signals
   -- Note: Delayed as many cycles as the testers take (two)
-  buffer_b_address_z    <= write_address_z_delayed_2;
-  buffer_b_address_y    <= write_address_y_delayed_2;
-  buffer_b_types_write  <= write_enable_delayed_2;
-  buffer_b_states_write <= write_enable_delayed_2;
+  bram_b_address_z    <= write_address_z_delayed_2;
+  bram_b_address_y    <= write_address_y_delayed_2;
+  bram_b_types_write  <= write_enable_delayed_2;
+  bram_b_states_write <= write_enable_delayed_2;
 
   -- Rule numbers write signals
   rule_numbers_address <= write_address_z_delayed_2 & write_address_y_delayed_2;

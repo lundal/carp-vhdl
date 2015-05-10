@@ -36,14 +36,14 @@ entity cellular_automata is
     live_count_buffer_size : positive := 256
   );
   port (
-    buffer_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
-    buffer_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
-    buffer_types_write  : out std_logic;
-    buffer_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
-    buffer_states_write : out std_logic;
-    buffer_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
-    buffer_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_address_z    : out std_logic_vector(bits(matrix_depth) - 1 downto 0);
+    bram_address_y    : out std_logic_vector(bits(matrix_height) - 1 downto 0);
+    bram_types_write  : out std_logic;
+    bram_types_in     : in  std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_types_out    : out std_logic_vector(matrix_width*cell_type_bits - 1 downto 0);
+    bram_states_write : out std_logic;
+    bram_states_in    : in  std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
+    bram_states_out   : out std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
 
     lut_storage_write   : in std_logic;
     lut_storage_address : in std_logic_vector(cell_type_bits - 1 downto 0);
@@ -86,7 +86,7 @@ architecture rtl of cellular_automata is
   signal configuration_state_slv  : std_logic_vector(matrix_width*cell_state_bits - 1 downto 0);
   signal configuration_enable_slv : std_logic_vector(matrix_depth*matrix_height - 1 downto 0);
 
-  signal buffer_states_selected : std_logic_vector(bits(matrix_depth*matrix_height) - 1 downto 0);
+  signal bram_states_selected : std_logic_vector(bits(matrix_depth*matrix_height) - 1 downto 0);
 
   signal states_slv : std_logic_vector(matrix_depth*matrix_height*matrix_width - 1 downto 0);
 
@@ -113,7 +113,7 @@ begin
     wait until rising_edge(clock);
 
     -- Defaults
-    buffer_states_write <= '0';
+    bram_states_write <= '0';
     update_matrix <= '0';
 
     case (state) is
@@ -130,8 +130,8 @@ begin
             when READBACK =>
               address_z <= (others => '0');
               address_y <= (others => '0');
-              buffer_states_selected <= (others => '0');
-              buffer_states_write <= '1';
+              bram_states_selected <= (others => '0');
+              bram_states_write <= '1';
               state <= READBACK;
             when STEP =>
               --update_matrix <= '1';
@@ -164,7 +164,7 @@ begin
         -- Copy LUTs to shift register and begin configuration of first row
         lut_storage_shift_register <= lut_storage_data_slv;
         lut_storage_shift_amount <= (others => '0');
-        configuration_state_slv <= buffer_states_in;
+        configuration_state_slv <= bram_states_in;
         configuration_enable_slv <= (configuration_enable_slv'left downto 1 => '0') & '1';
         state <= CONFIGURE;
 
@@ -174,7 +174,7 @@ begin
         lut_storage_shift_amount <= lut_storage_shift_amount + 1;
         -- If these are the last configuration bits, proceed to next row
         if (lut_storage_shift_amount = shift_register_bits - 1) then
-          -- Next cell buffer address
+          -- Next cell bram address
           address_y <= std_logic_vector(unsigned(address_y) + 1);
           if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
             address_y <= (others => '0');
@@ -183,7 +183,7 @@ begin
           -- Copy LUTs to shift register and begin configuration of next row
           lut_storage_shift_register <= lut_storage_data_slv;
           lut_storage_shift_amount <= (others => '0');
-          configuration_state_slv <= buffer_states_in;
+          configuration_state_slv <= bram_states_in;
           configuration_enable_slv <= std_logic_vector(shift_left(unsigned(configuration_enable_slv), 1));
           -- Check if done
           if ((unsigned(address_z) = 0 or matrix_depth = 1) and (unsigned(address_y) = 0 or matrix_height = 1)) then
@@ -193,7 +193,7 @@ begin
         end if;
 
       when READBACK =>
-        -- Next cell buffer address
+        -- Next cell bram address
         address_y <= std_logic_vector(unsigned(address_y) + 1);
         if (unsigned(address_y) = matrix_height-1 or matrix_height = 1) then
           address_y <= (others => '0');
@@ -204,11 +204,11 @@ begin
           end if;
         end if;
         -- Write row
-        buffer_states_selected <= std_logic_vector(unsigned(buffer_states_selected) + 1);
-        if (unsigned(buffer_states_selected) = matrix_depth * matrix_height - 1) then
-          buffer_states_selected <= (others => '0');
+        bram_states_selected <= std_logic_vector(unsigned(bram_states_selected) + 1);
+        if (unsigned(bram_states_selected) = matrix_depth * matrix_height - 1) then
+          bram_states_selected <= (others => '0');
         end if;
-        buffer_states_write <= '1';
+        bram_states_write <= '1';
 
       when STEP =>
         update_matrix <= '1';
@@ -232,7 +232,7 @@ begin
     write_address => lut_storage_address,
     write_data    => lut_storage_data,
 
-    read_address_slv => buffer_types_in,
+    read_address_slv => bram_types_in,
     read_data_slv    => lut_storage_data_slv,
 
     clock => clock
@@ -272,8 +272,8 @@ begin
   )
   port map (
     entries_in => states_slv,
-    entry_out  => buffer_states_out,
-    selected   => buffer_states_selected
+    entry_out  => bram_states_out,
+    selected   => bram_states_selected
   );
 
   -- Run livecounter after matrix is updated
@@ -311,12 +311,12 @@ begin
   );
 
   -- Output tie-offs
-  buffer_types_write <= '0';
-  buffer_types_out   <= (others => '0');
+  bram_types_write <= '0';
+  bram_types_out   <= (others => '0');
 
   -- Internally used out ports
-  buffer_address_z <= address_z;
-  buffer_address_y <= address_y;
+  bram_address_z <= address_z;
+  bram_address_y <= address_y;
   done <= done_i;
 
 end rtl;

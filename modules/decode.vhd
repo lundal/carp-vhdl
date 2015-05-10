@@ -72,12 +72,12 @@ entity decode is
 
     fitness_sender_operation : out fitness_sender_operation_type;
 
-    cell_buffer_operation : out cell_buffer_operation_type;
+    cell_storage_operation : out cell_storage_operation_type;
 
     resetter_operation : out resetter_operation_type;
 
-    cell_buffer_mux_select : out cell_buffer_mux_select_type;
-    send_buffer_mux_select : out send_buffer_mux_select_type;
+    cell_storage_mux_select : out cell_storage_mux_select_type;
+    send_buffer_mux_select  : out send_buffer_mux_select_type;
 
     run : in std_logic;
 
@@ -112,7 +112,7 @@ begin
     rule_vector_reader_operation <= NOP;
     rule_numbers_reader_operation <= NOP;
     fitness_sender_operation <= NOP;
-    cell_buffer_operation <= NOP;
+    cell_storage_operation <= NOP;
     resetter_operation <= NOP;
 
     case instruction_opcode is
@@ -126,12 +126,12 @@ begin
         cell_writer_reader_address_z <= instruction(cell_writer_reader_address_z'high + 24 downto 24);
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'high + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'high + 8 downto 8);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_READ_STATE_ALL =>
         cell_writer_reader_operation <= READ_STATE_ALL;
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_READ_TYPE_ONE =>
@@ -139,19 +139,19 @@ begin
         cell_writer_reader_address_z <= instruction(cell_writer_reader_address_z'high + 24 downto 24);
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'high + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'high + 8 downto 8);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_READ_TYPE_ALL =>
         cell_writer_reader_operation <= READ_TYPE_ALL;
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
         send_buffer_mux_select       <= CELL_WRITER_READER;
 
       when INSTRUCTION_FILL_CELLS =>
         cell_writer_reader_operation <= FILL_ALL;
         cell_writer_reader_state     <= instruction(cell_writer_reader_state'high + 8 downto 8);
         cell_writer_reader_type      <= instruction(cell_writer_reader_type'high + 16 downto 16);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_WRITE_STATE_ONE =>
         cell_writer_reader_operation <= WRITE_STATE_ONE;
@@ -159,7 +159,7 @@ begin
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'high + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'high + 8 downto 8);
         cell_writer_reader_state     <= instruction(cell_writer_reader_state'high + 32 downto 32);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_WRITE_STATE_ROW =>
         cell_writer_reader_operation <= WRITE_STATE_ROW;
@@ -167,7 +167,7 @@ begin
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'high + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'high + 8 downto 8);
         cell_writer_reader_states    <= instruction(cell_writer_reader_states'high + 32 downto 32);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_WRITE_TYPE_ONE =>
         cell_writer_reader_operation <= WRITE_TYPE_ONE;
@@ -175,7 +175,7 @@ begin
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'high + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'high + 8 downto 8);
         cell_writer_reader_type      <= instruction(cell_writer_reader_type'high + 32 downto 32);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_WRITE_TYPE_ROW =>
         cell_writer_reader_operation <= WRITE_TYPE_ROW;
@@ -183,10 +183,10 @@ begin
         cell_writer_reader_address_y <= instruction(cell_writer_reader_address_y'high + 16 downto 16);
         cell_writer_reader_address_x <= instruction(cell_writer_reader_address_x'high + 8 downto 8);
         cell_writer_reader_types     <= instruction(cell_writer_reader_types'high + 32 downto 32);
-        cell_buffer_mux_select       <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_SWAP_CELL_BUFFERS =>
-        cell_buffer_operation <= SWAP;
+        cell_storage_operation <= SWAP;
 
       when INSTRUCTION_RUNSTEP =>
         cellular_automata_operation  <= STEP;
@@ -194,11 +194,11 @@ begin
 
       when INSTRUCTION_CONFIGURE =>
         cellular_automata_operation <= CONFIGURE;
-        cell_buffer_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select     <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_READBACK =>
         cellular_automata_operation <= READBACK;
-        cell_buffer_mux_select      <= WRITER_READER_AND_CELLULAR_AUTOMATA;
+        cell_storage_mux_select     <= WRITER_READER_AND_CELLULAR_AUTOMATA;
 
       when INSTRUCTION_WRITE_LUT =>
         lut_writer_operation <= STORE;
@@ -211,8 +211,8 @@ begin
         rule_writer_data      <= instruction(rule_writer_data'high + 64 downto 64);
 
       when INSTRUCTION_DEVSTEP =>
-        development_operation  <= DEVELOP;
-        cell_buffer_mux_select <= DEVELOPMENT;
+        development_operation   <= DEVELOP;
+        cell_storage_mux_select <= DEVELOPMENT;
 
       when INSTRUCTION_READ_RULE_VECTOR =>
         rule_vector_reader_operation <= READ_N;
