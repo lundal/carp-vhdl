@@ -1,29 +1,11 @@
+# Read parameters
+include parameters.conf
+
 # Part spesification
 FAMILY  = spartan6
 DEVICE  = xc6slx45t
 PACKAGE = fgg484
 SPEED   = 3
-
-# System parameters
-COMMUNICATION_BUFFER_SIZE_LG = 10
-COMMUNICATION_REVERSE_ENDIAN = true # Must be true for x86 systems
-PROGRAM_COUNTER_BITS         = 8
-MATRIX_WIDTH                 = 10
-MATRIX_HEIGHT                = 10
-MATRIX_DEPTH                 = 8
-MATRIX_WRAP                  = true
-TYPE_BITS                    = 8
-STATE_BITS                   = 1    # Must be one due to implementation of CA
-COUNTER_AMOUNT               = 4
-COUNTER_BITS                 = 16
-INSTRUCTION_BITS             = 256  # Must be 256 due to implementation of Fetch
-LUT_CONFIGURATION_BITS       = 1    # Power of two <= 2 for 2D and <= 8 for 3D
-RULE_AMOUNT                  = 256
-RULES_TESTED_IN_PARALLEL     = 8
-RULE_VECTOR_BUFFER_SIZE      = 64
-LIVE_COUNT_BUFFER_SIZE       = 256
-FITNESS_BUFFER_SIZE          = 256
-FITNESS_MODULE_NAME          = dft  # Name of VHDL module without "fitness_" prefix
 
 # Project settings
 PROJECT_NAME = carp
@@ -83,7 +65,7 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 	cd ipcores; for core in $(COREFILES); do \
 	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
 
-$(TOPLEVEL): $(addsuffix .in, $(TOPLEVEL)) makefile
+$(TOPLEVEL): $(addsuffix .in, $(TOPLEVEL)) parameters.conf makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -166,7 +148,7 @@ $(PROJECT_NAME).pcf: $(PROJECT_NAME).ngd makefile
 	map -w -p $(DEVICE)-$(PACKAGE)-$(SPEED) -global_opt speed -logic_opt on -lc auto -mt 2 -o placed.ncd $< $@ | tee map_and_place.log
 	cat placed.mrp placed.psr > map_and_place.report
 
-$(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
+$(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -176,7 +158,7 @@ $(PROJECT_NAME).ncd: $(PROJECT_NAME).pcf
 	@echo
 	par -w -ol high -mt 4 placed.ncd $@ $< | tee route.log
 
-$(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
+$(PROJECT_NAME).bit: $(PROJECT_NAME).ncd makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -186,7 +168,7 @@ $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd
 	@echo
 	bitgen -g INIT_9K:YES $< $@ | tee bitgen.log
 
-$(PROJECT_NAME).mcs: $(PROJECT_NAME).bit
+$(PROJECT_NAME).mcs: $(PROJECT_NAME).bit makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
@@ -196,7 +178,7 @@ $(PROJECT_NAME).mcs: $(PROJECT_NAME).bit
 	@echo
 	promgen -w -p mcs -c FF -o $@ -s 4096 -u 0000 $< -spi | tee promgen.log
 
-flash: $(PROJECT_NAME).mcs
+flash: $(PROJECT_NAME).mcs makefile
 	@echo
 	@echo "##########################################"
 	@echo "#                                        #"
