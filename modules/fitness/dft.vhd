@@ -51,7 +51,7 @@ architecture rtl of dft is
 
   -- State machine
   type state_type is (
-    IDLE, WAIT_FOR_INPUT, RUNN,
+    IDLE, WAIT_FOR_INPUT, CALCULATE,
     WAIT_FOR_SUM, SUM_READY,
     WAIT_FOR_COMBINED, COMBINED_READY
   );
@@ -199,12 +199,12 @@ begin
           input_index    <= input_index + 1;
           twiddles_index <= twiddles_index + 1;
           -- Next state
-          state <= RUNN;
+          state <= CALCULATE;
           repeat_buffer_mode <= FILL;
           dsp_mode <= MULTIPLY_ACCUMULATE;
         end if;
 
-      when RUNN =>
+      when CALCULATE =>
         if (input_index = 0) then
           -- Next state when last twiddle
           state <= WAIT_FOR_SUM;
@@ -247,7 +247,7 @@ begin
           input_index <= input_index + 1;
           twiddles_index <= twiddles_index + 1;
           -- Next state
-          state <= RUNN;
+          state <= CALCULATE;
           repeat_buffer_mode <= REPEAT;
           dsp_mode <= MULTIPLY_ACCUMULATE;
         end if;
