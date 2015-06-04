@@ -40,8 +40,8 @@ package instructions is
   constant INSTRUCTION_WRITE_TYPE_ONE    : std_logic_vector(4 downto 0) := "01110";
   constant INSTRUCTION_WRITE_TYPE_ROW    : std_logic_vector(4 downto 0) := "01111";
 
-  constant INSTRUCTION_DEVSTEP           : std_logic_vector(4 downto 0) := "10000";
-  constant INSTRUCTION_RUNSTEP           : std_logic_vector(4 downto 0) := "10001";
+  constant INSTRUCTION_DEVELOP           : std_logic_vector(4 downto 0) := "10000";
+  constant INSTRUCTION_STEP              : std_logic_vector(4 downto 0) := "10001";
   constant INSTRUCTION_CONFIGURE         : std_logic_vector(4 downto 0) := "10010";
   constant INSTRUCTION_READBACK          : std_logic_vector(4 downto 0) := "10011";
 

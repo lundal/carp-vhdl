@@ -188,7 +188,7 @@ begin
       when INSTRUCTION_SWAP_CELL_BUFFERS =>
         cell_storage_operation <= SWAP;
 
-      when INSTRUCTION_RUNSTEP =>
+      when INSTRUCTION_STEP =>
         cellular_automata_operation  <= STEP;
         cellular_automata_step_count <= instruction(cellular_automata_step_count'high + 16 downto 16);
 
@@ -210,7 +210,7 @@ begin
         rule_writer_address   <= instruction(rule_writer_address'high + 32 downto 32);
         rule_writer_data      <= instruction(rule_writer_data'high + 64 downto 64);
 
-      when INSTRUCTION_DEVSTEP =>
+      when INSTRUCTION_DEVELOP =>
         development_operation   <= DEVELOP;
         cell_storage_mux_select <= DEVELOPMENT;
 
