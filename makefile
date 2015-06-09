@@ -64,6 +64,9 @@ ipcores/coregen.cgp: $(COREFILES) makefile
 # The core file has to be backed up because coregen overwrites it and hardcodes part info
 	cd ipcores; for core in $(COREFILES); do \
 	cp -p ../$$core core.tmp; coregen -b ../$$core -p .; mv core.tmp ../$$core; done
+# To open core wizard in ISE, use the following lines that hardcode part info instead
+#	cd ipcores; for core in $(COREFILES); do \
+#	coregen -b ../$$core -p .; done
 
 $(TOPLEVEL): $(addsuffix .in, $(TOPLEVEL)) parameters.conf makefile
 	@echo
