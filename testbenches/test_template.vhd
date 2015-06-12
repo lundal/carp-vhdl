@@ -2,10 +2,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity test_config_readback is
-end test_config_readback;
+entity test_template is
+end test_template;
 
-architecture behavior of test_config_readback is 
+architecture behavior of test_template is
 
   signal tx_buffer_data  : std_logic_vector(31 downto 0) := (others => '0');
   signal tx_buffer_count : std_logic_vector(9 downto 0) := (others => '0');
@@ -62,33 +62,7 @@ begin
 
     -- Instructions
 
-    -- Fill (x42, 1)
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"0042010B";
-
-    -- State(3,2,1) = 0
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"0302012C";
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000000";
-
-    -- Swap
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000014";
-
-    -- Configure
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000012";
-
-    -- Readback
-    wait for clock_period;
-    rx_buffer_write <= '1';
-    rx_buffer_data <= x"00000013";
+    -- [insert instructions here]
 
     -- Null
 
