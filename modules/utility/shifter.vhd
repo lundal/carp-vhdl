@@ -1,20 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : Shifter
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : shifter.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2014-11-21
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Shifts a signal a static amount.
---            : Supports left, right and arithmetic modes.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2014-11-21  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Shifter
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Shifts a signal a static amount.
+--             : Supports left, right and arithmetic modes.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--             : 2015  Lundal    Refactored
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Rule Numbers Reader
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : rule_numbers_reader.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-13
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Reads and sends hit rule numbers to host.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-13  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Rule Numbers Reader
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Reads rule hit numbers and places them in Send Buffer
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

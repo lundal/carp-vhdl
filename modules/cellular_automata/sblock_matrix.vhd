@@ -1,22 +1,18 @@
--------------------------------------------------------------------------------
--- Title      : Sblock Matrix
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : sblock_matrix.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-20
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: TODO
---            : For optimal shift_register usage, configuration_bits should not
---            : be higher than 2 for 2D and 8 for 3D.
---            : The configuration enable signals has one bit for each row.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-29  1.0      lundal	  Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Sblock Matrix
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : A 2D/3D matrix of sblocks.
+--             : Note: For optimal shift_register usage, configuration_bits
+--             : should not be higher than 2 for 2D and 8 for 3D.
+--             : The configuration enable signals has one bit for each row.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

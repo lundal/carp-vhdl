@@ -1,27 +1,23 @@
--------------------------------------------------------------------------------
--- Title      : Function Package
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : functions.vhd
--- Author     : Asbjørn Djupdal  <asbjoern@djupdal.org>
---            : Kjetil Aamodt
---            : Ola Martin Tiseth Stoevneng
---            : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-29
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Various functions
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-29  4.2      lundal    Add bits, min and if_else functions
--- 2015-01-20  4.1      lundal    Removed unused functions
--- 2014-11-27  4.0      lundal    Added reverse_endian
--- 2014-02-10  3.0      stoevneng Added reverse
--- 2003-03-06  2.0      aamodt	  Updated
--- 2003-03-06  1.0      djupdal	  Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Function Package
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Asbjørn Djupdal  <asbjoern@djupdal.org>
+--             : Kjetil Aamodt
+--             : Ola Martin Tiseth Støvneng
+--             : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Various functions
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2003  Djupdal   Created
+--             : 2003  Aamodt    Updated
+--             : 2014  Støvneng  Added reverse
+--             : 2015  Lundal    Refactored, removed unused functions,
+--             :                 added reverse_endian, bits, min, if_else,
+--             :                 to_std_logic, to_boolean, divide_ceil
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Selector
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : selector.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-30
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Selects one part of a signal (slv multiplexer)
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-30  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Selector
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Selects one part of a signal (std_logic_vector multiplexer)
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

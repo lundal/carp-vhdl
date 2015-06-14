@@ -1,20 +1,18 @@
--------------------------------------------------------------------------------
--- Title      : Multiple Rule Testers
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : rule_testers_multi.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-06
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Tests multiple development rules against cell neighborhoods.
---            : Note: Output is available after one clock cycle
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-06  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Multi Rule Testers
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Tests multiple development rules against multiple cell
+--             : neighborhoods.
+--             : Note: Hits are available after one clock cycle, while new
+--             : types and states are available after two.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

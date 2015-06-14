@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : Information Sender
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : information_sender.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-09
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Sends system information
---            : Note: Large parts of the data signal will be trimmed during
---            : synthesis since all the sent values are constants.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-09  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Information Sender
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Places system information in the Send Buffer
+--             : Note: Many signals are trimmed during synthesis since all
+--             : values are constants.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

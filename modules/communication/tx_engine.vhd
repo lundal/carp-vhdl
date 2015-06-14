@@ -1,20 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Transmission Engine
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : tx_engine.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2014-11-07
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Handles transmission of PCIe packets.
---            : The first word sent is the buffer word count.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2014-11-07  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Transmission Engine
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Handles transmission of PCI Express packets.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

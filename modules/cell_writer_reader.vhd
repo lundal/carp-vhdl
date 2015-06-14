@@ -1,19 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Cell Writer Reader
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : cell_writer_reader.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-23
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Writes cell data to buffer and sends cell data to host.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-23  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Cell Writer Reader
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Writes cell data to Cell Storage or reads cell data from
+--             : Cell Storage and places it in the Send Buffer
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

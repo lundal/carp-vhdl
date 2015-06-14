@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Twiddles
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : twiddles.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-20
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Calculates the twiddle factors required for DFT.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author   Description
--- 2015-02-20  1.0      lundal Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Twiddles
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Calculates twiddle factors required for DFT
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

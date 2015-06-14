@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : Shift Register
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : shift_register.vhd
--- Author     : Ola Martin Tiseth Stoevneng
---            : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-20
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: A shift register
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-20  1.1      lundal    Refactored
--- 2014-02-02  1.0      stoevneng Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Shift Regirser
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Ola Martin Tiseth Støvneng
+--             : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : A shift register
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Støvneng  Created
+--             : 2015  Lundal    Refactored
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

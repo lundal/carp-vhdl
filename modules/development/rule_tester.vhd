@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Rule Tester
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : rule_tester.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-03
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Tests a development rule against a cell neighborhood.
---            : Note: Type and state out may be modified when hit = '0'.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-03  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Rule Tester
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Tests a development rule against a cell neighborhood.
+--             : Note: Type and state out may be modified when hit = '0'.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

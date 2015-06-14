@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Cellular Automata
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : cellular_automata.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-30
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: TODO
---            : Configures one row at a time.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-30  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Cellular Automaton
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : CA based on an sblock matrix.
+--             : One row is configured and readback at a time.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

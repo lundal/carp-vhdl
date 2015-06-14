@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Cell Fetcher
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : cell_fetcher.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-04
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Fetches cells neighborhoods from cell bram.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-04  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Cell Fetcher
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Fetches cell neighborhoods from Cell BRAM
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

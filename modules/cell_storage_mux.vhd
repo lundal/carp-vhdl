@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Cell Storage Multiplexer
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : cell_storage_mux.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-23
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Controls which component has access to the cell bram.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-23  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Cell Storage Multiplexer
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Controls which components has access to the Cell Storage
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

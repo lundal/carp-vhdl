@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Simulated Communication Module
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : communication_sim.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2014-11-18
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Presents an interface identical to the communication module
---            : towards the circuit and direct FIFO access for the testbench
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2014-11-18  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Communication Simulator
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Presents an interface identical to Communication towards the
+--             : remaining design but gives direct FIFO access for testbenches
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

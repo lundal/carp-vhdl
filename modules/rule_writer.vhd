@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Rule Writer
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : rule_writer.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-06
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Writes development rules to rule storage
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-06  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Rule Writer
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Writes development rules to Rule Storage
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

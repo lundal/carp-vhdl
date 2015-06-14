@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : Discrete Fourier Transform
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : dft.vhd
--- Author     : Ola Martin Tiseth Stoevneng  <ola.martin.st@gmail.com>
---            : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-21
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Discrete Fourier Transform of data found in separate FIFO.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author   Description
--- 2015-02-21  2.0      lundal   Rewrote
--- 2014-04-08  1.0      stovneng Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Discrete Fourier Transform
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Ola Martin Tiseth Støvneng
+--             : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Calculates DFT of data found in separate FIFO using DSP slices
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Støvneng  Created
+--             : 2015  Lundal    Refactored, replaced BRAM interface with FIFO
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

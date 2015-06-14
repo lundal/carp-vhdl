@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Bit Counter 16
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : live_counter.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-16
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Calculates the number of ones in an N bit signal in X cycles,
---            : where X is bits(input_bits) - 4.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-16  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Bit Counter N
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Calculates the number of ones in an N-bit signal in
+--             : bits(input_bits) - 4 cycles.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

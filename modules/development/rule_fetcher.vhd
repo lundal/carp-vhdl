@@ -1,22 +1,18 @@
--------------------------------------------------------------------------------
--- Title      : Rule Fetcher
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : rule_fetcher.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-07
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Fetches N rules from storage each cycle.
---            : Note: rules_current is extended to prevent wrap-around errors.
---            : Note: Depending on rules_tested_in_parallel, some registers of
---            : rules_current and rules_number may be trimmed.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-07  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Rule Fetcher
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Fetches N rules from Rule Storage each cycle.
+--             : Note: rules_current is extended to prevent wrap-around errors.
+--             : Note: Depending on rules_tested_in_parallel, some registers of
+--             : rules_current and rules_number may be trimmed.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

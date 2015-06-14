@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : Special Request Handler
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : rq_special.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2014-11-23
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Handles special request packets
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2014-11-23  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Request Handler
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Handles special request packets
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

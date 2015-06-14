@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : Hits To Vector
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : hits_to_vector.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-08
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Processes hits from rule testers into rule vectors.
---            : Note: Generates up to (rules_tested_in_parallel) unconnected.
---            : Note: Must be reset before first hits.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-08  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Hits To Vector
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Processes hits from rule testers into rule vectors.
+--             : Note: Generates up to (rules_tested_in_parallel) unconnected.
+--             : Note: Must be reset before first hits.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Hits To Numbers
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : hits_to_numbers.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-08
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Processes hits from rule testers into rule numbers.
---            : Note: Assumes testers tag rule zero as hit (resets registers).
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-02-08  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Hits To Numbers
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Processes hits from rule testers into rule numbers.
+--             : Note: Assumes testers tag rule zero as hit (resets registers).
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

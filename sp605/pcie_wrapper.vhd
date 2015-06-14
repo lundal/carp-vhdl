@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : PCIe Wrapper
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : pcie_wrapper.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2014-11-07
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: A wrapper for the Spartan-6 PCIe integrated endpoint block,
---              configured for the SP605 development board.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2014-11-07  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : PCI Express Wrapper
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Wrapper for the Spartan-6 PCIe integrated endpoint block,
+--             : configured for the SP605 development board.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

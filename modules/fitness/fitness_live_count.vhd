@@ -1,19 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Fitness - Live Count
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : fitness_live_count.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-23
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: TODO
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author   Description
--- 2015-02-23  1.0      lundal   Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Live Count Fitness
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Uses live count values as directly as fitness. Moves values
+--             : from Live Count Buffer to Fitness Buffer when possible.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

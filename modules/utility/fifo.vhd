@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : FIFO Buffer
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : fifo.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-20
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: A circular first-in first-out buffer
---            : Note: Count becomes 0 when completely filled
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-20  1.1      lundal    Use updated bram module
--- 2014-11-07  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : FIFO
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : A circular first-in first-out buffer.
+--             : Note: Count becomes 0 when completely filled.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--             : 2015  Lundal    Use updated dual-port BRAM module
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

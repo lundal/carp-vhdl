@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : Fetch Handler
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : fetch.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-22
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Selects between instructions from communication or bram.
---            : Also handles instruction storage and control flow.
---            : Note: The BRAM address is modified in the combinatorial part.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-22  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Fetch Handler
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Selects between instructions from communication or BRAM.
+--             : Also handles instruction storage and control flow.
+--             : Note: The BRAM address is modified in the combinatorial part.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,28 +1,21 @@
--------------------------------------------------------------------------------
--- Title      : Sblock
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : sblock.vhd
--- Author     : Asbjørn Djupdal  <djupdal@idi.ntnu.no>
---            : Ola Martin Tiseth Stoevneng
---            : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-20
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: TODO
---            : Neighborhood includes itself.
---            : 2**neighborhood_size / lut_configuration_bits should be 16 or
---            : more for optimal shift_register usage.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-20  3.0      lundal    Refactored
--- 2014-03-03  2.5      stoevneng Updated for 3D
--- 2014-02-02  2.0      stoevneng Inferred SRL
--- 2003-01-17  1.1      djupdal
--- 2002-10-05  1.0      djupdal	  Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Sblock
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Asbjørn Djupdal  <djupdal@idi.ntnu.no>
+--             : Ola Martin Tiseth Støvneng
+--             : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : A sblock with a configurable neighborhood that includes itself.
+--             : Note: 2**neighborhood_size / lut_configuration_bits should be
+--             : 16 or more for optimal shift register usage.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2002  Djupdal   Created
+--             : 2014  Støvneng  Inferred shift register
+--             : 2015  Lundal    Refactored to allow any neighborhood size
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

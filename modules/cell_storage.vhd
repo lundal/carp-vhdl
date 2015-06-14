@@ -1,20 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Cell Storage
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : cell_storage.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-23
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Storage for cell types and states.
---            : It has two regions that can be swapped.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-23  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Cell Storage
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Stores cell states and types. There are two storage areas that
+--             : can swap contents.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

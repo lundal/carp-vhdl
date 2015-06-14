@@ -1,19 +1,16 @@
--------------------------------------------------------------------------------
--- Title      : Fitness Sender
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : fitness_sender.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-23
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: TODO
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author   Description
--- 2015-02-23  1.0      lundal   Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : Fitness Sender
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Reads fitness data from the Fitness Buffer and places it in
+--             : the Send Buffer
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

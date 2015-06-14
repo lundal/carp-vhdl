@@ -1,19 +1,15 @@
--------------------------------------------------------------------------------
--- Title      : LUT Writer
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : lut_writer.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-01-30
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: Writes LUT entries to Cellular Automata LUT storage
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2015-01-30  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : LUT Writer
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : Writes LUTs to LUT Storage
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

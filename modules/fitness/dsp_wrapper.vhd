@@ -1,21 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : DSP Wrapper
--- Project    : Cellular Automata Research Project
--------------------------------------------------------------------------------
--- File       : dsp_wrapper.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2015-02-20
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: This module wraps a dsp slice, exposing wanted functionality.
---            : The logical part implements the exact same functionality as
---            : the dsp_only part, but is less resource efficient.
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author   Description
--- 2015-02-20  1.0      lundal Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : DSP Wrapper
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : This module wraps a DSP slice, exposing wanted functionality.
+--             : The logical part implements the exact same functionality as
+--             : the dsp_only part, but is less resource efficient.
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2015  Lundal    Created
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -179,4 +175,4 @@ begin
     );
   end generate;
 
-end rtl;
+end architecture;

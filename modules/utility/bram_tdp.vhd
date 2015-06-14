@@ -1,20 +1,17 @@
--------------------------------------------------------------------------------
--- Title      : True Dual Port BRAM
--- Project    : Cellular Automata Research Platform
--------------------------------------------------------------------------------
--- File       : bram_tdp.vhd
--- Author     : Per Thomas Lundal <perthomas@gmail.com>
--- Company    : NTNU
--- Last update: 2014-12-05
--- Platform   : Spartan-6
--------------------------------------------------------------------------------
--- Description: A true dual port BRAM inferrer with some extra logic to allow
---            : write-first mode to function across ports (see UG383 page 15)
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author    Description
--- 2014-12-05  1.0      lundal    Created
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Title       : True Dual Port BRAM
+-- Project     : Cellular Automata Research Project
+--------------------------------------------------------------------------------
+-- Authors     : Per Thomas Lundal <perthomas@gmail.com>
+-- Institution : Norwegian University of Science and Technology
+--------------------------------------------------------------------------------
+-- Description : A true dual port BRAM inferrer with some extra logic to allow
+--             : write-first mode to function across ports (see UG383 page 15)
+--------------------------------------------------------------------------------
+-- Revisions   : Year  Author    Description
+--             : 2014  Lundal    Created
+--             : 2015  Lundal    Refactored
+--------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
