@@ -1,10 +1,10 @@
 ## Cellular Automata Research Platform - VHDL
 
-This repository contains the hardware design for my work on the Cellular Automata Reasearch Platform at the Norwegian University of Science and Technology.
+This repository contains the hardware design for my work on the Cellular Automata Research Platform at the Norwegian University of Science and Technology.
 
 #### Requirements
 * SP605 Evaluation Kit
-* Xilinx ISE 13.3 or newer (older versions might work if PCIe ipcore is replaced)
+* Xilinx ISE 13.3 or newer (older versions might work if PCI Express Core is replaced)
 * USB driver from http://rmdir.de/~michael/xilinx/ if the one provided by Xilinx does not work
 * Basic development tools (Bash, Make, Git, Sed)
 
