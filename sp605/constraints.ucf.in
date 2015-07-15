@@ -20,7 +20,7 @@ NET leds<2> LOC = D21;
 NET leds<3> LOC = W15;
 
 # Timing
-NET clock_125 PERIOD = 8ns;
+NET clock_200 PERIOD = 5ns;
 
 ###############################################################################
 # PCIe Constraints

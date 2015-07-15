@@ -23,6 +23,7 @@ use work.types.all;
 
 entity toplevel is
   generic (
+    clock_1000mhz_divider    : positive := @CLOCK_1000MHZ_DIVIDER;
     tx_buffer_address_bits   : positive := @COMMUNICATION_BUFFER_SIZE_LG;
     rx_buffer_address_bits   : positive := @COMMUNICATION_BUFFER_SIZE_LG;
     reverse_payload_endian   : boolean  := @COMMUNICATION_REVERSE_ENDIAN;
@@ -83,7 +84,7 @@ architecture rtl of toplevel is
   signal clock_feedback : std_logic;
   signal clock_locked   : std_logic;
   signal clock_200      : std_logic;
-  signal clock_125      : std_logic;
+  signal clock_scaled   : std_logic;
   signal clock          : std_logic;
 
   -- Pipeline control
@@ -282,14 +283,14 @@ begin
   generic map (
     CLKFBOUT_MULT  => 5,
     CLKIN_PERIOD   => 5.0,
-    CLKOUT0_DIVIDE => 8,
+    CLKOUT0_DIVIDE => clock_1000mhz_divider,
     COMPENSATION   => "INTERNAL"
   )
   port map (
     CLKIN     => clock_200,
     CLKFBIN   => clock_feedback,
     RST       => '0',
-    CLKOUT0   => clock_125,
+    CLKOUT0   => clock_scaled,
     CLKOUT1   => open,
     CLKOUT2   => open,
     CLKOUT3   => open,
@@ -301,7 +302,7 @@ begin
 
   clock_global : BUFG
   port map (
-    I => clock_125,
+    I => clock_scaled,
     O => clock
   );
 

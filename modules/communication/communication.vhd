@@ -93,7 +93,7 @@ architecture rtl of communication is
   signal rx_buffer_625_read  : std_logic;
   signal rx_buffer_625_write : std_logic;
 
-  -- Buffers 125 MHz
+  -- Buffers X MHz
   signal tx_buffer_out     : std_logic_vector(31 downto 0);
   signal tx_buffer_count_i : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
   signal tx_buffer_read    : std_logic;
@@ -219,7 +219,7 @@ begin
     data_write => rx_buffer_625_write
   );
 
-  -- External 125 MHz buffers
+  -- External X MHz buffers
 
   tx_buffer : entity work.fifo
   generic map (
