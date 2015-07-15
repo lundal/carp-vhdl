@@ -21,8 +21,8 @@ entity pcie_wrapper is
   port (
     -- User Interface
     -- General
-    clock     : out std_logic;
-    reset     : out std_logic;
+    clock_625 : out std_logic;
+    reset_625 : out std_logic;
     link_up   : out std_logic;
     device_id : out std_logic_vector(15 downto 0);
 
@@ -47,10 +47,10 @@ entity pcie_wrapper is
     pcie_rx_p : in  std_logic;
     pcie_rx_n : in  std_logic;
 
-    -- System
-    clock_p   : in  std_logic;
-    clock_n   : in  std_logic;
-    reset_n   : in  std_logic
+    -- In
+    pcie_clock_p : in  std_logic;
+    pcie_clock_n : in  std_logic;
+    pcie_reset_n : in  std_logic
   );
 end pcie_wrapper;
 
@@ -313,21 +313,19 @@ begin
   -- Clock Input Buffer for differential system clock
   ---------------------------------------------------------
   clock_buffer : IBUFDS
-  port map
-  (
+  port map (
     O  => sys_clock,
-    I  => clock_p,
-    IB => clock_n
+    I  => pcie_clock_p,
+    IB => pcie_clock_n
   );
 
   ---------------------------------------------------------
   -- Input buffer for system reset signal
   ---------------------------------------------------------
   reset_buffer : IBUF
-  port map
-  (
+  port map (
     O  => sys_reset_n,
-    I  => reset_n
+    I  => pcie_reset_n
   );
 
   sys_reset <= not sys_reset_n;
@@ -346,8 +344,8 @@ begin
     -- Transaction (TRN) Interface
     -- Common clock & reset
     user_lnk_up                        => link_up,
-    user_clk_out                       => clock,
-    user_reset_out                     => reset,
+    user_clk_out                       => clock_625,
+    user_reset_out                     => reset_625,
     -- Common flow control
     fc_sel                             => fc_sel,
     fc_nph                             => fc_nph,
@@ -458,4 +456,3 @@ begin
   device_id              <= cfg_bus_number & cfg_device_number & cfg_function_number;
 
 end rtl;
-
