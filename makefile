@@ -169,7 +169,7 @@ $(PROJECT_NAME).bit: $(PROJECT_NAME).ncd makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	bitgen -g INIT_9K:YES $< $@ | tee bitgen.log
+	bitgen -g INIT_9K:YES -w $< $@ | tee bitgen.log
 
 $(PROJECT_NAME).mcs: $(PROJECT_NAME).bit makefile
 	@echo
