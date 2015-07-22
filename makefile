@@ -76,7 +76,8 @@ $(TOPLEVEL): $(addsuffix .in, $(TOPLEVEL)) parameters.conf makefile
 	@echo "#                                        #"
 	@echo "##########################################"
 	@echo
-	sed -e "s/@COMMUNICATION_BUFFER_SIZE_LG/$(COMMUNICATION_BUFFER_SIZE_LG)/" \
+	sed -e "s/@CLOCK_1000MHZ_DIVIDER/$(CLOCK_1000MHZ_DIVIDER)/" \
+		-e "s/@COMMUNICATION_BUFFER_SIZE_LG/$(COMMUNICATION_BUFFER_SIZE_LG)/" \
 		-e "s/@COMMUNICATION_REVERSE_ENDIAN/$(COMMUNICATION_REVERSE_ENDIAN)/" \
 		-e "s/@PROGRAM_COUNTER_BITS/$(PROGRAM_COUNTER_BITS)/" \
 		-e "s/@MATRIX_WIDTH/$(MATRIX_WIDTH)/" \

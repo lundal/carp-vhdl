@@ -15,6 +15,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library unisim;
+use unisim.vcomponents.all;
+
 entity communication is
   generic (
     tx_buffer_address_bits : positive := 10; -- PCIe packet length field is 10 bits
@@ -27,9 +30,9 @@ entity communication is
     pcie_rx_p : in  std_logic;
     pcie_rx_n : in  std_logic;
 
-    clock_p : in  std_logic;
-    clock_n : in  std_logic;
-    reset_n : in  std_logic;
+    pcie_clock_p : in  std_logic;
+    pcie_clock_n : in  std_logic;
+    pcie_reset_n : in  std_logic;
 
     tx_buffer_in    : in  std_logic_vector(31 downto 0);
     tx_buffer_count : out std_logic_vector(tx_buffer_address_bits - 1 downto 0);
@@ -39,16 +42,15 @@ entity communication is
     rx_buffer_count : out std_logic_vector(rx_buffer_address_bits - 1 downto 0);
     rx_buffer_read  : in  std_logic;
 
-    clock : out std_logic;
-    reset : out std_logic
+    clock : in std_logic
   );
 end communication;
 
 architecture rtl of communication is
 
   -- General
-  signal clock_i    : std_logic;
-  signal reset_i    : std_logic;
+  signal clock_625  : std_logic;
+  signal reset_625  : std_logic;
   signal link_up    : std_logic;
   signal device_id  : std_logic_vector(15 downto 0);
 
@@ -79,13 +81,25 @@ architecture rtl of communication is
   signal rq_special      : std_logic;
   signal rq_special_data : std_logic_vector(31 downto 0);
 
-  -- Buffers
-  signal tx_buffer_out            : std_logic_vector(31 downto 0);
-  signal tx_buffer_count_i        : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
-  signal tx_buffer_read           : std_logic;
-  signal rx_buffer_in             : std_logic_vector(31 downto 0);
-  signal rx_buffer_count_i        : std_logic_vector(rx_buffer_address_bits - 1 downto 0);
-  signal rx_buffer_write          : std_logic;
+  -- Buffers 62.5 MHz
+  signal tx_buffer_625_in    : std_logic_vector(31 downto 0);
+  signal tx_buffer_625_out   : std_logic_vector(31 downto 0);
+  signal tx_buffer_625_count : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal tx_buffer_625_read  : std_logic;
+  signal tx_buffer_625_write : std_logic;
+  signal rx_buffer_625_in    : std_logic_vector(31 downto 0);
+  signal rx_buffer_625_out   : std_logic_vector(31 downto 0);
+  signal rx_buffer_625_count : std_logic_vector(rx_buffer_address_bits - 1 downto 0);
+  signal rx_buffer_625_read  : std_logic;
+  signal rx_buffer_625_write : std_logic;
+
+  -- Buffers X MHz
+  signal tx_buffer_out     : std_logic_vector(31 downto 0);
+  signal tx_buffer_count_i : std_logic_vector(tx_buffer_address_bits - 1 downto 0);
+  signal tx_buffer_read    : std_logic;
+  signal rx_buffer_in      : std_logic_vector(31 downto 0);
+  signal rx_buffer_count_i : std_logic_vector(rx_buffer_address_bits - 1 downto 0);
+  signal rx_buffer_write   : std_logic;
 
 begin
 
@@ -95,8 +109,8 @@ begin
   )
   port map (
     -- General
-    clock      => clock_i,
-    reset      => reset_i,
+    clock      => clock_625,
+    reset      => reset_625,
     link_up    => link_up,
     device_id  => device_id,
     -- Tx
@@ -116,8 +130,8 @@ begin
     rq_special      => rq_special,
     rq_special_data => rq_special_data,
     -- Buffer
-    buffer_data  => tx_buffer_out,
-    buffer_read  => tx_buffer_read
+    buffer_data  => tx_buffer_625_out,
+    buffer_read  => tx_buffer_625_read
   );
 
   rx_engine : entity work.rx_engine
@@ -126,8 +140,8 @@ begin
   )
   port map (
     -- General
-    clock      => clock_i,
-    reset      => reset_i,
+    clock      => clock_625,
+    reset      => reset_625,
     link_up    => link_up,
     device_id  => device_id,
     -- Rx
@@ -145,8 +159,8 @@ begin
     rq_tag     => rq_tag,
     rq_bar_hit => rq_bar_hit,
     -- Buffer
-    buffer_data  => rx_buffer_in,
-    buffer_write => rx_buffer_write
+    buffer_data  => rx_buffer_625_in,
+    buffer_write => rx_buffer_625_write
   );
 
   rq_special_handler : entity work.rq_special
@@ -156,8 +170,8 @@ begin
   )
   port map (
     -- General
-    clock      => clock_i,
-    reset      => reset_i,
+    clock      => clock_625,
+    reset      => reset_625,
     link_up    => link_up,
     device_id  => device_id,
     -- Request
@@ -169,9 +183,43 @@ begin
     rq_special      => rq_special,
     rq_special_data => rq_special_data,
     -- Buffer
-    tx_buffer_count => tx_buffer_count_i,
-    rx_buffer_count => rx_buffer_count_i
+    tx_buffer_count => tx_buffer_625_count,
+    rx_buffer_count => rx_buffer_625_count
   );
+
+  -- Internal 62.5 MHz buffers
+
+  tx_buffer_625 : entity work.fifo
+  generic map (
+    address_bits => tx_buffer_address_bits,
+    data_bits => 32
+  )
+  port map (
+    clock      => clock_625,
+    reset      => reset_625,
+    data_in    => tx_buffer_625_in,
+    data_out   => tx_buffer_625_out,
+    data_count => tx_buffer_625_count,
+    data_read  => tx_buffer_625_read,
+    data_write => tx_buffer_625_write
+  );
+
+  rx_buffer_625 : entity work.fifo
+  generic map (
+    address_bits => rx_buffer_address_bits,
+    data_bits => 32
+  )
+  port map (
+    clock      => clock_625,
+    reset      => reset_625,
+    data_in    => rx_buffer_625_in,
+    data_out   => rx_buffer_625_out,
+    data_count => rx_buffer_625_count,
+    data_read  => rx_buffer_625_read,
+    data_write => rx_buffer_625_write
+  );
+
+  -- External X MHz buffers
 
   tx_buffer : entity work.fifo
   generic map (
@@ -179,8 +227,8 @@ begin
     data_bits => 32
   )
   port map (
-    clock      => clock_i,
-    reset      => reset_i,
+    clock      => clock,
+    reset      => '0',
     data_in    => tx_buffer_in,
     data_out   => tx_buffer_out,
     data_count => tx_buffer_count_i,
@@ -194,8 +242,8 @@ begin
     data_bits => 32
   )
   port map (
-    clock      => clock_i,
-    reset      => reset_i,
+    clock      => clock,
+    reset      => '0',
     data_in    => rx_buffer_in,
     data_out   => rx_buffer_out,
     data_count => rx_buffer_count_i,
@@ -203,12 +251,52 @@ begin
     data_write => rx_buffer_write
   );
 
+  -- Synchronizers
+
+  tx_synchronizer : entity work.fifo_synchronizer
+  generic map (
+    buffer_a_size => 2 ** tx_buffer_address_bits,
+    buffer_b_size => 2 ** tx_buffer_address_bits,
+    buffer_bits   => 32
+  )
+  port map (
+    buffer_a_read  => tx_buffer_read,
+    buffer_a_data  => tx_buffer_out,
+    buffer_a_count => tx_buffer_count_i,
+
+    buffer_b_write => tx_buffer_625_write,
+    buffer_b_data  => tx_buffer_625_in,
+    buffer_b_count => tx_buffer_625_count,
+
+    clock_a => clock,
+    clock_b => clock_625
+  );
+
+  rx_synchronizer : entity work.fifo_synchronizer
+  generic map (
+    buffer_a_size => 2 ** rx_buffer_address_bits,
+    buffer_b_size => 2 ** rx_buffer_address_bits,
+    buffer_bits   => 32
+  )
+  port map (
+    buffer_a_read  => rx_buffer_625_read,
+    buffer_a_data  => rx_buffer_625_out,
+    buffer_a_count => rx_buffer_625_count,
+
+    buffer_b_write => rx_buffer_write,
+    buffer_b_data  => rx_buffer_in,
+    buffer_b_count => rx_buffer_count_i,
+
+    clock_a => clock_625,
+    clock_b => clock
+  );
+
   pcie : entity work.pcie_wrapper
   port map (
     -- User Interface
     -- General
-    clock     => clock_i,
-    reset     => reset_i,
+    clock_625 => clock_625,
+    reset_625 => reset_625,
     link_up   => link_up,
     device_id => device_id,
 
@@ -232,19 +320,13 @@ begin
     pcie_tx_n => pcie_tx_n,
     pcie_rx_p => pcie_rx_p,
     pcie_rx_n => pcie_rx_n,
-
-    -- System
-    clock_p   => clock_p,
-    clock_n   => clock_n,
-    reset_n   => reset_n
+    pcie_clock_p => pcie_clock_p,
+    pcie_clock_n => pcie_clock_n,
+    pcie_reset_n => pcie_reset_n
   );
 
   -- Buffer mappings
   tx_buffer_count <= tx_buffer_count_i;
   rx_buffer_count <= rx_buffer_count_i;
-
-  -- Output mappings
-  clock <= clock_i;
-  reset <= reset_i;
 
 end rtl;

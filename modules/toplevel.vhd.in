@@ -14,12 +14,16 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library unisim;
+use unisim.vcomponents.all;
+
 library work;
 use work.functions.all;
 use work.types.all;
 
 entity toplevel is
   generic (
+    clock_1000mhz_divider    : positive := @CLOCK_1000MHZ_DIVIDER;
     tx_buffer_address_bits   : positive := @COMMUNICATION_BUFFER_SIZE_LG;
     rx_buffer_address_bits   : positive := @COMMUNICATION_BUFFER_SIZE_LG;
     reverse_payload_endian   : boolean  := @COMMUNICATION_REVERSE_ENDIAN;
@@ -55,9 +59,12 @@ entity toplevel is
     pcie_rx_p : in  std_logic;
     pcie_rx_n : in  std_logic;
 
-    clock_p : in  std_logic;
-    clock_n : in  std_logic;
-    reset_n : in  std_logic;
+    pcie_clock_p : in  std_logic;
+    pcie_clock_n : in  std_logic;
+    pcie_reset_n : in  std_logic;
+
+    clock_200_p : in std_logic;
+    clock_200_n : in std_logic;
 
     leds : out std_logic_vector(3 downto 0)
   );
@@ -73,9 +80,12 @@ architecture rtl of toplevel is
   constant live_count_buffer_bits : positive := bits(matrix_depth*matrix_height*matrix_width) + 1; -- From cellular automata
   constant send_buffer_size       : positive := 2**tx_buffer_address_bits;
 
-  -- General
-  signal clock : std_logic;
-  signal reset : std_logic;
+  -- Clocking
+  signal clock_feedback : std_logic;
+  signal clock_locked   : std_logic;
+  signal clock_200      : std_logic;
+  signal clock_scaled   : std_logic;
+  signal clock          : std_logic;
 
   -- Pipeline control
   signal run                      : std_logic;
@@ -262,6 +272,40 @@ architecture rtl of toplevel is
 
 begin
 
+  clock_buffer : IBUFDS
+  port map (
+    I  => clock_200_p,
+    IB => clock_200_n,
+    O  => clock_200
+  );
+
+  clock_pll : PLL_BASE
+  generic map (
+    CLKFBOUT_MULT  => 5,
+    CLKIN_PERIOD   => 5.0,
+    CLKOUT0_DIVIDE => clock_1000mhz_divider,
+    COMPENSATION   => "INTERNAL"
+  )
+  port map (
+    CLKIN     => clock_200,
+    CLKFBIN   => clock_feedback,
+    RST       => '0',
+    CLKOUT0   => clock_scaled,
+    CLKOUT1   => open,
+    CLKOUT2   => open,
+    CLKOUT3   => open,
+    CLKOUT4   => open,
+    CLKOUT5   => open,
+    CLKFBOUT  => clock_feedback,
+    LOCKED    => clock_locked
+  );
+
+  clock_global : BUFG
+  port map (
+    I => clock_scaled,
+    O => clock
+  );
+
   leds <= "0101";
 
   run <= done_fetch
@@ -291,10 +335,6 @@ begin
       sim_rx_buffer_count => sim_rx_buffer_count,
       sim_rx_buffer_write => sim_rx_buffer_write,
 
-      clock_p => clock_p,
-      clock_n => clock_n,
-      reset_n => reset_n,
-
       tx_buffer_in    => tx_buffer_data,
       tx_buffer_count => tx_buffer_count,
       tx_buffer_write => tx_buffer_write,
@@ -303,8 +343,7 @@ begin
       rx_buffer_count => rx_buffer_count,
       rx_buffer_read  => rx_buffer_read,
 
-      clock => clock,
-      reset => reset
+      clock => clock
     );
   end generate;
 
@@ -321,9 +360,9 @@ begin
       pcie_rx_p => pcie_rx_p,
       pcie_rx_n => pcie_rx_n,
 
-      clock_p => clock_p,
-      clock_n => clock_n,
-      reset_n => reset_n,
+      pcie_clock_p => pcie_clock_p,
+      pcie_clock_n => pcie_clock_n,
+      pcie_reset_n => pcie_reset_n,
 
       tx_buffer_in    => tx_buffer_data,
       tx_buffer_count => tx_buffer_count,
@@ -333,8 +372,7 @@ begin
       rx_buffer_count => rx_buffer_count,
       rx_buffer_read  => rx_buffer_read,
 
-      clock => clock,
-      reset => reset
+      clock => clock
     );
   end generate;
 
